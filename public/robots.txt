@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Admin panelni qidiruv natijalarida ko'rsatmaslik uchun (agar u asosiy domenda bo'lsa)
+Disallow: /login
+Disallow: /admin
+
+# Sayt xaritasi (Sitemap) manzili
+Sitemap: https://uzautotrailer.uz/sitemap.xml
