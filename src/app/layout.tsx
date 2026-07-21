@@ -23,7 +23,7 @@ export const metadata = {
     images: ['/uzbg1.png'],
   },
   icons: {
-    icon: '/favicon.ico',
+    icon: '/Logo.png',
   },
 };
 
