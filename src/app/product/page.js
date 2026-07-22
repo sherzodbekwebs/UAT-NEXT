@@ -1,3 +1,5 @@
+import ProductsPage from "@/components/ProductsPage/ProductsPage";
+
 // Buni page.js (Server Component) ichida yozasiz
 export const metadata = {
   title: 'Mahsulotlar',
@@ -11,5 +13,5 @@ export const metadata = {
 };
 
 export default function Page() {
-  return <ProductsClient />;
+  return <ProductsPage />;
 }

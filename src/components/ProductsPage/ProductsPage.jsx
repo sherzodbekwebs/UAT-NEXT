@@ -233,6 +233,7 @@ const ProductsPageContent = () => {
 
             {/* Next.js-da scriptni dangerouslySetInnerHTML bilan yozish xavfsizroq */}
             <script
+                id="products-page-script"
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{
                     __html: JSON.stringify({

@@ -188,7 +188,7 @@ const Hero = ({ lang = 'ru' }) => {
                 <title>{t.seoTitle}</title>
                 <meta name="description" content={t.metaDesc} />
                 <link rel="canonical" href="https://uzautotrailer.uz/" />
-                <script type="application/ld+json">
+                <script id="hero-jsonld" type="application/ld+json">
                     {JSON.stringify({
                         "@context": "https://schema.org",
                         "@type": "Organization",
