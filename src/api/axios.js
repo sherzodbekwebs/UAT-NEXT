@@ -1,13 +1,12 @@
 import axios from 'axios';
 
-// 1. URL'ni aniqlash
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.uzautotrailer.uz/api';
+// 1. URL'ni aniqlash va EXPORT qilish (Chunki boshqa komponentlar buni ishlatyapti)
+export const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'https://api.uzautotrailer.uz/api').replace(/\/+$/, '');
 
 // 2. Axios instance yaratish
 const API = axios.create({
-    // baseURL bo'sh bo'lib qolmasligi uchun aniq qiymat beramiz
-    baseURL: BASE_URL.replace(/\/+$/, ''), 
-    timeout: 30000, // Build vaqtida internet sekin bo'lishi mumkin, shunga vaqtni cho'zdik
+    baseURL: API_URL, 
+    timeout: 30000, 
     headers: {
         Accept: 'application/json',
     },
