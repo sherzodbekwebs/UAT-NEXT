@@ -1,4 +1,4 @@
-name: Deploy Next.js to cPanel
+name: Deploy Next.js to cPanel (ZIP Version)
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   web-deploy:
-    name: 🎉 Deploy
+    name: 🎉 Build and Zip
     runs-on: ubuntu-latest
     env:
       NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
@@ -28,16 +28,23 @@ jobs:
     - name: 🏗️ Build Project
       run: npm run build
 
-    - name: 📂 Sync files to cPanel
+    - name: 🤐 Zip the build
+      run: |
+        cd out
+        zip -r ../deploy.zip .
+        cd ..
+
+    - name: 📂 Upload ZIP and Extractor
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
         server: ${{ secrets.FTP_SERVER }}
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
-        local-dir: ./out/
+        # FAQAT ZIP va PHP ni yuklaymiz
+        local-dir: ./
         server-dir: ./
-        # 🛡️ ENG XAVFSIZ SOZLAMALAR:
-        parallel: 1             # Bir vaqtda faqat 1 ta fayl! (Eng muhimi)
-        timeout: 1800000        # 30 daqiqa (Kutish vaqtini juda uzoq qildik)
-        state-name: .ftp-deploy-sync-state.json
-        dangerous-clean-ls: false
+        exclude: |
+          **/*
+          !.github/**
+          !deploy.zip
+          !unzip.php
