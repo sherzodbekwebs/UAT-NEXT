@@ -4,13 +4,13 @@ import API from '@/api/axios';
 
 export async function generateStaticParams() {
   try {
-    const res = await API.get('/products'); 
+    const res = await API.get('/products');
     const products = res.data;
 
     return products.map((product: any) => ({
       // JUDA MUHIM: Bu yerda 'id' o'rniga mahsulotning slug'ini (nomini) qaytarish kerak
       // Chunki sizning saytingizda URL'lar mahsulot nomi bilan ochilyapti
-      id: (product.slug || product.id).toString(), 
+      id: (product.slug || product.id).toString(),
     }));
   } catch (error) {
     console.error("Mahsulotlarni build qilishda xato:", error);
@@ -31,7 +31,20 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       title: `${product.titleRu || product.titleUz} | UzAuto TRAILER`,
       description: product.contentRu || product.contentUz,
       openGraph: {
-        images: [product.image ? `https://api.uzautotrailer.uz/${product.image}` : ''],
+        title: `${product.titleRu || product.titleUz} | UzAuto TRAILER`,
+        description: product.contentRu || product.contentUz,
+        url: `https://uzautotrailer.uz/product/${id}/`,
+        siteName: 'UzAuto TRAILER',
+        images: [
+          {
+            url: product.image ? `https://api.uzautotrailer.uz/${product.image.replace(/^\//, '')}` : 'https://uzautotrailer.uz/Logo.png',
+            width: 1200,
+            height: 630,
+            alt: product.titleRu,
+          },
+        ],
+        locale: 'ru_RU',
+        type: 'website',
       },
     };
   } catch {
