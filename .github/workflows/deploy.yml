@@ -36,11 +36,8 @@ jobs:
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: ./out/
         server-dir: ./
-        # 🚀 SERVERNI BLOKLANISHIDAN HIMOYA QILISH:
-        parallel: 10 # Bir vaqtda faqat 10 ta fayl (server o'chib qolmasligi uchun)
-        timeout: 120000 # 2 daqiqa
+        # 🛡️ ENG XAVFSIZ SOZLAMALAR:
+        parallel: 1             # Bir vaqtda faqat 1 ta fayl! (Eng muhimi)
+        timeout: 1800000        # 30 daqiqa (Kutish vaqtini juda uzoq qildik)
         state-name: .ftp-deploy-sync-state.json
-        exclude: |
-          **/.git*
-          **/node_modules/**
-          .next/**
+        dangerous-clean-ls: false
