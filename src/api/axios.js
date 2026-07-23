@@ -1,32 +1,24 @@
 import axios from 'axios';
 
-const getEnvApiUrl = () => {
-    const value = process.env.NEXT_PUBLIC_API_URL || '';
-    return value.replace(/\/+$/, '');
-};
+// 1. URL'ni aniqlash
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.uzautotrailer.uz/api';
 
-// 🚀 Next.js va Vite muhit o'zgaruvchilari uchun umumiy manzil
-export const API_URL = getEnvApiUrl();
-
+// 2. Axios instance yaratish
 const API = axios.create({
-    baseURL: API_URL || undefined,
-    timeout: 10000,
+    // baseURL bo'sh bo'lib qolmasligi uchun aniq qiymat beramiz
+    baseURL: BASE_URL.replace(/\/+$/, ''), 
+    timeout: 30000, // Build vaqtida internet sekin bo'lishi mumkin, shunga vaqtni cho'zdik
     headers: {
         Accept: 'application/json',
     },
 });
 
 API.interceptors.request.use((config) => {
-    const safeConfig = config || {};
-    const safeHeaders = safeConfig.headers || {};
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-
-    if (token) {
-        safeHeaders.Authorization = `Bearer ${token}`;
-        safeConfig.headers = safeHeaders;
+    if (token && config.headers) {
+        config.headers.Authorization = `Bearer ${token}`;
     }
-
-    return safeConfig;
+    return config;
 });
 
 export default API;

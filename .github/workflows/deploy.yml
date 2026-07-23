@@ -9,6 +9,10 @@ jobs:
   web-deploy:
     name: 🎉 Deploy
     runs-on: ubuntu-latest
+    # SHU YERDA ENV NI BOSHIDAN BERAMIZ
+    env:
+      NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+
     steps:
     - name: 🚚 Get latest code
       uses: actions/checkout@v4
@@ -23,9 +27,8 @@ jobs:
       run: npm install
 
     - name: 🏗️ Build Project
+      # Bu yerda env ni qayta ko'rsatish shart emas, chunki tepada berdik
       run: npm run build
-      env:
-        NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
 
     - name: 📂 Sync files to cPanel
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
