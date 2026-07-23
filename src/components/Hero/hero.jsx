@@ -16,7 +16,8 @@ const translations = {
         metaDesc: "UzAuto Trailer — O‘zbekistondagi og‘ir yuk tashish sanoatida ishonchli hamkor. Sifatli yarim tirkamalar, konteynerlar va maxsus transport vositalari ishlab chiqarish.",
         catalogBtn: "Katalog",
         contactBtn: "Aloqa",
-        description: "UzAuto Trailer — og'ir yuk tashish sanoatida ishonchli hamkoringiz. Biz kuch va innovatsiyani birlashtiramiz.",
+        // \n qo'shildi
+        description: "UzAuto Trailer — og'ir yuk tashish sanoatida ishonchli hamkoringiz.\nBiz kuch va innovatsiyani birlashtiramiz.",
         titles: [
             "UzAuto TRAILER\nYo'llardan bir qadam oldinda",
             "Katta vazifalar uchun muhandislik quvvati",
@@ -36,7 +37,8 @@ const translations = {
         metaDesc: "UzAuto Trailer — ваш надежный партнер в индустрии большегрузных перевозок. Производство высококачественных полуприцепов и контейнеров.",
         catalogBtn: "Каталог",
         contactBtn: "Контакты",
-        description: "UzAuto Trailer — ваш надежный партнер в индустрии большегрузных перевозок. Мы объединяем силу и инновации.",
+        // \n qo'shildi
+        description: "UzAuto Trailer — ваш надежный партнер в индустрии большегрузных перевозок.\nМы объединяем силу и инновации.",
         titles: [
             "UzAuto TRAILER\nНа шаг впереди дорог",
             "Инженерная мощь для больших задач",
@@ -56,7 +58,8 @@ const translations = {
         metaDesc: "UzAuto Trailer is a leading manufacturer of high-quality semi-trailers, containers, and specialized transport equipment in Uzbekistan.",
         catalogBtn: "Catalog",
         contactBtn: "Contact",
-        description: "UzAuto Trailer is your reliable partner in the heavy haulage industry. We combine strength and innovation.",
+        // \n qo'shildi
+        description: "UzAuto Trailer is your reliable partner in the heavy haulage industry.\nWe combine strength and innovation.",
         titles: [
             "UzAuto TRAILER\nOne step ahead of the roads",
             "Engineering power for big tasks",
@@ -81,7 +84,6 @@ const Hero = ({ lang = 'ru' }) => {
         queryKey: ['sliders'],
         queryFn: async () => {
             if (!API_URL) return [];
-
             try {
                 const res = await API.get('/sliders');
                 const payload = Array.isArray(res?.data) ? res.data : res?.data?.data || [];
@@ -117,16 +119,12 @@ const Hero = ({ lang = 'ru' }) => {
         const rawValue = typeof img === 'string'
             ? img
             : img?.image || img?.url || img?.src || img?.path || '';
-
         if (!rawValue || typeof rawValue !== 'string') return staticslayd;
-
         const value = rawValue.trim();
         if (!value) return staticslayd;
         if (value.startsWith('http') || value.startsWith('data:')) return value;
-
         const cleanBaseUrl = API_URL.endsWith('/') ? API_URL.slice(0, -1) : API_URL;
         if (!cleanBaseUrl) return value.startsWith('/') ? value : `/${value}`;
-
         return `${cleanBaseUrl}${value.startsWith('/') ? value : `/${value}`}`;
     };
 
@@ -183,25 +181,10 @@ const Hero = ({ lang = 'ru' }) => {
 
     return (
         <section className="relative w-full flex flex-col lg:h-screen lg:block overflow-hidden bg-[#0a0a0a] font-roboto">
-            {/* SEO OPTIMIZATSIYASI */}
             <Helmet>
                 <title>{t.seoTitle}</title>
                 <meta name="description" content={t.metaDesc} />
                 <link rel="canonical" href="https://uzautotrailer.uz/" />
-                <script id="hero-jsonld" type="application/ld+json">
-                    {JSON.stringify({
-                        "@context": "https://schema.org",
-                        "@type": "Organization",
-                        "name": "UzAuto TRAILER",
-                        "url": "https://uzautotrailer.uz/",
-                        "logo": "https://uzautotrailer.uz/logo.png",
-                        "description": t.metaDesc,
-                        "address": {
-                            "@type": "PostalAddress",
-                            "addressCountry": "UZ"
-                        }
-                    })}
-                </script>
             </Helmet>
 
             <style>{`
@@ -209,7 +192,6 @@ const Hero = ({ lang = 'ru' }) => {
                 * { font-family: 'Roboto', sans-serif !important; }
             `}</style>
 
-            {/* Rasm qismi */}
             <div className="relative w-full aspect-video sm:aspect-[16/8] lg:aspect-auto lg:h-full lg:absolute lg:inset-0 z-10 overflow-hidden cursor-grab active:cursor-grabbing">
                 {loading ? (
                     <div className="absolute inset-0 w-full h-full">
@@ -241,8 +223,8 @@ const Hero = ({ lang = 'ru' }) => {
                 )}
             </div>
 
-            {/* Matn qismi */}
-            <div className="relative z-20 -mt-14 sm:-mt-16 lg:mt-0 lg:h-full max-w-[1600px] mx-auto px-6 lg:px-12 flex flex-col justify-start lg:justify-center items-center lg:items-start text-center lg:text-left bg-transparent pt-0 pb-16 lg:pb-0 pointer-events-none font-roboto">
+            {/* MATN QISMI: O'zgarishlar shu yerda */}
+            <div className="relative z-20 -mt-24 sm:-mt-28 lg:mt-0 lg:h-full max-w-[1600px] mx-auto px-6 lg:px-12 flex flex-col justify-start lg:justify-start lg:pt-65 items-center lg:items-start text-center lg:text-left bg-transparent pb-16 lg:pb-0 pointer-events-none font-roboto">
                 <div className="max-w-4xl pointer-events-auto w-full">
 
                     <div className="min-h-[90px] sm:min-h-[120px] lg:min-h-0 flex items-center lg:items-start justify-center lg:justify-start">
@@ -264,13 +246,13 @@ const Hero = ({ lang = 'ru' }) => {
                         <motion.p
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            className="text-[14px] lg:text-lg text-white/90 font-medium leading-relaxed px-4 lg:px-0 drop-shadow-lg mx-auto lg:mx-0"
+                            // whitespace-pre-line qo'shildi: \n ishlashi uchun
+                            className="text-[14px] lg:text-lg text-white/90 font-medium leading-relaxed px-4 lg:px-0 drop-shadow-lg mx-auto lg:mx-0 whitespace-pre-line"
                         >
                             {t.description}
                         </motion.p>
                     </div>
 
-                    {/* SEO OPTIMIZATSIYASI: Tugmalar Link ga o'zgartirildi */}
                     <div className="flex flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4 w-full sm:w-auto px-2 lg:px-0">
                         <Link
                             href="/products"
@@ -288,7 +270,6 @@ const Hero = ({ lang = 'ru' }) => {
                 </div>
             </div>
 
-            {/* Navigatsiya */}
             {!loading && bgImages.length > 1 && (
                 <div className="absolute bottom-6 lg:bottom-12 left-0 right-0 z-40 px-6 lg:px-12 flex flex-row justify-between items-end pointer-events-none w-full">
                     <div className="flex gap-2 pointer-events-auto items-center">
@@ -297,7 +278,6 @@ const Hero = ({ lang = 'ru' }) => {
                                 className={`cursor-pointer transition-all duration-500 rounded-full ${idx === current % bgImages.length ? 'w-8 lg:w-16 h-[3px] bg-[#0061A4]' : 'w-4 lg:w-8 h-[2px] bg-white/20'}`} />
                         ))}
                     </div>
-
                     <div className="hidden lg:flex gap-3 pointer-events-auto">
                         <button onClick={prevSlide} className="w-12 h-12 border border-white/10 rounded-full flex items-center justify-center text-white hover:bg-[#0061A4] backdrop-blur-md transition-all active:scale-90 shadow-2xl">
                             <ChevronLeft size={24} />
