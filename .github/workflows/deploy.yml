@@ -9,7 +9,6 @@ jobs:
   web-deploy:
     name: 🎉 Deploy
     runs-on: ubuntu-latest
-    # SHU YERDA ENV NI BOSHIDAN BERAMIZ
     env:
       NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
 
@@ -27,7 +26,6 @@ jobs:
       run: npm install
 
     - name: 🏗️ Build Project
-      # Bu yerda env ni qayta ko'rsatish shart emas, chunki tepada berdik
       run: npm run build
 
     - name: 📂 Sync files to cPanel
@@ -38,3 +36,7 @@ jobs:
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: ./out/
         server-dir: ./
+        # 🚀 XATOLARNI OLDINI OLISH UCHUN QO'SHIMCHA SOZLAMALAR:
+        timeout: 900000 # 15 daqiqa (hosting sekin bo'lsa ham ulgurishi uchun)
+        state-name: .ftp-deploy-sync-state.json # Faqat o'zgargan fayllarni yuklaydi (tezlik uchun)
+        log-level: verbose # Nima bo'layotganini aniq ko'rish uchun
