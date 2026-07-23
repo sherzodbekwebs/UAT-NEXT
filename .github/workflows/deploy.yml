@@ -3,7 +3,7 @@ name: Deploy Next.js to cPanel
 on:
   push:
     branches:
-      - main  # Agar branchingiz nomi 'master' bo'lsa, master deb yozing
+      - main
 
 jobs:
   web-deploy:
@@ -24,6 +24,8 @@ jobs:
 
     - name: 🏗️ Build Project
       run: npm run build
+      env:
+        NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
 
     - name: 📂 Sync files to cPanel
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
