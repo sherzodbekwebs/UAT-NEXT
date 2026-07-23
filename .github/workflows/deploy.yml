@@ -36,7 +36,11 @@ jobs:
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: ./out/
         server-dir: ./
-        # 🚀 XATOLARNI OLDINI OLISH UCHUN QO'SHIMCHA SOZLAMALAR:
-        timeout: 900000 # 15 daqiqa (hosting sekin bo'lsa ham ulgurishi uchun)
-        state-name: .ftp-deploy-sync-state.json # Faqat o'zgargan fayllarni yuklaydi (tezlik uchun)
-        log-level: verbose # Nima bo'layotganini aniq ko'rish uchun
+        # 🚀 SERVERNI BLOKLANISHIDAN HIMOYA QILISH:
+        parallel: 10 # Bir vaqtda faqat 10 ta fayl (server o'chib qolmasligi uchun)
+        timeout: 120000 # 2 daqiqa
+        state-name: .ftp-deploy-sync-state.json
+        exclude: |
+          **/.git*
+          **/node_modules/**
+          .next/**
