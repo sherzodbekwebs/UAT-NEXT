@@ -289,7 +289,7 @@ const Navbar = () => {
 
             <header className="navbar-roboto-container fixed top-0 left-0 w-full z-[1000]">
                 {/* TOP BAR */}
-                <div className="hidden min-[1201px]:block bg-[#334155] text-white py-2 shadow-md">
+                {/* <div className="hidden min-[1201px]:block bg-[#334155] text-white py-2 shadow-md">
                     <div className="max-w-[1440px] mx-auto px-6 flex justify-between items-center">
                         <div className="flex items-center gap-5">
                             {socialLinks.map((social, index) => (
@@ -309,7 +309,7 @@ const Navbar = () => {
                             </a>
                         </div>
                     </div>
-                </div>
+                </div> */}
 
                 <nav className="bg-white/95 backdrop-blur-lg border-b border-gray-100 h-16 min-[1201px]:h-20 transition-all duration-300">
                     <div className="max-w-[1440px] mx-auto h-full flex items-center justify-between px-4">

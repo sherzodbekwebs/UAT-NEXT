@@ -224,7 +224,7 @@ const Hero = ({ lang = 'ru' }) => {
             </div>
 
             {/* MATN QISMI: O'zgarishlar shu yerda */}
-            <div className="relative z-20 -mt-24 sm:-mt-28 lg:mt-0 lg:h-full max-w-[1600px] mx-auto px-6 lg:px-12 flex flex-col justify-start lg:justify-start lg:pt-65 items-center lg:items-start text-center lg:text-left bg-transparent pb-16 lg:pb-0 pointer-events-none font-roboto">
+            <div className="relative z-20 -mt-24 sm:-mt-28 lg:mt-0 lg:h-full max-w-[1600px] mx-auto px-6 lg:px-12 flex flex-col justify-start lg:justify-start lg:pt-55 items-center lg:items-start text-center lg:text-left bg-transparent pb-16 lg:pb-0 pointer-events-none font-roboto">
                 <div className="max-w-4xl pointer-events-auto w-full">
 
                     <div className="min-h-[90px] sm:min-h-[120px] lg:min-h-0 flex items-center lg:items-start justify-center lg:justify-start">

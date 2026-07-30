@@ -1,6 +1,5 @@
 "use client"; // 1. BU JUDA MUHIM: Framer Motion ishlashi uchun shart.
 
-import React from 'react';
 import { motion } from 'framer-motion';
 import { PhoneCall, Headset, ShoppingBag } from 'lucide-react';
 
