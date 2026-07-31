@@ -1,21 +1,35 @@
 import { Metadata } from 'next';
 import ProductDetailPage from '@/components/ProductDetailPage/ProductDetailPage';
 import API from '@/api/axios';
+import { cache } from 'react';
 
-// --- Yordamchi funksiyalar ---
 const SITE_URL = 'https://uzautotrailer.uz';
 const API_BASE_URL = 'https://api.uzautotrailer.uz';
+
+// 1. Ma'lumotlarni keshlaymiz (API so'rovni optimallashtirish uchun)
+const getProductData = cache(async (id: string) => {
+  try {
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    const isNumeric = /^\d+$/.test(id);
+    const fetchUrl = (isUuid || isNumeric) ? `/products/${id}` : `/products/detail/${id}`;
+    
+    const res = await API.get(fetchUrl);
+    return res.data?.data || res.data;
+  } catch (e) {
+    return null;
+  }
+});
 
 const cleanText = (text: string, length: number) => {
   if (!text) return '';
   return text
-    .replace(/<[^>]*>?/gm, '') // HTML teglarni o'chirish
-    .replace(/\s+/g, ' ')      // Ortiqcha bo'shliqlarni bittaga tushirish
+    .replace(/<[^>]*>?/gm, '')
+    .replace(/\s+/g, ' ')
     .trim()
     .substring(0, length);
 };
 
-// 1. generateStaticParams
+// 2. generateStaticParams - Build vaqtida barcha sahifalarni yaratish
 export async function generateStaticParams() {
   try {
     const res = await API.get('/products');
@@ -32,95 +46,76 @@ export async function generateStaticParams() {
   }
 }
 
-// 2. generateMetadata (SEO Professional)
+// 3. generateMetadata (Professional Ruscha SEO)
 export async function generateMetadata(props: any): Promise<Metadata> {
   const params = await props.params;
-  const rawId = params?.id || '';
-  const id = rawId.replace(/\/$/, '');
+  const id = params?.id?.replace(/\/$/, '') || '';
 
-  try {
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-    const isNumeric = /^\d+$/.test(id);
-    const fetchUrl = (isUuid || isNumeric) ? `/products/${id}` : `/products/detail/${id}`;
-    
-    const res = await API.get(fetchUrl);
-    const product = res.data?.data || res.data;
+  const product = await getProductData(id);
 
-    if (!product) return { title: 'Mahsulot topilmadi | UzAuto TRAILER' };
+  if (!product) return { title: 'Продукт не найден | UzAuto TRAILER' };
 
-    const title = `${product.titleRu || product.titleUz} | UzAuto TRAILER`;
-    const description = cleanText(product.contentRu || product.contentUz, 160);
-    
-    // Rasm yo'li
-    const imagePath = product.image ? product.image.replace(/^\//, '') : '';
-    const imageUrl = imagePath 
-      ? (imagePath.startsWith('uploads/') ? `${API_BASE_URL}/${imagePath}` : `${API_BASE_URL}/uploads/products/${imagePath}`)
-      : `${SITE_URL}/Logo.png`;
+  // Ruscha sarlavhani birinchi navbatga qo'yamiz va tijoriy qo'shimchalar qo'shamiz
+  const productName = product.titleRu || product.titleUz || 'Спецтехника';
+  const pageTitle = `${productName} — Купить в Узбекистане, цена и характеристики | UzAuto TRAILER`;
+  
+  const cleanDescription = cleanText(product.contentRu || product.contentUz, 160);
+  
+  const imagePath = product.image ? product.image.replace(/^\//, '') : '';
+  const imageUrl = imagePath 
+    ? (imagePath.startsWith('uploads/') ? `${API_BASE_URL}/${imagePath}` : `${API_BASE_URL}/uploads/products/${imagePath}`)
+    : `${SITE_URL}/Logo.png`;
 
-    // Asosiy URL (SEO uchun juda muhim: Canonical)
-    // Agar foydalanuvchi ID bilan kirsa ham, qidiruv tizimi Slug-ni asosiy deb biladi
-    const canonicalUrl = `${SITE_URL}/product/${product.slug || product.id}/`;
+  // Asosiy SEO linki (Slug bilan va slashsiz)
+  const canonicalUrl = `${SITE_URL}/product/${product.slug || product.id}`;
 
-    return {
-      title: title,
-      description: description,
-      alternates: {
-        canonical: canonicalUrl,
-      },
-      openGraph: {
-        title: title,
-        description: description,
-        url: canonicalUrl,
-        siteName: 'UzAuto TRAILER',
-        images: [
-          {
-            url: imageUrl,
-            width: 1200,
-            height: 630,
-            alt: product.titleRu || product.titleUz,
-          },
-        ],
-        locale: 'ru_RU',
-        type: 'website',
-      },
-      twitter: {
-        card: 'summary_large_image',
-        title: title,
-        description: description,
-        images: [imageUrl],
-      },
-      robots: {
+  return {
+    title: pageTitle,
+    description: cleanDescription,
+    keywords: [
+      productName, 
+      'купить спецтехнику', 
+      'цена в Ташкенте', 
+      'технические характеристики', 
+      'UzAuto TRAILER', 
+      'продажа грузовиков'
+    ],
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      title: pageTitle,
+      description: cleanDescription,
+      url: canonicalUrl,
+      siteName: 'UzAuto TRAILER',
+      images: [{ url: imageUrl, width: 1200, height: 630, alt: productName }],
+      locale: 'ru_RU',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: pageTitle,
+      description: cleanDescription,
+      images: [imageUrl],
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
         index: true,
         follow: true,
-        googleBot: {
-          index: true,
-          follow: true,
-          'max-video-preview': -1,
-          'max-image-preview': 'large',
-          'max-snippet': -1,
-        },
+        'max-image-preview': 'large',
+        'max-snippet': -1,
       },
-    };
-  } catch (error) {
-    return { title: 'UzAuto TRAILER' };
-  }
+    },
+  };
 }
 
-// 3. Page Komponenti + JSON-LD Structured Data
+// 4. Page Komponenti + JSON-LD (Google Rich Snippets)
 export default async function Page(props: any) {
   const params = await props.params;
-  const id = params?.id;
+  const productData = await getProductData(params?.id);
 
-  // Mahsulot ma'lumotlarini JSON-LD skripti uchun qayta olamiz
-  let productData = null;
-  try {
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-    const fetchUrl = (isUuid || /^\d+$/.test(id)) ? `/products/${id}` : `/products/detail/${id}`;
-    const res = await API.get(fetchUrl);
-    productData = res.data?.data || res.data;
-  } catch (e) {}
-
-  // Google uchun Structured Data (Schema.org)
   const jsonLd = productData ? {
     '@context': 'https://schema.org',
     '@type': 'Product',
@@ -133,7 +128,7 @@ export default async function Page(props: any) {
     },
     offers: {
       '@type': 'Offer',
-      url: `${SITE_URL}/product/${productData.slug || productData.id}/`,
+      url: `${SITE_URL}/product/${productData.slug || productData.id}`,
       priceCurrency: 'UZS',
       availability: 'https://schema.org/InStock',
     }

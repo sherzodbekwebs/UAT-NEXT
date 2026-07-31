@@ -1,5 +1,6 @@
 "use client";
 
+import React from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import DynamicPage from '@/components/DynamicPage/DynamicPage';
 
@@ -18,24 +19,46 @@ import QualityAwards from '@/components/QualityAwards/QualityAwards';
 import Technologies from '@/components/Technologies/Technologies';
 import DesignBureau from '@/components/DesignBureau/DesignBureau';
 
-// { slug } prop-ni qabul qilishini yozing
-export default function PageSwitcher({ slug }: { slug: string }) {
+interface PageSwitcherProps {
+  slug: string;
+}
+
+export default function PageSwitcher({ slug }: PageSwitcherProps) {
   const { lang } = useLanguage();
 
+  // Rus tiliga fokuslangan bo'lsangiz, lang har doim to'g'ri uzatilayotganini tekshiring
+  // Agar lang aniqlanmasa 'ru' standart qilib belgilanishi tavsiya etiladi
+  const currentLang = lang || 'ru';
+
   switch (slug) {
-    case 'general_information': return <GeneralInfo lang={lang} />;
-    case 'history': return <CompanyHistory lang={lang} />;
-    case 'mission_vision': return <MissionVision lang={lang} />;
-    case 'affiliated_companies': return <AffiliatedCompanies lang={lang} />;
-    case 'registration_and_trademark_information': return <RegistrationInfo lang={lang} />;
-    case 'compliance_policy': return <Compliance lang={lang} />;
-    case 'achievements_and_awards': return <Achievements lang={lang} />;
-    case 'careers': return <Careers lang={lang} />;
-    case 'quality_management': return <QualityManagement lang={lang} />;
-    case 'quality_policy': return <QualityPolicy lang={lang} />;
-    case 'quality_awards': return <QualityAwards lang={lang} />;
-    case 'technologies': return <Technologies lang={lang} />;
-    case 'design_bureau': return <DesignBureau lang={lang} />;
-    default: return <DynamicPage slug={slug} lang={lang} />;
+    case 'general_information': 
+      return <GeneralInfo lang={currentLang} />;
+    case 'history': 
+      return <CompanyHistory lang={currentLang} />;
+    case 'mission_vision': 
+      return <MissionVision lang={currentLang} />;
+    case 'affiliated_companies': 
+      return <AffiliatedCompanies lang={currentLang} />;
+    case 'registration_and_trademark_information': 
+      return <RegistrationInfo lang={currentLang} />;
+    case 'compliance_policy': 
+      return <Compliance lang={currentLang} />;
+    case 'achievements_and_awards': 
+      return <Achievements lang={currentLang} />;
+    case 'careers': 
+      return <Careers lang={currentLang} />;
+    case 'quality_management': 
+      return <QualityManagement lang={currentLang} />;
+    case 'quality_policy': 
+      return <QualityPolicy lang={currentLang} />;
+    case 'quality_awards': 
+      return <QualityAwards lang={currentLang} />;
+    case 'technologies': 
+      return <Technologies lang={currentLang} />;
+    case 'design_bureau': 
+      return <DesignBureau lang={currentLang} />;
+    default: 
+      // Agar kiritilgan slug mavjud bo'lmasa, API orqali dinamik sahifani qidiradi
+      return <DynamicPage slug={slug} lang={currentLang} />;
   }
 }

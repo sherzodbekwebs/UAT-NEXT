@@ -1,14 +1,25 @@
 import NewsDetailPage from '@/components/NewsDetailPage/NewsDetailPage'; 
 import { Metadata } from 'next';
 import API from '@/api/axios';
+import { cache } from 'react';
 
-// 1. Build vaqtida barcha yangiliklar sahifalarini generatsiya qilish
+// 1. Ma'lumotlarni keshlaymiz (Metadata va Page bitta so'rovdan foydalanishi uchun)
+const getNewsPost = cache(async (id: string) => {
+  try {
+    const res = await API.get(`/news/${id}`); 
+    return res.data;
+  } catch (error) {
+    return null;
+  }
+});
+
+// 2. Build vaqtida barcha yangiliklar sahifalarini generatsiya qilish
 export async function generateStaticParams() {
   try {
     const res = await API.get('/news'); 
-    const news = res.data;
+    const news = Array.isArray(res.data) ? res.data : (res.data?.news || []);
+
     return news.map((post: any) => ({
-      // Agar URL'da yangilik nomi (slug) bo'lsa, post.slug deb o'zgartiring
       id: (post.slug || post.id).toString(), 
     }));
   } catch (error) {
@@ -17,72 +28,75 @@ export async function generateStaticParams() {
   }
 }
 
-// 2. SEO uchun Dinamik Metadata (Telegramda rasm chiqishi uchun)
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
-  const { id } = await params;
+// 3. SEO uchun Professional Ruscha Metadata
+export async function generateMetadata(props: any): Promise<Metadata> {
+  const params = await props.params;
+  const id = params.id;
   
+  const post = await getNewsPost(id);
+
   const fallbackMetadata: Metadata = {
-    title: "Yangiliklar | UzAuto TRAILER",
-    description: "UzAuto TRAILER kompaniyasining eng so'nggi yangiliklari va tadbirlari.",
+    title: "Новости компании | UzAuto TRAILER — Официальный сайт",
+    description: "Свежие новости, события и достижения завода UzAuto TRAILER. Будьте в курсе последних обновлений производства.",
     openGraph: {
         images: ['https://uzautotrailer.uz/Logo.png'],
     }
   };
 
-  try {
-    // Yangilik ma'lumotlarini olish
-    const res = await API.get(`/news/${id}`); 
-    const post = res.data;
+  if (!post) return fallbackMetadata;
 
-    if (!post) return fallbackMetadata;
-
-    // 🚀 RASM YO'LINI TO'G'RI SHAKLLANTIRISH:
-    let imageUrl = 'https://uzautotrailer.uz/Logo.png';
-    if (post.image) {
-      const cleanPath = post.image.replace(/^\//, '');
-      // Yangiliklar rasmi odatda 'uploads/news/' papkasida bo'ladi
-      if (!cleanPath.startsWith('uploads/')) {
-        imageUrl = `https://api.uzautotrailer.uz/uploads/news/${cleanPath}`;
-      } else {
-        imageUrl = `https://api.uzautotrailer.uz/${cleanPath}`;
-      }
-    }
-
-    // HTML teglarni tozalash va qisqartirish
-    const cleanDescription = (post.contentRu || post.contentUz || "")
-      .replace(/<[^>]*>?/gm, '') 
-      .substring(0, 160);
-
-    return {
-      title: `${post.titleRu || post.titleUz} | UzAuto TRAILER`,
-      description: cleanDescription,
-      openGraph: {
-        title: `${post.titleRu || post.titleUz} | UzAuto TRAILER`,
-        description: cleanDescription,
-        url: `https://uzautotrailer.uz/news/${id}/`,
-        siteName: 'UzAuto TRAILER',
-        images: [
-          {
-            url: imageUrl,
-            width: 1200,
-            height: 630,
-            alt: post.titleRu,
-          },
-        ],
-        locale: 'ru_RU',
-        type: 'article',
-      },
-      twitter: {
-        card: 'summary_large_image',
-        images: [imageUrl],
-      }
-    };
-  } catch (error) {
-    return fallbackMetadata;
+  // Rasm yo'lini shakllantirish
+  let imageUrl = 'https://uzautotrailer.uz/Logo.png';
+  if (post.image) {
+    const cleanPath = post.image.replace(/^\//, '');
+    imageUrl = cleanPath.startsWith('uploads/') 
+      ? `https://api.uzautotrailer.uz/${cleanPath}` 
+      : `https://api.uzautotrailer.uz/uploads/news/${cleanPath}`;
   }
+
+  // Matnni tozalash (Ruscha matnga ustuvorlik beramiz)
+  const title = post.titleRu || post.titleUz || "Новость";
+  const content = post.contentRu || post.contentUz || "";
+  const cleanDescription = content
+    .replace(/<[^>]*>?/gm, '') 
+    .replace(/\s+/g, ' ')
+    .trim()
+    .substring(0, 160);
+
+  const pageTitle = `${title} | Новости UzAuto TRAILER`;
+
+  return {
+    title: pageTitle,
+    description: cleanDescription,
+    alternates: {
+      canonical: `https://uzautotrailer.uz/news/${id}`,
+    },
+    openGraph: {
+      title: pageTitle,
+      description: cleanDescription,
+      url: `https://uzautotrailer.uz/news/${id}`,
+      siteName: 'UzAuto TRAILER',
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+      locale: 'ru_RU',
+      type: 'article',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: pageTitle,
+      description: cleanDescription,
+      images: [imageUrl],
+    }
+  };
 }
 
-// 3. Sahifa komponenti
+// 4. Sahifa komponenti
 export default function Page() {
     return <NewsDetailPage />;
 }

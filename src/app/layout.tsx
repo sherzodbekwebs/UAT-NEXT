@@ -3,29 +3,58 @@ import { Inter, Roboto } from 'next/font/google';
 import AppShell from '../components/AppShell';
 import type { ReactNode } from "react";
 import Script from 'next/script';
+import { Metadata } from 'next';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const roboto = Roboto({ subsets: ['latin'], weight: ['300', '400', '500', '700', '900'], variable: '--font-roboto' });
 
-export const metadata = {
-  title: 'UzAuto TRAILER',
-  description: "UzAuto TRAILER – O'zbekistondagi tirkamalar, yarim tirkamalar va maxsus texnikalar ishlab chiqarish bo'yicha yetakchi kompaniya.",
+// Professional SEO Metadata (Rus tiliga fokuslangan)
+export const metadata: Metadata = {
   metadataBase: new URL('https://uzautotrailer.uz'),
+  title: {
+    default: 'UzAuto TRAILER — Официальный сайт завода прицепной техники',
+    template: '%s | UzAuto TRAILER', // Ichki sahifalar "Название | UzAuto TRAILER" bo'lib chiqadi
+  },
+  description: "Официальный сайт UzAuto TRAILER – ведущего производителя прицепов, полуприцепов и спецтехники в Узбекистане. Гарантия качества, современное производство и сервис.",
+  keywords: "UzAuto TRAILER, производство прицепов, спецтехника Узбекистан, полуприцепы Ташкент, купить грузовик, самосвалы Камаз, завод прицепов",
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
-    title: 'UzAuto TRAILER',
-    description: "O'zbekistondagi eng yirik tirkamalar va osma uskunalar ishlab chiqaruvchisi.",
+    title: 'UzAuto TRAILER — Завод по производству спецтехники',
+    description: "Крупнейший производитель прицепной и навесной техники в Узбекистане. Официальный сайт.",
     type: 'website',
     url: 'https://uzautotrailer.uz/',
-    images: ['/uzbg1.png'],
+    siteName: 'UzAuto TRAILER',
+    images: [
+      {
+        url: '/uzbg1.png',
+        width: 1200,
+        height: 630,
+        alt: 'UzAuto TRAILER Завод',
+      },
+    ],
+    locale: 'ru_RU',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'UzAuto TRAILER',
-    description: "Tirkamalar va maxsus texnikalar ishlab chiqarishda yuqori sifat va ishonchlilik.",
+    title: 'UzAuto TRAILER — Лидер производства спецтехники',
+    description: "Качественные прицепы и спецтехника от производителя в Узбекистане.",
     images: ['/uzbg1.png'],
   },
   icons: {
     icon: '/Logo.png',
+    apple: '/Logo.png', // Apple qurilmalari uchun
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
 };
 
@@ -35,11 +64,12 @@ export default function RootLayout({
   children: ReactNode;
 }) {
   return (
-    <html lang="uz" className={`${inter.variable} ${roboto.variable}`}>
+    // Ruscha SEO uchun lang="ru" qildik
+    <html lang="ru" className={`${inter.variable} ${roboto.variable}`}>
       <body>
         <AppShell>{children}</AppShell>
 
-        {/* Yandex Metrika - ID berilgan, xato chiqmasligi uchun */}
+        {/* Yandex Metrika */}
         <Script id="yandex-metrika-main" strategy="afterInteractive">
           {`
             (function (m, e, t, r, i, k, a) {
