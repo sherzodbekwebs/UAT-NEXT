@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     siteName: 'UzAuto TRAILER',
     images: [
       {
-        url: 'https://uzautotrailer.uz/Logo.png', // Ijtimoiy tarmoqlar uchun rasm
+        url: 'https://uzautotrailer.uz/kontact_img.png', // Ijtimoiy tarmoqlar uchun rasm
         width: 1200,
         height: 630,
         alt: 'UzAuto TRAILER Контакты',
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Контакты UzAuto TRAILER',
     description: 'Адреса и телефоны официального производителя спецтехники в Узбекистане.',
-    images: ['https://uzautotrailer.uz/Logo.png'],
+    images: ['https://uzautotrailer.uz/kontact_img.png'],
   },
 };
 

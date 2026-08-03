@@ -129,15 +129,27 @@ const toCyrillic = (text) => {
 
 // --- YORDAMCHI KOMPONENTLAR ---
 
-const NavItem = ({ label, active, onEnter, onLeave, children }) => (
+/**
+ * Dropdown-li nav item. `isCurrent` — shu bo'limga tegishli sahifada turilganini bildiradi
+ * va pastida doimiy ko'k chiziqcha (indicator) chiqadi. `open` — sichqoncha ustida
+ * turilganda dropdown ochiq holatini bildiradi.
+ */
+const NavItem = ({ label, open, isCurrent, onEnter, onLeave, children }) => (
     <li className="relative h-full flex items-center font-bold" onMouseEnter={onEnter} onMouseLeave={onLeave}>
-        <div className="relative py-2 flex items-center gap-1 group cursor-pointer h-full text-[#1a2e44] hover:text-[#0054A6] transition-colors">
-            <span className={active ? 'text-[#0054A6]' : ''}>{label}</span>
-            <ChevronRight className={`w-3 h-3 transition-transform duration-300 ${active ? 'rotate-90 text-blue-600' : 'text-gray-400'}`} />
+        <div className={`relative py-2 flex items-center gap-1 group cursor-pointer h-full transition-colors ${isCurrent ? 'text-[#0054A6]' : 'text-[#1a2e44] hover:text-[#0054A6]'}`}>
+            <span>{label}</span>
+            <ChevronRight className={`w-3 h-3 transition-transform duration-300 ${open ? 'rotate-90 text-[#0054A6]' : 'text-gray-400'}`} />
+            {isCurrent && (
+                <motion.span
+                    layoutId="nav-active-indicator"
+                    className="absolute -bottom-[2px] left-0 right-0 h-[3px] rounded-full bg-gradient-to-r from-[#0054A6] to-[#3B82F6]"
+                    transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                />
+            )}
         </div>
         <AnimatePresence>
-            {active && (
-                <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="absolute top-full left-0 min-w-64 bg-white shadow-2xl rounded-b-2xl border-t-2 border-[#0054A6] z-[100]">
+            {open && (
+                <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.18, ease: 'easeOut' }} className="absolute top-full left-0 min-w-64 bg-white shadow-[0_18px_45px_-12px_rgba(15,35,65,0.25)] rounded-b-2xl border-t-2 border-[#0054A6] z-[100]">
                     {children}
                 </motion.div>
             )}
@@ -145,38 +157,62 @@ const NavItem = ({ label, active, onEnter, onLeave, children }) => (
     </li>
 );
 
+/** Oddiy (dropdownsiz) nav link — joriy sahifa bo'lsa ko'k rangda va tagida chiziqcha bilan. */
+const SimpleNavLink = ({ href, label, isCurrent }) => (
+    <Link href={href}>
+        <li className={`relative py-2 transition-colors ${isCurrent ? 'text-[#0054A6]' : 'hover:text-[#0054A6]'}`}>
+            {label}
+            {isCurrent && (
+                <motion.span
+                    layoutId="nav-active-indicator"
+                    className="absolute -bottom-[2px] left-0 right-0 h-[3px] rounded-full bg-gradient-to-r from-[#0054A6] to-[#3B82F6]"
+                    transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                />
+            )}
+        </li>
+    </Link>
+);
+
 const SearchResults = ({ suggestions, t, getLangField, handleResultClick }) => (
-    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="absolute top-full right-0 mt-3 w-[380px] bg-white shadow-2xl rounded-3xl border border-gray-100 overflow-hidden z-[2000] p-2">
+    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.18 }} className="absolute top-full right-0 mt-3 w-[380px] bg-white shadow-[0_20px_50px_-15px_rgba(15,35,65,0.3)] rounded-3xl border border-gray-100 overflow-hidden z-[2000] p-2">
         {suggestions.length > 0 ? (
             <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
                 {suggestions.map(p => (
-                    <div key={p.id} onClick={() => handleResultClick(p.id)} className="flex items-center gap-4 p-3 hover:bg-blue-50/50 rounded-2xl cursor-pointer transition-all group">
+                    <div key={p.id} onClick={() => handleResultClick(p.id)} className="flex items-center gap-4 p-3 hover:bg-blue-50/60 rounded-2xl cursor-pointer transition-all group">
                         <div className="w-14 h-14 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0 border border-gray-100">
                             <img src={`${API_URL}${p.image}`} className="w-full h-full object-contain p-1" alt="" />
                         </div>
-                        <div className="flex flex-col gap-0.5 text-black">
-                            <span className="text-[14px] font-bold text-gray-700 group-hover:text-blue-600 line-clamp-1">{getLangField(p, 'title')}</span>
-                            <span className="text-[12px] text-gray-400 font-medium">Batafsil ko'rish <ArrowRight size={10} className="inline ml-1" /></span>
+                        <div className="flex flex-col gap-0.5 text-black min-w-0">
+                            <span className="text-[14px] font-bold text-gray-700 group-hover:text-[#0054A6] line-clamp-1">{getLangField(p, 'title')}</span>
+                            <span className="text-[12px] text-gray-400 font-medium flex items-center gap-1">
+                                Batafsil ko'rish <ArrowRight size={10} className="group-hover:translate-x-0.5 transition-transform" />
+                            </span>
                         </div>
                     </div>
                 ))}
             </div>
-        ) : <div className="p-8 text-center text-gray-400 text-sm font-medium">{t.noResults}</div>}
+        ) : (
+            <div className="p-8 text-center text-gray-400 text-sm font-medium flex flex-col items-center gap-2">
+                <Search size={22} className="text-gray-200" />
+                {t.noResults}
+            </div>
+        )}
     </motion.div>
 );
 
-const MobileNavItem = ({ icon: Icon, label, isOpen, onClick, children }) => (
+const MobileNavItem = ({ icon: Icon, label, isOpen, isCurrent, onClick, children }) => (
     <div className="rounded-2xl overflow-hidden transition-all duration-300">
-        <button onClick={onClick} className={`w-full flex justify-between items-center p-4 rounded-2xl transition-all ${isOpen ? 'bg-blue-50 text-blue-700' : 'text-[#1a2e44] hover:bg-gray-50'}`}>
+        <button onClick={onClick} className={`w-full flex justify-between items-center p-4 rounded-2xl transition-all ${isOpen ? 'bg-blue-50 text-[#0054A6]' : isCurrent ? 'bg-blue-50/60 text-[#0054A6]' : 'text-[#1a2e44] hover:bg-gray-50'}`}>
             <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-xl ${isOpen ? 'bg-blue-600 text-white' : 'bg-gray-100 text-blue-600'}`}><Icon size={18} /></div>
+                <div className={`p-2 rounded-xl transition-colors ${isOpen || isCurrent ? 'bg-[#0054A6] text-white' : 'bg-gray-100 text-[#0054A6]'}`}><Icon size={18} /></div>
                 <span className="text-[16px] font-bold">{label}</span>
+                {isCurrent && <span className="w-1.5 h-1.5 rounded-full bg-[#0054A6]" />}
             </div>
-            <ChevronRight size={18} className={`transition-transform duration-300 ${isOpen ? 'rotate-90 text-blue-600' : 'text-gray-300'}`} />
+            <ChevronRight size={18} className={`transition-transform duration-300 ${isOpen ? 'rotate-90 text-[#0054A6]' : 'text-gray-300'}`} />
         </button>
         <AnimatePresence>
             {isOpen && (
-                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden bg-gray-50/50 mx-2 rounded-b-2xl border-x border-b border-blue-50 px-4 py-2 ml-8 border-l-2 border-blue-100 my-2">
+                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.22 }} className="overflow-hidden bg-gray-50/50 mx-2 rounded-b-2xl border-x border-b border-blue-50 px-4 py-2 ml-8 border-l-2 border-blue-100 my-2">
                     {children}
                 </motion.div>
             )}
@@ -184,14 +220,14 @@ const MobileNavItem = ({ icon: Icon, label, isOpen, onClick, children }) => (
     </div>
 );
 
-// 🟢 BU YERDA XATO TUZATILDI: to -> href
-const SimpleMobileLink = ({ href, icon: Icon, label, onClick }) => (
-    <Link href={href} onClick={onClick} className="flex items-center justify-between p-4 rounded-2xl hover:bg-gray-50 text-[#1a2e44] transition-all group">
+const SimpleMobileLink = ({ href, icon: Icon, label, isCurrent, onClick }) => (
+    <Link href={href} onClick={onClick} className={`flex items-center justify-between p-4 rounded-2xl transition-all group ${isCurrent ? 'bg-blue-50/70 text-[#0054A6]' : 'hover:bg-gray-50 text-[#1a2e44]'}`}>
         <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gray-100 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all"><Icon size={18} /></div>
+            <div className={`p-2 rounded-xl transition-all ${isCurrent ? 'bg-[#0054A6] text-white' : 'bg-gray-100 text-[#0054A6] group-hover:bg-[#0054A6] group-hover:text-white'}`}><Icon size={18} /></div>
             <span className="text-[16px] font-bold">{label}</span>
+            {isCurrent && <span className="w-1.5 h-1.5 rounded-full bg-[#0054A6]" />}
         </div>
-        <ArrowRight size={18} className="text-gray-300 group-hover:translate-x-1 transition-transform" />
+        <ArrowRight size={18} className={`transition-transform ${isCurrent ? 'text-[#0054A6]' : 'text-gray-300 group-hover:translate-x-1'}`} />
     </Link>
 );
 
@@ -205,6 +241,7 @@ const Navbar = () => {
     const [activeSubMenu, setActiveSubMenu] = useState(null);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [mobileAccordion, setMobileAccordion] = useState(null);
+    const [isScrolled, setIsScrolled] = useState(false);
 
     const [searchTerm, setSearchTerm] = useState("");
     const [allProducts, setAllProducts] = useState([]);
@@ -220,6 +257,14 @@ const Navbar = () => {
     useEffect(() => {
         API.get('/menus').then(res => setDynamicMenus(res.data)).catch(() => {});
         API.get('/products').then(res => setAllProducts(res.data)).catch(() => {});
+    }, []);
+
+    // Scroll qilinganda navbar soyasini kuchaytirish — professional "elevate on scroll" effekti
+    useEffect(() => {
+        const onScroll = () => setIsScrolled(window.scrollY > 8);
+        onScroll();
+        window.addEventListener('scroll', onScroll, { passive: true });
+        return () => window.removeEventListener('scroll', onScroll);
     }, []);
 
     const getLangField = (obj, field) => {
@@ -263,6 +308,21 @@ const Navbar = () => {
 
     const fullAboutItems = [...t.staticAbout, ...getDynamicItems('about')];
 
+    // --- Joriy sahifani aniqlash mantig'i ---
+    const isPathActive = (href) => pathname === href || pathname?.startsWith(href + '/');
+
+    const prodLinks = t.prodItems.flatMap(item => item.sub ? item.sub.map(s => s.link) : [item.link]);
+    const isAboutActive = fullAboutItems.some(item => isPathActive(item.link));
+    const isProdActive = prodLinks.some(link => isPathActive(link));
+
+    const simpleLinks = [
+        { href: '/news', label: t.news, icon: Info },
+        { href: '/products', label: t.products, icon: Package },
+        { href: '/dealers', label: t.dealers, icon: MapPin },
+        { href: '/videos', label: t.videorolik, icon: PlayCircle },
+        { href: '/contacts', label: t.contacts, icon: Phone },
+    ];
+
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) setIsLangOpen(false);
@@ -288,89 +348,76 @@ const Navbar = () => {
             `}</style>
 
             <header className="navbar-roboto-container fixed top-0 left-0 w-full z-[1000]">
-                {/* TOP BAR */}
-                {/* <div className="hidden min-[1201px]:block bg-[#334155] text-white py-2 shadow-md">
-                    <div className="max-w-[1440px] mx-auto px-6 flex justify-between items-center">
-                        <div className="flex items-center gap-5">
-                            {socialLinks.map((social, index) => (
-                                <a key={index} href={social.url} target="_blank" rel="noopener noreferrer" className="transition-all duration-300 hover:scale-110" style={{ color: 'white' }} onMouseEnter={(e) => e.currentTarget.style.color = social.color} onMouseLeave={(e) => e.currentTarget.style.color = 'white'}>
-                                    <social.icon size={16} strokeWidth={2.5} />
-                                </a>
-                            ))}
-                        </div>
-                        <div className="flex items-center gap-8 text-[13px] font-medium">
-                            <a href="tel:+998712023223" className="flex items-center gap-2 hover:text-blue-300 transition-all duration-300">
-                                <Phone size={14} className="fill-white text-white" />
-                                <span>+998 71 202 32 23</span>
-                            </a>
-                            <a href="tel:+998712028866" className="flex items-center gap-2 hover:text-blue-300 transition-all duration-300">
-                                <Phone size={14} className="fill-white text-white" />
-                                <span>+998 71 202 88 66</span>
-                            </a>
-                        </div>
-                    </div>
-                </div> */}
-
-                <nav className="bg-white/95 backdrop-blur-lg border-b border-gray-100 h-16 min-[1201px]:h-20 transition-all duration-300">
+                <nav className={`bg-white/95 backdrop-blur-lg border-b transition-all duration-300 h-16 min-[1201px]:h-20 ${isScrolled ? 'border-gray-100 shadow-[0_8px_30px_-15px_rgba(15,35,65,0.18)]' : 'border-transparent shadow-none'}`}>
                     <div className="max-w-[1440px] mx-auto h-full flex items-center justify-between px-4">
                         <div className="flex items-center shrink-0">
                             <Link href="/">
-                                <img src={logo.src || logo} alt="Logo" className="h-9 min-[1201px]:h-13 w-auto rounded-lg object-contain cursor-pointer" />
+                                <img src={logo.src || logo} alt="Logo" className="h-9 min-[1201px]:h-13 w-auto rounded-lg object-contain cursor-pointer transition-transform hover:scale-[1.03]" />
                             </Link>
                         </div>
 
                         <div className="hidden min-[1201px]:flex flex-1 justify-center h-full">
                             <ul className="flex items-center gap-x-6 xl:gap-x-8 text-[#1a2e44] font-semibold text-[15px] xl:text-[16px] h-full whitespace-nowrap">
-                                <NavItem label={t.about} active={activeMenu === 'about'} onEnter={() => setActiveMenu('about')} onLeave={() => setActiveMenu(null)}>
+                                <NavItem label={t.about} open={activeMenu === 'about'} isCurrent={isAboutActive} onEnter={() => setActiveMenu('about')} onLeave={() => setActiveMenu(null)}>
                                     <div className="p-8 bg-white w-[600px] grid grid-cols-2 gap-x-8 gap-y-2">
-                                        {fullAboutItems.map((item, i) => (
-                                            <Link key={i} href={item.link}>
-                                                <div className="px-4 py-3 hover:bg-gray-50 text-[#004A99] font-bold text-[14px] rounded-xl transition-all cursor-pointer">{item.title}</div>
-                                            </Link>
-                                        ))}
+                                        {fullAboutItems.map((item, i) => {
+                                            const active = isPathActive(item.link);
+                                            return (
+                                                <Link key={i} href={item.link}>
+                                                    <div className={`px-4 py-3 font-bold text-[14px] rounded-xl transition-all cursor-pointer flex items-center gap-2 ${active ? 'bg-blue-50 text-[#0054A6]' : 'hover:bg-gray-50 text-[#004A99]'}`}>
+                                                        {active && <span className="w-1.5 h-1.5 rounded-full bg-[#0054A6] shrink-0" />}
+                                                        {item.title}
+                                                    </div>
+                                                </Link>
+                                            );
+                                        })}
                                     </div>
                                 </NavItem>
 
-                                <NavItem label={t.production} active={activeMenu === 'prod'} onEnter={() => setActiveMenu('prod')} onLeave={() => { setActiveMenu(null); setActiveSubMenu(null); }}>
+                                <NavItem label={t.production} open={activeMenu === 'prod'} isCurrent={isProdActive} onEnter={() => setActiveMenu('prod')} onLeave={() => { setActiveMenu(null); setActiveSubMenu(null); }}>
                                     <ul className="py-4 w-72">
                                         {t.prodItems.map((item, i) => (
                                             item.sub ? (
                                                 <li key={i} className="relative px-6 py-3.5 hover:bg-gray-50 text-[#004A99] font-bold transition-all cursor-pointer text-sm flex items-center justify-between" onMouseEnter={() => setActiveSubMenu(item.label)} onMouseLeave={() => setActiveSubMenu(null)}>
-                                                    <span>{item.label}</span>
+                                                    <span className="flex items-center gap-2">
+                                                        {item.sub.some(s => isPathActive(s.link)) && <span className="w-1.5 h-1.5 rounded-full bg-[#0054A6]" />}
+                                                        {item.label}
+                                                    </span>
                                                     <ChevronRight size={14} className={activeSubMenu === item.label ? 'rotate-90' : ''} />
                                                     <AnimatePresence>
                                                         {activeSubMenu === item.label && (
-                                                            <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} className="absolute top-0 left-full w-80 bg-white shadow-2xl border-l-2 border-[#0054A6] py-3 z-[110] rounded-r-2xl">
-                                                                {item.sub.map((subItem, j) => (
-                                                                    <Link key={j} href={subItem.link || "#"}>
-                                                                        <div className="px-6 py-3 hover:bg-gray-50 text-[#004A99] font-bold text-sm border-b border-gray-50 last:border-0 transition-all">{subItem.title}</div>
-                                                                    </Link>
-                                                                ))}
+                                                            <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.16 }} className="absolute top-0 left-full w-80 bg-white shadow-[0_18px_45px_-12px_rgba(15,35,65,0.25)] border-l-2 border-[#0054A6] py-3 z-[110] rounded-r-2xl">
+                                                                {item.sub.map((subItem, j) => {
+                                                                    const active = isPathActive(subItem.link || "#");
+                                                                    return (
+                                                                        <Link key={j} href={subItem.link || "#"}>
+                                                                            <div className={`px-6 py-3 font-bold text-sm border-b border-gray-50 last:border-0 transition-all ${active ? 'bg-blue-50 text-[#0054A6]' : 'hover:bg-gray-50 text-[#004A99]'}`}>{subItem.title}</div>
+                                                                        </Link>
+                                                                    );
+                                                                })}
                                                             </motion.div>
                                                         )}
                                                     </AnimatePresence>
                                                 </li>
                                             ) : (
                                                 <Link key={i} href={item.link}>
-                                                    <div className="px-6 py-3.5 hover:bg-gray-50 text-[#004A99] font-bold text-sm transition-all">{item.label}</div>
+                                                    <div className={`px-6 py-3.5 font-bold text-sm transition-all ${isPathActive(item.link) ? 'bg-blue-50 text-[#0054A6]' : 'hover:bg-gray-50 text-[#004A99]'}`}>{item.label}</div>
                                                 </Link>
                                             )
                                         ))}
                                     </ul>
                                 </NavItem>
 
-                                <Link href="/news"><li className="hover:text-[#0054A6] transition-colors">{t.news}</li></Link>
-                                <Link href="/products"><li className="hover:text-[#0054A6] transition-colors">{t.products}</li></Link>
-                                <Link href="/dealers"><li className="hover:text-[#0054A6] transition-colors">{t.dealers}</li></Link>
-                                <Link href="/videos"><li className="hover:text-[#0054A6] transition-colors">{t.videorolik}</li></Link>
-                                <Link href="/contacts"><li className="hover:text-[#0054A6] transition-colors">{t.contacts}</li></Link>
+                                {simpleLinks.map((l) => (
+                                    <SimpleNavLink key={l.href} href={l.href} label={l.label} isCurrent={isPathActive(l.href)} />
+                                ))}
                             </ul>
                         </div>
 
                         <div className="flex items-center gap-3 min-[1201px]:gap-6 justify-end">
                             <div className="relative hidden min-[1201px]:block w-48 xl:w-56 h-10" ref={searchWrapperRef}>
-                                <div className={`absolute right-0 top-0 flex items-center rounded-2xl px-4 py-2.5 transition-all duration-300 border ${showSuggestions ? 'w-[380px] bg-white border-blue-400 shadow-xl' : 'w-full bg-gray-50 border-gray-100 hover:border-gray-200'}`}>
-                                    <Search className="w-4 h-4 text-gray-400" />
+                                <div className={`absolute right-0 top-0 flex items-center rounded-2xl px-4 py-2.5 transition-all duration-300 border ${showSuggestions ? 'w-[380px] bg-white border-[#0054A6]/40 shadow-xl' : 'w-full bg-gray-50 border-gray-100 hover:border-gray-200'}`}>
+                                    <Search className="w-4 h-4 text-gray-400 shrink-0" />
                                     <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} onFocus={() => searchTerm.length > 1 && setShowSuggestions(true)} placeholder={t.searchPlaceholder} className="bg-transparent border-none outline-none w-full text-[13px] ml-3 font-medium text-gray-800 placeholder:text-gray-400" />
                                 </div>
                                 <AnimatePresence>
@@ -379,15 +426,15 @@ const Navbar = () => {
                             </div>
 
                             <div className="relative" ref={dropdownRef}>
-                                <button onClick={() => setIsLangOpen(!isLangOpen)} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg font-bold text-[11px] uppercase transition-all bg-gray-50 border border-gray-100 hover:bg-white text-black">
-                                    <GlobeIcon size={14} className="text-blue-600" />
+                                <button onClick={() => setIsLangOpen(!isLangOpen)} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg font-bold text-[11px] uppercase transition-all bg-gray-50 border border-gray-100 hover:bg-white hover:border-gray-200 text-black">
+                                    <GlobeIcon size={14} className="text-[#0054A6]" />
                                     <span>{lang}</span>
                                 </button>
                                 <AnimatePresence>
                                     {isLangOpen && (
-                                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="absolute right-0 mt-2 w-32 bg-white shadow-2xl rounded-2xl p-1.5 z-[120]">
+                                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.16 }} className="absolute right-0 mt-2 w-32 bg-white shadow-[0_18px_45px_-12px_rgba(15,35,65,0.25)] rounded-2xl p-1.5 z-[120] border border-gray-50">
                                             {['uz', 'ru', 'en'].map((item) => (
-                                                <button key={item} onClick={() => { setLang(item); setIsLangOpen(false); }} className={`w-full text-left px-4 py-2.5 rounded-xl text-[12px] font-bold uppercase text-black ${lang === item ? 'bg-blue-50 text-[#0054A6]' : 'hover:bg-gray-50'}`}>
+                                                <button key={item} onClick={() => { setLang(item); setIsLangOpen(false); }} className={`w-full text-left px-4 py-2.5 rounded-xl text-[12px] font-bold uppercase transition-all ${lang === item ? 'bg-blue-50 text-[#0054A6]' : 'hover:bg-gray-50 text-black'}`}>
                                                     {item}
                                                 </button>
                                             ))}
@@ -396,7 +443,7 @@ const Navbar = () => {
                                 </AnimatePresence>
                             </div>
 
-                            <button onClick={() => setIsMobileMenuOpen(true)} className="min-[1201px]:hidden p-2 text-black">
+                            <button onClick={() => setIsMobileMenuOpen(true)} className="min-[1201px]:hidden p-2 text-black rounded-lg hover:bg-gray-50 transition-colors">
                                 <MenuIcon className="w-6 h-6" />
                             </button>
                         </div>
@@ -407,33 +454,47 @@ const Navbar = () => {
             <AnimatePresence>
                 {isMobileMenuOpen && (
                     <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: "spring", damping: 25 }} className="navbar-roboto-container fixed inset-0 bg-white z-[9999] min-[1201px]:hidden flex flex-col">
-                        <div className="h-16 flex items-center justify-between px-6 border-b">
+                        <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100">
                             <img src={logo.src || logo} alt="Logo" className="h-10 w-auto" />
-                            <button onClick={() => setIsMobileMenuOpen(false)} className="text-black"><XIcon size={22} /></button>
+                            <button onClick={() => setIsMobileMenuOpen(false)} className="text-black p-2 rounded-lg hover:bg-gray-50 transition-colors"><XIcon size={22} /></button>
                         </div>
                         <div className="flex-1 overflow-y-auto px-6 py-5">
                             <div className="space-y-1">
-                                <MobileNavItem icon={Info} label={t.about} isOpen={mobileAccordion === 'about'} onClick={() => setMobileAccordion(mobileAccordion === 'about' ? null : 'about')}>
-                                    {fullAboutItems.map((item, i) => <Link key={i} href={item.link} onClick={() => setIsMobileMenuOpen(false)} className="block py-2 text-gray-500 font-semibold">{item.title}</Link>)}
+                                <MobileNavItem icon={Info} label={t.about} isOpen={mobileAccordion === 'about'} isCurrent={isAboutActive} onClick={() => setMobileAccordion(mobileAccordion === 'about' ? null : 'about')}>
+                                    {fullAboutItems.map((item, i) => (
+                                        <Link key={i} href={item.link} onClick={() => setIsMobileMenuOpen(false)} className={`flex items-center gap-2 py-2 font-semibold transition-colors ${isPathActive(item.link) ? 'text-[#0054A6]' : 'text-gray-500'}`}>
+                                            {isPathActive(item.link) && <span className="w-1 h-1 rounded-full bg-[#0054A6]" />}
+                                            {item.title}
+                                        </Link>
+                                    ))}
                                 </MobileNavItem>
-                                <MobileNavItem icon={Settings} label={t.production} isOpen={mobileAccordion === 'production'} onClick={() => setMobileAccordion(mobileAccordion === 'production' ? null : 'production')}>
+                                <MobileNavItem icon={Settings} label={t.production} isOpen={mobileAccordion === 'production'} isCurrent={isProdActive} onClick={() => setMobileAccordion(mobileAccordion === 'production' ? null : 'production')}>
                                     {t.prodItems.map((item, i) => (
                                         <div key={i} className="mb-4">
                                             {item.sub ? (
                                                 <>
                                                     <div className="text-xs font-black text-blue-400 uppercase mb-2">{item.label}</div>
-                                                    {item.sub.map((sub, j) => <Link key={j} href={sub.link} onClick={() => setIsMobileMenuOpen(false)} className="block py-1 text-gray-500">{sub.title}</Link>)}
+                                                    {item.sub.map((sub, j) => (
+                                                        <Link key={j} href={sub.link} onClick={() => setIsMobileMenuOpen(false)} className={`block py-1 transition-colors ${isPathActive(sub.link) ? 'text-[#0054A6] font-bold' : 'text-gray-500'}`}>{sub.title}</Link>
+                                                    ))}
                                                 </>
-                                            ) : <Link href={item.link} onClick={() => setIsMobileMenuOpen(false)} className="block font-bold text-black">{item.label}</Link>}
+                                            ) : (
+                                                <Link href={item.link} onClick={() => setIsMobileMenuOpen(false)} className={`block font-bold ${isPathActive(item.link) ? 'text-[#0054A6]' : 'text-black'}`}>{item.label}</Link>
+                                            )}
                                         </div>
                                     ))}
                                 </MobileNavItem>
-                                <SimpleMobileLink href="/news" icon={Info} label={t.news} onClick={() => setIsMobileMenuOpen(false)} />
-                                <SimpleMobileLink href="/products" icon={Package} label={t.products} onClick={() => setIsMobileMenuOpen(false)} />
-                                <SimpleMobileLink href="/dealers" icon={MapPin} label={t.dealers} onClick={() => setIsMobileMenuOpen(false)} />
-                                <SimpleMobileLink href="/videos" icon={PlayCircle} label={t.videorolik} onClick={() => setIsMobileMenuOpen(false)} />
-                                <SimpleMobileLink href="/contacts" icon={Phone} label={t.contacts} onClick={() => setIsMobileMenuOpen(false)} />
+                                {simpleLinks.map((l) => (
+                                    <SimpleMobileLink key={l.href} href={l.href} icon={l.icon} label={l.label} isCurrent={isPathActive(l.href)} onClick={() => setIsMobileMenuOpen(false)} />
+                                ))}
                             </div>
+                        </div>
+                        <div className="px-6 py-5 border-t border-gray-100 flex items-center justify-center gap-5">
+                            {socialLinks.map((social, index) => (
+                                <a key={index} href={social.url} target="_blank" rel="noopener noreferrer" className="text-gray-400 transition-all duration-300 hover:scale-110" onMouseEnter={(e) => e.currentTarget.style.color = social.color} onMouseLeave={(e) => e.currentTarget.style.color = ''}>
+                                    <social.icon size={20} strokeWidth={2.2} />
+                                </a>
+                            ))}
                         </div>
                     </motion.div>
                 )}

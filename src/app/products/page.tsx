@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     siteName: 'UzAuto TRAILER',
     images: [
       {
-        url: 'https://uzautotrailer.uz/uzbg1.png', // Katalog uchun umumiy rasm
+        url: 'https://uzautotrailer.uz/products_seoimg.png', // Katalog uchun umumiy rasm
         width: 1200,
         height: 630,
         alt: 'Каталог продукции UzAuto TRAILER',
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Спецтехника и прицепы UzAuto TRAILER',
     description: 'Официальный каталог прицепной техники в Узбекистане.',
-    images: ['https://uzautotrailer.uz/uzbg1.png'],
+    images: ['https://uzautotrailer.uz/products_seoimg.png'],
   },
   robots: {
     index: true,

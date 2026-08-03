@@ -1,7 +1,6 @@
 import NewsListPage from '@/components/NewsListPage/NewsListPage';
 import { Metadata } from 'next';
 
-// Professional SEO Metadata (Rus tilida)
 export const metadata: Metadata = {
   title: 'Новости и события компании | UzAuto TRAILER — Официальный сайт',
   description: 'Все последние новости, события, достижения и важные обновления завода UzAuto TRAILER. Будьте в курсе жизни крупнейшего производителя спецтехники в Узбекистане.',
@@ -22,7 +21,7 @@ export const metadata: Metadata = {
     siteName: 'UzAuto TRAILER',
     images: [
       {
-        url: 'https://uzautotrailer.uz/uzbg1.png',
+        url: 'https://uzautotrailer.uz/news_seoimg.png',
         width: 1200,
         height: 630,
         alt: 'Новости UzAuto TRAILER',
@@ -35,7 +34,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Новости и события UzAuto TRAILER',
     description: 'Официальные новости завода-производителя спецтехники в Узбекистане.',
-    images: ['https://uzautotrailer.uz/uzbg1.png'],
+    images: ['https://uzautotrailer.uz/news_seoimg.png'],
   },
   robots: {
     index: true,
