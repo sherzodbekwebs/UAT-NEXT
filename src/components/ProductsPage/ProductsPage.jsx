@@ -15,6 +15,78 @@ import { useLanguage } from '../../context/LanguageContext';
 import SEO from '../SEO';
 import { ShieldCheck, Factory, Truck, Award } from "lucide-react";
 
+const localTranslations = {
+    uz: {
+        heroDesc: "Sizning biznesingiz uchun yuk tashuvchi, tirkama va maxsus texnikalarning keng assortimenti.",
+        guarantee: "Rasmiy\nkafolat",
+        production: "O'zimizning\nishlab chiqarish",
+        modelsCount: "56 dan ortiq\ntexnika modellari",
+        allModels: "Barcha modellar",
+        categories: "Kategoriyalar",
+        brands: "Brendlar",
+        allBrands: "Barchasi",
+        agreed: "Kelishilgan",
+        currency: "so'm",
+        more: "BATAFSIL",
+        notFound: "Mahsulotlar topilmadi",
+        clearFilter: "Filtrni tozalash",
+        total: "ta"
+    },
+    ru: {
+        heroDesc: "Широкий ассортимент грузовой, прицепной и специальной техники для вашего бизнеса.",
+        guarantee: "Официальная\nгарантия",
+        production: "Собственное\nпроизводство",
+        modelsCount: "Более 56\nмоделей техники",
+        allModels: "Все модели",
+        categories: "Категории",
+        brands: "Бренды",
+        allBrands: "Все",
+        agreed: "Договорная",
+        currency: "сум",
+        more: "ПОДРОБНЕЕ",
+        notFound: "Ничего не найдено",
+        clearFilter: "Очистить фильтр",
+        total: "ед."
+    },
+    en: {
+        heroDesc: "A wide range of cargo, trailer and special equipment for your business.",
+        guarantee: "Official\nwarranty",
+        production: "Own\nproduction",
+        modelsCount: "More than 56\nequipment models",
+        allModels: "All models",
+        categories: "Categories",
+        brands: "Brands",
+        allBrands: "All",
+        agreed: "Price on request",
+        currency: "sum",
+        more: "DETAILS",
+        notFound: "No products found",
+        clearFilter: "Clear filters",
+        total: "units"
+    }
+};
+
+
+const menuVariants = {
+    open: { 
+        height: "auto", 
+        opacity: 1,
+        transition: {
+            height: { duration: 0.3, ease: [0.4, 0, 0.2, 1] },
+            opacity: { duration: 0.2, delay: 0.1 }
+        }
+    },
+    collapsed: { 
+        height: 0, 
+        opacity: 0,
+        transition: {
+            height: { duration: 0.3, ease: [0.4, 0, 0.2, 1] },
+            opacity: { duration: 0.1 }
+        }
+    }
+};
+
+
 
 const getField = (item, field, lang) => {
     if (!item) return '---';
@@ -57,14 +129,30 @@ const CountBadge = ({ count, active }) => (
 );
 
 const ProductsPageContent = () => {
+    const productsTopRef = useRef(null);
     const { t, lang } = useLanguage();
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
 
+    const curT = localTranslations[lang] || localTranslations.ru;
+
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [expandedGroups, setExpandedGroups] = useState({});
     const [viewMode, setViewMode] = useState('grid');
+
+    const scrollToProducts = () => {
+        if (productsTopRef.current) {
+            const navbarHeight = 130; // Navbaringiz balandligi + zapas
+            const elementPosition = productsTopRef.current.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - navbarHeight;
+
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth'
+            });
+        }
+    };
 
     const { data: exchangeRate } = useQuery({
         queryKey: ['usdRate'],
@@ -140,6 +228,24 @@ const ProductsPageContent = () => {
     const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
     const paginatedProducts = filteredProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
+    const currentTitle = useMemo(() => {
+        if (activeCategory === 'all') return curT.allModels;
+
+        // 1. Maxsus guruhlar (special, dumpers, etc.)
+        const group = groupedCategories.find(g => g.id === activeCategory);
+        if (group) {
+            return lang === 'ru' ? group.ru : lang === 'en' ? group.en : group.uz;
+        }
+
+        // 2. Real ID bo'yicha kategoriyalar
+        const cat = categories.find(c => String(c.id) === String(activeCategory));
+        if (cat) {
+            return getField(cat, 'title', lang);
+        }
+
+        return '---';
+    }, [activeCategory, groupedCategories, categories, lang, curT.allModels]);
+
     const handleFilterChange = (newParams, sidebarClose = true) => {
         const params = new URLSearchParams(searchParams.toString());
         Object.entries(newParams).forEach(([key, value]) => {
@@ -147,22 +253,38 @@ const ProductsPageContent = () => {
             else params.set(key, value);
         });
         params.set('page', '1');
-        router.push(`${pathname}?${params.toString()}`);
+
+        // { scroll: false } Next.js avtomatik sakrashini to'xtatadi
+        router.push(`${pathname}?${params.toString()}`, { scroll: false });
+
         if (sidebarClose) setSidebarOpen(false);
+
+        // Filtrlashda ham tepaga chiqaramiz
+        setTimeout(scrollToProducts, 100);
     };
 
     const handlePageChange = (newPage) => {
         if (newPage >= 1 && newPage <= totalPages) {
             const params = new URLSearchParams(searchParams.toString());
             params.set('page', String(newPage));
-            router.push(`${pathname}?${params.toString()}`);
-            if (typeof window !== 'undefined') window.scrollTo({ top: 300, behavior: 'smooth' });
+
+            // Next.js tepaga sakrashini o'chiramiz
+            router.push(`${pathname}?${params.toString()}`, { scroll: false });
+
+            // Biz xohlagan joygacha smoth scroll qilamiz
+            setTimeout(scrollToProducts, 100);
         }
     };
 
     const toggleGroup = (groupId) => {
-        setExpandedGroups(prev => ({ ...prev, [groupId]: !prev[groupId] }));
-    };
+    setExpandedGroups(prev => {
+        // Agar bir vaqtda faqat bitta guruh ochiq turishini xohlasangiz:
+        // return { [groupId]: !prev[groupId] }; 
+        
+        // Agar bir nechta guruh ochiq turishi mumkin bo'lsa:
+        return { ...prev, [groupId]: !prev[groupId] };
+    });
+};
 
     const clearFilters = () => {
         router.push(pathname);
@@ -171,84 +293,85 @@ const ProductsPageContent = () => {
 
     const hasActiveFilters = activeCategory !== 'all' || activeBrand !== 'all';
 
-    const getField = (item, field) => {
-        if (!item) return '---';
-        const k = lang === 'ru' ? 'Ru' : lang === 'en' ? 'En' : 'Uz';
-        return item[`${field}${k}`] || item[`${field}Ru`] || '---';
-    };
 
     ///////////////////////  SIDEBAR: CATEGORIES  ///////////////////////
-    const CategoryList = () => (
-        <div className="flex flex-col gap-3"> {/* Har bir blok orasida masofa (gap-3) */}
+const CategoryList = () => (
+    // motion.div va layout prop'i ichidagi elementlar surilganda ularni silliq qiladi
+    <motion.div layout className="flex flex-col gap-3"> 
+        {/* 1. Barcha mahsulotlar tugmasi */}
+        <motion.button
+            layout
+            onClick={() => handleFilterChange({ category: 'all' }, true)}
+            className={cn(
+                "w-full flex items-center justify-between px-5 py-4 rounded-2xl transition-all border shadow-sm",
+                activeCategory === 'all'
+                    ? "bg-[#0061A4] border-[#0061A4] text-white shadow-blue-100"
+                    : "bg-white border-gray-100 text-slate-700 hover:border-[#0061A4]/30"
+            )}
+        >
+            <div className="flex items-center gap-3">
+                <LayoutGrid size={18} className={activeCategory === 'all' ? "text-white" : "text-[#0061A4]"} />
+                <span className="text-[14px] font-black tracking-tight">{curT.allModels}</span>
+            </div>
+            <span className={cn("px-2.5 py-0.5 rounded-lg text-[11px] font-black", activeCategory === 'all' ? "bg-white/20 text-white" : "bg-blue-50 text-[#0061A4]")}>
+                {products.length}
+            </span>
+        </motion.button>
 
-            {/* 1. Barcha mahsulotlar tugmasi */}
-            <button
-                onClick={() => handleFilterChange({ category: 'all' }, true)}
-                className={cn(
-                    "w-full flex items-center justify-between px-5 py-4 rounded-2xl transition-all border shadow-sm",
-                    activeCategory === 'all'
-                        ? "bg-[#0061A4] border-[#0061A4] text-white shadow-blue-100"
-                        : "bg-white border-gray-100 text-slate-700 hover:border-[#0061A4]/30"
-                )}
-            >
-                <div className="flex items-center gap-3">
-                    <LayoutGrid size={18} className={activeCategory === 'all' ? "text-white" : "text-[#0061A4]"} />
-                    <span className="text-[14px] font-black tracking-tight">
-                        {t('all_models') || 'Все модели'}
-                    </span>
-                </div>
-                <span className={cn(
-                    "px-2.5 py-0.5 rounded-lg text-[11px] font-black",
-                    activeCategory === 'all' ? "bg-white/20 text-white" : "bg-blue-50 text-[#0061A4]"
-                )}>
-                    {products.length}
-                </span>
-            </button>
+        {/* 2. Kategoriyalar */}
+        {groupedCategories.map((group) => {
+            const isGroupActive = activeCategory === group.id;
+            
+            // Faqat lokal state orqali ochilishini nazorat qilamiz
+            const isExpanded = expandedGroups[group.id];
 
-            {/* 2. Kategoriyalar bloklari */}
-            {groupedCategories.map((group) => {
-                const isGroupActive = activeCategory === group.id;
-                const isExpanded = expandedGroups[group.id] || group.items.some(cat => String(cat.id) === activeCategory);
+            return (
+                <motion.div layout key={group.id} className="flex flex-col gap-1">
+                    <div className={cn(
+                        "flex items-center rounded-2xl transition-all border shadow-sm overflow-hidden",
+                        isGroupActive ? "bg-[#0061A4] border-[#0061A4] text-white" : "bg-white border-gray-100"
+                    )}>
+                        <button
+                            onClick={() => {
+                                // 1. Filtrlash (URL o'zgaradi)
+                                handleFilterChange({ category: group.id }, false);
+                                // 2. Lokal ochish/yopish (Animatsiya uchun)
+                                toggleGroup(group.id);
+                            }}
+                            className="flex-1 flex items-center gap-3 text-left px-5 py-4 text-[14px] font-bold"
+                        >
+                            <Box size={18} className={isGroupActive ? "text-white" : "text-[#0061A4]"} />
+                            {lang === 'ru' ? group.ru : lang === 'en' ? group.en : group.uz}
+                        </button>
 
-                return (
-                    <div key={group.id} className="flex flex-col gap-1">
-                        <div className={cn(
-                            "flex items-center rounded-2xl transition-all border shadow-sm overflow-hidden",
-                            isGroupActive
-                                ? "bg-[#0061A4] border-[#0061A4] text-white shadow-blue-100"
-                                : "bg-white border-gray-100 text-slate-700 hover:border-[#0061A4]/30"
-                        )}>
+                        {group.items.length > 0 && (
                             <button
-                                onClick={() => { handleFilterChange({ category: group.id }, false); if (!isExpanded) toggleGroup(group.id); }}
-                                className="flex-1 flex items-center gap-3 text-left px-5 py-4 text-[14px] font-bold leading-tight"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleGroup(group.id);
+                                }}
+                                className={cn(
+                                    "p-4 border-l transition-transform duration-300",
+                                    isExpanded ? "rotate-180" : "rotate-0",
+                                    isGroupActive ? "border-white/10" : "border-gray-50"
+                                )}
                             >
-                                <Box size={18} className={isGroupActive ? "text-white" : "text-[#0061A4]"} />
-                                {lang === 'ru' ? group.ru : lang === 'en' ? group.en : group.uz}
+                                <ChevronDown size={14} />
                             </button>
+                        )}
+                    </div>
 
-                            {group.items.length > 0 && (
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); toggleGroup(group.id); }}
-                                    className={cn(
-                                        "p-4 border-l transition-transform duration-300",
-                                        isGroupActive ? "border-white/10" : "border-gray-50",
-                                        isExpanded && "rotate-180"
-                                    )}
-                                >
-                                    <ChevronDown size={14} />
-                                </button>
-                            )}
-                        </div>
-
-                        {/* Ichki kategoriyalar (ochilgandagi holat) */}
-                        <AnimatePresence>
-                            {isExpanded && group.items.length > 0 && (
-                                <motion.div
-                                    initial={{ height: 0, opacity: 0 }}
-                                    animate={{ height: 'auto', opacity: 1 }}
-                                    exit={{ height: 0, opacity: 0 }}
-                                    className="overflow-hidden flex flex-col gap-1 px-2 pt-1 pb-2"
-                                >
+                    <AnimatePresence initial={false}>
+                        {isExpanded && group.items.length > 0 && (
+                            <motion.div
+                                key={`content-${group.id}`}
+                                initial="collapsed"
+                                animate="open"
+                                exit="collapsed"
+                                variants={menuVariants}
+                                className="overflow-hidden bg-gray-50/50 mx-2 rounded-b-2xl border-x border-b border-blue-50"
+                            >
+                                <div className="flex flex-col gap-1 px-2 pt-2 pb-3">
                                     {group.items.map(cat => (
                                         <button
                                             key={cat.id}
@@ -256,22 +379,26 @@ const ProductsPageContent = () => {
                                             className={cn(
                                                 "flex items-center gap-3 px-4 py-3 rounded-xl text-[13px] font-bold transition-all text-left",
                                                 String(activeCategory) === String(cat.id)
-                                                    ? "bg-blue-50 text-[#0061A4]"
-                                                    : "text-slate-400 hover:bg-gray-50 hover:text-slate-600"
+                                                    ? "bg-blue-100/50 text-[#0054A6]"
+                                                    : "text-slate-500 hover:bg-gray-100"
                                             )}
                                         >
-                                            <div className="w-1.5 h-1.5 rounded-full bg-current opacity-40" />
+                                            <div className={cn(
+                                                "w-1.5 h-1.5 rounded-full transition-all",
+                                                String(activeCategory) === String(cat.id) ? "bg-[#0054A6] scale-125" : "bg-slate-300"
+                                            )} />
                                             {getField(cat, 'title', lang)}
                                         </button>
                                     ))}
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-                    </div>
-                );
-            })}
-        </div>
-    );
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </motion.div>
+            );
+        })}
+    </motion.div>
+);
 
     ///////////////////////  SIDEBAR: BRANDS (checkbox style)  ///////////////////////
     const BrandList = () => (
@@ -379,14 +506,14 @@ const ProductsPageContent = () => {
                     {/* --- NARX (Ko'k rang berildi) --- */}
                     <div className="mt-auto pt-5 border-t border-gray-50 flex items-center justify-between">
                         <span className="text-[18px] font-black text-[#0061A4] tabular-nums tracking-tight">
-                            {p.price ? `${p.price} ${lang === 'ru' ? 'сум' : "so'm"}` : "Kelishilgan"}
+                            {p.price ? `${p.price} ${curT.currency}` : curT.agreed}
                         </span>
 
                         <Link
                             href={`/product/${p.slug || p.id}`}
                             className="text-[#0061A4] hover:text-blue-800 transition-colors flex items-center gap-1.5 text-[12px] font-black uppercase tracking-tighter"
                         >
-                            {lang === 'ru' ? 'ПОДРОБНЕЕ' : 'BATAFSIL'} <ArrowUpRight size={18} />
+                            {curT.more} <ArrowUpRight size={18} />
                         </Link>
                     </div>
                 </div>
@@ -533,15 +660,15 @@ const ProductsPageContent = () => {
                             </h1>
 
                             <p className="mt-4 lg:mt-6 max-w-2xl text-[15px] lg:text-[17px] leading-relaxed lg:leading-8 text-slate-800">
-                                Широкий ассортимент грузовой, прицепной и специальной техники для вашего бизнеса.
+                                {curT.heroDesc}
                             </p>
 
                             {/* Feature stats (Icon based) */}
-                            <div className="mt-8 lg:mt-10 flex flex-wrap items-center gap-x-6 lg:gap-x-10 gap-y-6">
+                            <div className="mt-8 lg:mt-10 flex flex-wrap items-center gap-x-6 lg:gap-x-8 gap-y-6">
                                 <div className="flex items-center gap-3">
                                     <ShieldCheck size={22} className="text-[#0061A4] shrink-0" />
                                     <div className="text-[13px] lg:text-sm text-slate-800 font-medium leading-tight">
-                                        Официальная<br className="hidden sm:block" />гарантия
+                                        {curT.guarantee}
                                     </div>
                                 </div>
 
@@ -550,7 +677,7 @@ const ProductsPageContent = () => {
                                 <div className="flex items-center gap-3">
                                     <Factory size={22} className="text-[#0061A4] shrink-0" />
                                     <div className="text-[13px] lg:text-sm text-slate-800 font-medium leading-tight">
-                                        Собственное<br className="hidden sm:block" />производство
+                                        {curT.production}
                                     </div>
                                 </div>
 
@@ -567,7 +694,7 @@ const ProductsPageContent = () => {
                                 <div className="flex items-center gap-3">
                                     <Award size={22} className="text-[#0061A4] shrink-0" />
                                     <div className="text-[13px] lg:text-sm text-slate-800 font-medium leading-tight">
-                                        Более 56<br className="hidden sm:block" />моделей техники
+                                        {curT.modelsCount}
                                     </div>
                                 </div>
                             </div>
@@ -660,7 +787,7 @@ const ProductsPageContent = () => {
                                 <Layers size={18} className="text-[#0061A4]" />
                             </div>
                             <h2 className="text-[18px] font-black text-slate-900  tracking-tight">
-                                {t('categories_label') || 'Категории'}
+                                {curT.categories}
                             </h2>
                         </div>
 
@@ -676,7 +803,7 @@ const ProductsPageContent = () => {
                                     <SlidersHorizontal size={18} className="text-[#0061A4]" />
                                 </div>
                                 <h2 className="text-[15px] font-black text-slate-900 uppercase tracking-tight">
-                                    Бренды
+                                    {curT.brands}
                                 </h2>
                             </div>
                             <BrandList />
@@ -684,16 +811,18 @@ const ProductsPageContent = () => {
                     </aside>
 
                     {/* ---- PRODUCTS ---- */}
-                    <main className="flex-1 min-w-0 w-full font-roboto">
+                    <main
+                        ref={productsTopRef} className="flex-1 min-w-0 w-full font-roboto scroll-mt-32"
+                    >
 
                         {/* Top bar: count + sort + view toggle */}
                         <div className="flex items-center justify-between gap-4 mb-6">
                             <div className="flex items-center gap-3">
                                 <h2 className="text-[18px] font-black text-slate-900">
-                                    {activeCategory === 'all' ? (t('all_models') || 'Barcha mahsulotlar') : getField(categories.find(c => String(c.id) === activeCategory), 'title', lang)}
+                                    {currentTitle}
                                 </h2>
                                 <span className="bg-blue-50 text-[#0061A4] px-3 py-0.5 rounded-full text-[11px] font-black">
-                                    {filteredProducts.length} ta
+                                    {filteredProducts.length} {curT.total}
                                 </span>
                             </div>
 
@@ -735,14 +864,43 @@ const ProductsPageContent = () => {
                                 )}
 
                                 {totalPages > 1 && (
-                                    <div className="flex items-center justify-center gap-2 mt-12 py-6 border-t border-gray-100 w-full overflow-hidden px-2">
-                                        <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="shrink-0 p-3 rounded-xl border border-gray-200 hover:bg-gray-50 disabled:opacity-30 transition-all cursor-pointer"><ChevronLeft size={20} /></button>
-                                        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar px-2 max-w-full">
-                                            {[...Array(totalPages)].map((_, i) => (
-                                                <button key={i + 1} onClick={() => handlePageChange(i + 1)} className={cn("shrink-0 w-10 h-12 sm:w-12 sm:h-12 rounded-lg font-bold text-[13px] transition-all border cursor-pointer", currentPage === i + 1 ? "bg-[#0061A4] text-white border-[#0061A4] shadow-lg shadow-blue-200" : "bg-white text-slate-600 border-gray-200 hover:border-blue-400")}>{i + 1}</button>
-                                            ))}
+                                    <div className="flex items-center justify-center gap-2 mt-12 py-6 border-t border-gray-100">
+                                        <button
+                                            onClick={() => handlePageChange(currentPage - 1)}
+                                            disabled={currentPage === 1}
+                                            className="p-3 rounded-xl border hover:bg-gray-50 disabled:opacity-30 transition-all cursor-pointer"
+                                        >
+                                            <ChevronLeft size={20} />
+                                        </button>
+
+                                        <div className="flex items-center gap-1.5">
+                                            {[...Array(totalPages)].map((_, i) => {
+                                                const pageNum = i + 1;
+                                                // Faqat joriy sahifa atrofidagi tugmalarni ko'rsatish (ixtiyoriy, agar sahifalar ko'p bo'lsa)
+                                                return (
+                                                    <button
+                                                        key={pageNum}
+                                                        onClick={() => handlePageChange(pageNum)}
+                                                        className={cn(
+                                                            "w-10 h-10 sm:w-12 sm:h-12 rounded-xl font-bold text-[13px] transition-all border cursor-pointer",
+                                                            currentPage === pageNum
+                                                                ? "bg-[#0061A4] text-white border-[#0061A4] shadow-lg shadow-blue-100"
+                                                                : "bg-white text-slate-600 border-gray-100 hover:border-blue-400"
+                                                        )}
+                                                    >
+                                                        {pageNum}
+                                                    </button>
+                                                );
+                                            })}
                                         </div>
-                                        <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="shrink-0 p-3 rounded-xl border border-gray-200 hover:bg-gray-50 disabled:opacity-30 transition-all cursor-pointer"><ChevronRight size={20} /></button>
+
+                                        <button
+                                            onClick={() => handlePageChange(currentPage + 1)}
+                                            disabled={currentPage === totalPages}
+                                            className="p-3 rounded-xl border hover:bg-gray-50 disabled:opacity-30 transition-all cursor-pointer"
+                                        >
+                                            <ChevronRight size={20} />
+                                        </button>
                                     </div>
                                 )}
                             </>

@@ -8,7 +8,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { useQuery } from '@tanstack/react-query';
 import API, { API_URL } from '../../api/axios';
-import staticslayd from '../../../public/staticslayder.jpg';
+import staticslayd from '../../../public/staticslayder.webp';
 
 const translations = {
     uz: {
@@ -16,7 +16,6 @@ const translations = {
         metaDesc: "UzAuto Trailer — O‘zbekistondagi og‘ir yuk tashish sanoatida ishonchli hamkor. Sifatli yarim tirkamalar, konteynerlar va maxsus transport vositalari ishlab chiqarish.",
         catalogBtn: "Katalog",
         contactBtn: "Aloqa",
-        // \n qo'shildi
         description: "UzAuto Trailer — og'ir yuk tashish sanoatida ishonchli hamkoringiz.\nBiz kuch va innovatsiyani birlashtiramiz.",
         titles: [
             "UzAuto TRAILER\nYo'llardan bir qadam oldinda",
@@ -37,7 +36,6 @@ const translations = {
         metaDesc: "UzAuto Trailer — ваш надежный партнер в индустрии большегрузных перевозок. Производство высококачественных полуприцепов и контейнеров.",
         catalogBtn: "Каталог",
         contactBtn: "Контакты",
-        // \n qo'shildi
         description: "UzAuto Trailer — ваш надежный партнер в индустрии большегрузных перевозок.\nМы объединяем силу и инновации.",
         titles: [
             "UzAuto TRAILER\nНа шаг впереди дорог",
@@ -58,7 +56,6 @@ const translations = {
         metaDesc: "UzAuto Trailer is a leading manufacturer of high-quality semi-trailers, containers, and specialized transport equipment in Uzbekistan.",
         catalogBtn: "Catalog",
         contactBtn: "Contact",
-        // \n qo'shildi
         description: "UzAuto Trailer is your reliable partner in the heavy haulage industry.\nWe combine strength and innovation.",
         titles: [
             "UzAuto TRAILER\nOne step ahead of the roads",
@@ -77,9 +74,9 @@ const translations = {
 };
 
 const Hero = ({ lang = 'ru' }) => {
-    const router = useRouter();
     const t = translations[lang] || translations.ru;
-
+    
+    // API'dan ma'lumot olish
     const { data: bgImages = [], isLoading: queryLoading } = useQuery({
         queryKey: ['sliders'],
         queryFn: async () => {
@@ -94,16 +91,18 @@ const Hero = ({ lang = 'ru' }) => {
             }
         },
         staleTime: 1000 * 60 * 10,
-        retry: false,
     });
 
     const [current, setCurrent] = useState(0);
     const [isDragging, setIsDragging] = useState(false);
     const [transitionEnabled, setTransitionEnabled] = useState(false);
     const [firstLoad, setFirstLoad] = useState(true);
+    
+    // MUHIM: Birinchi rasm yuklanganini aniqlash uchun state
+    const [isFirstImageLoaded, setIsFirstImageLoaded] = useState(false);
 
     const slides = useMemo(() => {
-        if (bgImages.length === 0) return [{ image: staticslayd, id: 'static' }];
+        if (bgImages.length === 0) return [];
         return [...bgImages, ...bgImages, ...bgImages];
     }, [bgImages]);
 
@@ -113,42 +112,37 @@ const Hero = ({ lang = 'ru' }) => {
         }
     }, [bgImages, current]);
 
-    const loading = queryLoading;
-
     const getFullImagePath = (img) => {
         const rawValue = typeof img === 'string'
             ? img
             : img?.image || img?.url || img?.src || img?.path || '';
-        if (!rawValue || typeof rawValue !== 'string') return staticslayd;
-        const value = rawValue.trim();
-        if (!value) return staticslayd;
-        if (value.startsWith('http') || value.startsWith('data:')) return value;
+        if (!rawValue) return staticslayd.src;
+        if (rawValue.startsWith('http') || rawValue.startsWith('data:')) return rawValue;
         const cleanBaseUrl = API_URL.endsWith('/') ? API_URL.slice(0, -1) : API_URL;
-        if (!cleanBaseUrl) return value.startsWith('/') ? value : `/${value}`;
-        return `${cleanBaseUrl}${value.startsWith('/') ? value : `/${value}`}`;
+        return `${cleanBaseUrl}${rawValue.startsWith('/') ? rawValue : `/${rawValue}`}`;
     };
 
     useEffect(() => {
-        if (!loading) {
+        if (!queryLoading) {
             const timeout = setTimeout(() => {
                 setTransitionEnabled(true);
                 setFirstLoad(false);
             }, 50);
             return () => clearTimeout(timeout);
         }
-    }, [loading]);
+    }, [queryLoading]);
 
     useEffect(() => {
-        if (bgImages.length <= 1 || isDragging || loading || !transitionEnabled) return;
+        if (bgImages.length <= 1 || isDragging || queryLoading || !transitionEnabled) return;
         const timer = setInterval(() => setCurrent(prev => prev + 1), 7000);
         return () => clearInterval(timer);
-    }, [current, isDragging, bgImages, loading, transitionEnabled]);
+    }, [current, isDragging, bgImages, queryLoading, transitionEnabled]);
 
     const nextSlide = () => { if (transitionEnabled) setCurrent(prev => prev + 1); };
     const prevSlide = () => { if (transitionEnabled) setCurrent(prev => prev - 1); };
 
     const handleUpdate = () => {
-        if (loading || !bgImages.length) return;
+        if (queryLoading || !bgImages.length) return;
         if (current >= bgImages.length * 2) {
             setTransitionEnabled(false);
             setCurrent(current - bgImages.length);
@@ -159,14 +153,14 @@ const Hero = ({ lang = 'ru' }) => {
     };
 
     useEffect(() => {
-        if (!transitionEnabled && !loading) {
+        if (!transitionEnabled && !queryLoading) {
             const timeout = setTimeout(() => setTransitionEnabled(true), 20);
             return () => clearTimeout(timeout);
         }
-    }, [transitionEnabled, loading]);
+    }, [transitionEnabled, queryLoading]);
 
     const onDragEnd = (e, info) => {
-        if (loading) return;
+        if (queryLoading) return;
         setIsDragging(false);
         const { offset, velocity } = info;
         if (offset.x < -40 || velocity.x < -400) nextSlide();
@@ -184,6 +178,8 @@ const Hero = ({ lang = 'ru' }) => {
             <Helmet>
                 <title>{t.seoTitle}</title>
                 <meta name="description" content={t.metaDesc} />
+                {/* API serveriga oldindan ulanish */}
+                {API_URL && <link rel="preconnect" href={API_URL} />}
                 <link rel="canonical" href="https://uzautotrailer.uz/" />
             </Helmet>
 
@@ -193,12 +189,28 @@ const Hero = ({ lang = 'ru' }) => {
             `}</style>
 
             <div className="relative w-full aspect-video sm:aspect-[16/8] lg:aspect-auto lg:h-full lg:absolute lg:inset-0 z-10 overflow-hidden cursor-grab active:cursor-grabbing">
-                {loading ? (
-                    <div className="absolute inset-0 w-full h-full">
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent lg:bg-gradient-to-r lg:from-black/80 lg:via-black/20 lg:to-transparent z-10" />
-                        <img src={staticslayd} alt="UzAuto Trailer mahsulotlari" className="w-full h-full object-cover object-center lg:object-[75%_center]" />
-                    </div>
-                ) : (
+                
+                {/* 1. STATIK PLACEHOLDER: Rasm yuklanguncha ko'rinib turadi */}
+                <AnimatePresence>
+                    {(!isFirstImageLoaded || queryLoading) && (
+                        <motion.div 
+                            initial={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.6 }}
+                            className="absolute inset-0 z-30 w-full h-full bg-[#0a0a0a]"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent lg:bg-gradient-to-r lg:from-black/80 lg:via-black/20 lg:to-transparent z-10" />
+                            <img 
+                                src={staticslayd.src} 
+                                alt="UzAuto Trailer Loading" 
+                                className="w-full h-full object-cover object-center lg:object-[75%_center]" 
+                            />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* 2. DINAMIK SLIDER: Orqafonda yuklanishni boshlaydi */}
+                {bgImages.length > 0 && (
                     <motion.div
                         drag="x"
                         dragMomentum={false}
@@ -214,7 +226,13 @@ const Hero = ({ lang = 'ru' }) => {
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent lg:bg-gradient-to-r lg:from-black/80 lg:via-black/20 lg:to-transparent z-10" />
                                 <img
                                     src={getFullImagePath(img.image)}
-                                    alt={`UzAuto Trailer - ${currentTitle.replace('\n', ' ')}`}
+                                    alt="UzAuto Trailer Truck"
+                                    // Birinchi ko'rinadigan rasmga ustuvorlik beramiz
+                                    fetchPriority={idx === current ? "high" : "low"}
+                                    loading="eager"
+                                    onLoad={() => {
+                                        if (idx === current) setIsFirstImageLoaded(true);
+                                    }}
                                     className="w-full h-full object-cover object-center lg:object-[75%_center] pointer-events-none select-none"
                                 />
                             </div>
@@ -223,10 +241,9 @@ const Hero = ({ lang = 'ru' }) => {
                 )}
             </div>
 
-            {/* MATN QISMI: O'zgarishlar shu yerda */}
-            <div className="relative z-20 -mt-24 sm:-mt-28 lg:mt-0 lg:h-full max-w-[1600px] mx-auto px-6 lg:px-12 flex flex-col justify-start lg:justify-start lg:pt-55 items-center lg:items-start text-center lg:text-left bg-transparent pb-16 lg:pb-0 pointer-events-none font-roboto">
+            {/* MATN QISMI */}
+            <div className="relative z-20 -mt-24 sm:-mt-28 lg:mt-0 lg:h-full max-w-[1600px] mx-auto px-6 lg:px-12 flex flex-col justify-start lg:justify-start lg:pt-[200px] items-center lg:items-start text-center lg:text-left bg-transparent pb-16 lg:pb-0 pointer-events-none font-roboto">
                 <div className="max-w-4xl pointer-events-auto w-full">
-
                     <div className="min-h-[90px] sm:min-h-[120px] lg:min-h-0 flex items-center lg:items-start justify-center lg:justify-start">
                         <AnimatePresence mode="wait">
                             <motion.h1
@@ -246,7 +263,6 @@ const Hero = ({ lang = 'ru' }) => {
                         <motion.p
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            // whitespace-pre-line qo'shildi: \n ishlashi uchun
                             className="text-[14px] lg:text-lg text-white/90 font-medium leading-relaxed px-4 lg:px-0 drop-shadow-lg mx-auto lg:mx-0 whitespace-pre-line"
                         >
                             {t.description}
@@ -254,23 +270,18 @@ const Hero = ({ lang = 'ru' }) => {
                     </div>
 
                     <div className="flex flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4 w-full sm:w-auto px-2 lg:px-0">
-                        <Link
-                            href="/products"
-                            className="flex-1 sm:flex-none min-w-[130px] sm:min-w-[180px] bg-[#0061A4] hover:bg-blue-600 text-white px-4 sm:px-12 py-3.5 rounded-sm font-bold transition-all text-[12px] tracking-widest shadow-xl uppercase text-center flex items-center justify-center"
-                        >
+                        <Link href="/products" className="flex-1 sm:flex-none min-w-[130px] sm:min-w-[180px] bg-[#0061A4] hover:bg-blue-600 text-white px-4 sm:px-12 py-3.5 rounded-sm font-bold transition-all text-[12px] tracking-widest shadow-xl uppercase text-center flex items-center justify-center">
                             {t.catalogBtn}
                         </Link>
-                        <Link
-                            href="/contacts"
-                            className="flex-1 sm:flex-none min-w-[130px] sm:min-w-[180px] bg-[#E88B3A] hover:bg-[#d47a2e] text-white px-4 sm:px-12 py-3.5 rounded-sm font-bold transition-all text-[12px] tracking-widest shadow-xl uppercase text-center flex items-center justify-center"
-                        >
+                        <Link href="/contacts" className="flex-1 sm:flex-none min-w-[130px] sm:min-w-[180px] bg-[#E88B3A] hover:bg-[#d47a2e] text-white px-4 sm:px-12 py-3.5 rounded-sm font-bold transition-all text-[12px] tracking-widest shadow-xl uppercase text-center flex items-center justify-center">
                             {t.contactBtn}
                         </Link>
                     </div>
                 </div>
             </div>
 
-            {!loading && bgImages.length > 1 && (
+            {/* NAVIGATSIYA */}
+            {bgImages.length > 1 && (
                 <div className="absolute bottom-6 lg:bottom-12 left-0 right-0 z-40 px-6 lg:px-12 flex flex-row justify-between items-end pointer-events-none w-full">
                     <div className="flex gap-2 pointer-events-auto items-center">
                         {bgImages.map((_, idx) => (

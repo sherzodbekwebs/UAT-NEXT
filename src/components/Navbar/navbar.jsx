@@ -149,7 +149,7 @@ const NavItem = ({ label, open, isCurrent, onEnter, onLeave, children }) => (
         </div>
         <AnimatePresence>
             {open && (
-                <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.18, ease: 'easeOut' }} className="absolute top-full left-0 min-w-64 bg-white shadow-[0_18px_45px_-12px_rgba(15,35,65,0.25)] rounded-b-2xl border-t-2 border-[#0054A6] z-[100]">
+                <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.18, ease: 'easeOut' }} className="absolute top-full left-0 mt-3 min-w-64 bg-white shadow-[0_18px_45px_-12px_rgba(15,35,65,0.28)] rounded-3xl border border-gray-100 z-[100] overflow-hidden">
                     {children}
                 </motion.div>
             )}
@@ -255,11 +255,11 @@ const Navbar = () => {
     const t = translations[lang] || translations.ru;
 
     useEffect(() => {
-        API.get('/menus').then(res => setDynamicMenus(res.data)).catch(() => {});
-        API.get('/products').then(res => setAllProducts(res.data)).catch(() => {});
+        API.get('/menus').then(res => setDynamicMenus(res.data)).catch(() => { });
+        API.get('/products').then(res => setAllProducts(res.data)).catch(() => { });
     }, []);
 
-    // Scroll qilinganda navbar soyasini kuchaytirish — professional "elevate on scroll" effekti
+    // Scroll qilinganda kapsulaning soyasi va shaffofligini kuchaytirish — "elevate on scroll" effekti
     useEffect(() => {
         const onScroll = () => setIsScrolled(window.scrollY > 8);
         onScroll();
@@ -345,17 +345,45 @@ const Navbar = () => {
                 .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
                 .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
                 .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+
+                /* Silliq o'tish uchun kapsula animatsiyasi: max-width, radius, soya va fon alohida-alohida
+                   o'z tezligida animatsiya qilinadi — natija tabiiyroq ko'rinadi. */
+                .nav-transition {
+                    transition: max-width 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+                                border-radius 0.5s ease,
+                                box-shadow 0.4s ease,
+                                background-color 0.4s ease,
+                                border-color 0.4s ease;
+                }
             `}</style>
 
-            <header className="navbar-roboto-container fixed top-0 left-0 w-full z-[1000]">
-                <nav className={`bg-white/95 backdrop-blur-lg border-b transition-all duration-300 h-16 min-[1201px]:h-20 ${isScrolled ? 'border-gray-100 shadow-[0_8px_30px_-15px_rgba(15,35,65,0.18)]' : 'border-transparent shadow-none'}`}>
-                    <div className="max-w-[1440px] mx-auto h-full flex items-center justify-between px-4">
+            {/*
+                HEADER: har doim tepada va butun kenglikda (w-full). Default holatda hech qanday
+                padding yo'q — navbar chekka-chekkaga yopishgan. Skrol bo'lganda atrofdan bo'shliq
+                (pt-4 / px-4) qo'shiladi — shu bo'shliq ichida nav "suzuvchi kapsula"ga aylanadi.
+            */}
+            <header className={`navbar-roboto-container fixed top-0 left-0 w-full z-[1000] transition-all duration-300 ${isScrolled ? 'pt-3 px-4' : 'pt-0 px-0'}`}>
+                <nav
+                    className={`nav-transition mx-auto border flex items-center h-16 min-[1201px]:h-20 ${isScrolled
+                            ? 'max-w-[1500px] rounded-full bg-white/95 backdrop-blur-xl border-gray-100 shadow-2xl'
+                            : 'max-w-[1500px] rounded-full bg-white border-transparent border-b-gray-100 shadow-none border-none'
+                        }`}
+                >
+                    {/*
+                        KONTENT: logo, menyu, qidiruv va til tanlash HAR DOIM bir xil max-width va padding
+                        bilan markazlashgan konteyner ichida turadi. Shu tufayli tashqi <nav> kichrayib/
+                        kattalashib turishidan qat'i nazar, ichidagi elementlar chap-o'ngga siljimaydi.
+                    */}
+                    <div className="w-full h-full max-w-[1490px] mx-auto flex items-center justify-between px-5 sm:px-5 min-[1201px]:px-5">
+
+                        {/* LOGO */}
                         <div className="flex items-center shrink-0">
                             <Link href="/">
-                                <img src={logo.src || logo} alt="Logo" className="h-9 min-[1201px]:h-13 w-auto rounded-lg object-contain cursor-pointer transition-transform hover:scale-[1.03]" />
+                                <img src={logo.src || logo} alt="Logo" className="w-auto h-9 min-[1201px]:h-12 object-contain cursor-pointer transition-transform hover:scale-105" />
                             </Link>
                         </div>
 
+                        {/* DESKTOP MENU */}
                         <div className="hidden min-[1201px]:flex flex-1 justify-center h-full">
                             <ul className="flex items-center gap-x-6 xl:gap-x-8 text-[#1a2e44] font-semibold text-[15px] xl:text-[16px] h-full whitespace-nowrap">
                                 <NavItem label={t.about} open={activeMenu === 'about'} isCurrent={isAboutActive} onEnter={() => setActiveMenu('about')} onLeave={() => setActiveMenu(null)}>
@@ -386,7 +414,7 @@ const Navbar = () => {
                                                     <ChevronRight size={14} className={activeSubMenu === item.label ? 'rotate-90' : ''} />
                                                     <AnimatePresence>
                                                         {activeSubMenu === item.label && (
-                                                            <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.16 }} className="absolute top-0 left-full w-80 bg-white shadow-[0_18px_45px_-12px_rgba(15,35,65,0.25)] border-l-2 border-[#0054A6] py-3 z-[110] rounded-r-2xl">
+                                                            <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.16 }} className="absolute top-0 left-full ml-2 w-80 bg-white shadow-[0_18px_45px_-12px_rgba(15,35,65,0.28)] border border-gray-100 py-3 z-[110] rounded-3xl overflow-hidden">
                                                                 {item.sub.map((subItem, j) => {
                                                                     const active = isPathActive(subItem.link || "#");
                                                                     return (
@@ -414,9 +442,10 @@ const Navbar = () => {
                             </ul>
                         </div>
 
-                        <div className="flex items-center gap-3 min-[1201px]:gap-6 justify-end">
-                            <div className="relative hidden min-[1201px]:block w-48 xl:w-56 h-10" ref={searchWrapperRef}>
-                                <div className={`absolute right-0 top-0 flex items-center rounded-2xl px-4 py-2.5 transition-all duration-300 border ${showSuggestions ? 'w-[380px] bg-white border-[#0054A6]/40 shadow-xl' : 'w-full bg-gray-50 border-gray-100 hover:border-gray-200'}`}>
+                        {/* RIGHT SECTION: Search, Language, Burger */}
+                        <div className="flex items-center gap-3 min-[1201px]:gap-5 justify-end">
+                            <div className="relative hidden min-[1201px]:block w-44 xl:w-52 h-9" ref={searchWrapperRef}>
+                                <div className={`absolute right-0 top-0 flex items-center rounded-full px-4 py-2 transition-all duration-300 border ${showSuggestions ? 'w-[380px] bg-white border-[#0054A6]/40 shadow-xl' : 'w-full bg-gray-50 border-gray-100 hover:border-gray-200'}`}>
                                     <Search className="w-4 h-4 text-gray-400 shrink-0" />
                                     <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} onFocus={() => searchTerm.length > 1 && setShowSuggestions(true)} placeholder={t.searchPlaceholder} className="bg-transparent border-none outline-none w-full text-[13px] ml-3 font-medium text-gray-800 placeholder:text-gray-400" />
                                 </div>
@@ -426,15 +455,15 @@ const Navbar = () => {
                             </div>
 
                             <div className="relative" ref={dropdownRef}>
-                                <button onClick={() => setIsLangOpen(!isLangOpen)} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg font-bold text-[11px] uppercase transition-all bg-gray-50 border border-gray-100 hover:bg-white hover:border-gray-200 text-black">
+                                <button onClick={() => setIsLangOpen(!isLangOpen)} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full font-bold text-[11px] uppercase transition-all bg-gray-50 border border-gray-100 hover:bg-white hover:border-gray-200 text-black">
                                     <GlobeIcon size={14} className="text-[#0054A6]" />
                                     <span>{lang}</span>
                                 </button>
                                 <AnimatePresence>
                                     {isLangOpen && (
-                                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.16 }} className="absolute right-0 mt-2 w-32 bg-white shadow-[0_18px_45px_-12px_rgba(15,35,65,0.25)] rounded-2xl p-1.5 z-[120] border border-gray-50">
+                                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.16 }} className="absolute right-0 mt-3 w-32 bg-white shadow-[0_18px_45px_-12px_rgba(15,35,65,0.28)] rounded-3xl p-1.5 z-[120] border border-gray-100">
                                             {['uz', 'ru', 'en'].map((item) => (
-                                                <button key={item} onClick={() => { setLang(item); setIsLangOpen(false); }} className={`w-full text-left px-4 py-2.5 rounded-xl text-[12px] font-bold uppercase transition-all ${lang === item ? 'bg-blue-50 text-[#0054A6]' : 'hover:bg-gray-50 text-black'}`}>
+                                                <button key={item} onClick={() => { setLang(item); setIsLangOpen(false); }} className={`w-full text-left px-4 py-2.5 rounded-2xl text-[12px] font-bold uppercase transition-all ${lang === item ? 'bg-blue-50 text-[#0054A6]' : 'hover:bg-gray-50 text-black'}`}>
                                                     {item}
                                                 </button>
                                             ))}
@@ -443,13 +472,27 @@ const Navbar = () => {
                                 </AnimatePresence>
                             </div>
 
-                            <button onClick={() => setIsMobileMenuOpen(true)} className="min-[1201px]:hidden p-2 text-black rounded-lg hover:bg-gray-50 transition-colors">
+                            <button onClick={() => setIsMobileMenuOpen(true)} className="min-[1201px]:hidden p-2 text-black rounded-full hover:bg-gray-50 transition-colors">
                                 <MenuIcon className="w-6 h-6" />
                             </button>
                         </div>
                     </div>
                 </nav>
             </header>
+
+            {/*
+                SPACER: header `fixed` bo'lgani uchun sahifa oqimidan chiqadi — shuning uchun undan keyingi
+                content navbar ostiga yashirinib qolmasligi uchun aynan shuncha joy band qilinadi.
+                Qiymatlar navbar balandligi (h-16/h-20) + skrolda qo'shiladigan pt-4 (16px) bilan ANIQ mos:
+                h-16 (64px) + 16px = h-20 (80px); h-20 (80px) + 16px = h-24 (96px).
+                Shu sababli scroll paytida ortiqcha oq bo'shliq yoki content sakrashi bo'lmaydi.
+                ESLATMA: agar sahifangizda Navbar tagida qo'lda qo'yilgan pt-20 / mt-20 kabi bo'shliq bo'lsa,
+                uni olib tashlang — endi shu spacer o'zi kifoya.
+            */}
+            {/* <div
+                aria-hidden="true"
+                className={`w-full transition-all duration-300 ${isScrolled ? 'h-20 min-[1201px]:h-24' : 'h-16 min-[1201px]:h-20'}`}
+            /> */}
 
             <AnimatePresence>
                 {isMobileMenuOpen && (
