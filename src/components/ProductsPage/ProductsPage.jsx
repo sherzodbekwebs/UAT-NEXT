@@ -453,7 +453,7 @@ const CategoryList = () => (
                 "объём кузова",
                 "количество пассажиров",
                 "масса снаряженного прицепа",
-                "номинальная вместимость цистерны"
+                "номинальная вместимость цистерны",
             ];
             return p.techSpecs.filter(spec =>
                 targets.some(target => spec.keyRu?.toLowerCase().includes(target))

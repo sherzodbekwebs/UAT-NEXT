@@ -13,10 +13,10 @@ import staticslayd from '../../../public/staticslayder.webp';
 const translations = {
     uz: {
         seoTitle: "UzAuto TRAILER — Yarim tirkamalar va maxsus texnikalar ishlab chiqaruvchisi",
-        metaDesc: "UzAuto Trailer — O‘zbekistondagi og‘ir yuk tashish sanoatida ishonchli hamkor. Sifatli yarim tirkamalar, konteynerlar va maxsus transport vositalari ishlab chiqarish.",
+        metaDesc: "UzAuto TRAILER — O‘zbekistondagi og‘ir yuk tashish sanoatida ishonchli hamkor. Sifatli yarim tirkamalar, konteynerlar va maxsus transport vositalari ishlab chiqarish.",
         catalogBtn: "Katalog",
         contactBtn: "Aloqa",
-        description: "UzAuto Trailer — og'ir yuk tashish sanoatida ishonchli hamkoringiz.\nBiz kuch va innovatsiyani birlashtiramiz.",
+        description: "UzAuto TRAILER — og'ir yuk tashish sanoatida ishonchli hamkoringiz.\nBiz kuch va innovatsiyani birlashtiramiz.",
         titles: [
             "UzAuto TRAILER\nYo'llardan bir qadam oldinda",
             "Katta vazifalar uchun muhandislik quvvati",
@@ -33,10 +33,10 @@ const translations = {
     },
     ru: {
         seoTitle: "UzAuto TRAILER — Производитель полуприцепов и спецтехники в Узбекистане",
-        metaDesc: "UzAuto Trailer — ваш надежный партнер в индустрии большегрузных перевозок. Производство высококачественных полуприцепов и контейнеров.",
+        metaDesc: "UzAuto TRAILER — ваш надежный партнер в индустрии большегрузных перевозок. Производство высококачественных полуприцепов и контейнеров.",
         catalogBtn: "Каталог",
         contactBtn: "Контакты",
-        description: "UzAuto Trailer — ваш надежный партнер в индустрии большегрузных перевозок.\nМы объединяем силу и инновации.",
+        description: "UzAuto TRAILER — ваш надежный партнер в индустрии большегрузных перевозок.\nМы объединяем силу и инновации.",
         titles: [
             "UzAuto TRAILER\nНа шаг впереди дорог",
             "Инженерная мощь для больших задач",
@@ -53,10 +53,10 @@ const translations = {
     },
     en: {
         seoTitle: "UzAuto TRAILER — Leading Semi-trailer & Special Equipment Manufacturer",
-        metaDesc: "UzAuto Trailer is a leading manufacturer of high-quality semi-trailers, containers, and specialized transport equipment in Uzbekistan.",
+        metaDesc: "UzAuto TRAILER is a leading manufacturer of high-quality semi-trailers, containers, and specialized transport equipment in Uzbekistan.",
         catalogBtn: "Catalog",
         contactBtn: "Contact",
-        description: "UzAuto Trailer is your reliable partner in the heavy haulage industry.\nWe combine strength and innovation.",
+        description: "UzAuto TRAILER is your reliable partner in the heavy haulage industry.\nWe combine strength and innovation.",
         titles: [
             "UzAuto TRAILER\nOne step ahead of the roads",
             "Engineering power for big tasks",
@@ -75,7 +75,7 @@ const translations = {
 
 const Hero = ({ lang = 'ru' }) => {
     const t = translations[lang] || translations.ru;
-    
+
     // API'dan ma'lumot olish
     const { data: bgImages = [], isLoading: queryLoading } = useQuery({
         queryKey: ['sliders'],
@@ -97,7 +97,7 @@ const Hero = ({ lang = 'ru' }) => {
     const [isDragging, setIsDragging] = useState(false);
     const [transitionEnabled, setTransitionEnabled] = useState(false);
     const [firstLoad, setFirstLoad] = useState(true);
-    
+
     // MUHIM: Birinchi rasm yuklanganini aniqlash uchun state
     const [isFirstImageLoaded, setIsFirstImageLoaded] = useState(false);
 
@@ -189,21 +189,21 @@ const Hero = ({ lang = 'ru' }) => {
             `}</style>
 
             <div className="relative w-full aspect-video sm:aspect-[16/8] lg:aspect-auto lg:h-full lg:absolute lg:inset-0 z-10 overflow-hidden cursor-grab active:cursor-grabbing">
-                
+
                 {/* 1. STATIK PLACEHOLDER: Rasm yuklanguncha ko'rinib turadi */}
                 <AnimatePresence>
                     {(!isFirstImageLoaded || queryLoading) && (
-                        <motion.div 
+                        <motion.div
                             initial={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             transition={{ duration: 0.6 }}
                             className="absolute inset-0 z-30 w-full h-full bg-[#0a0a0a]"
                         >
                             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent lg:bg-gradient-to-r lg:from-black/80 lg:via-black/20 lg:to-transparent z-10" />
-                            <img 
-                                src={staticslayd.src} 
-                                alt="UzAuto Trailer Loading" 
-                                className="w-full h-full object-cover object-center lg:object-[75%_center]" 
+                            <img
+                                src={staticslayd.src}
+                                alt="UzAuto Trailer Loading"
+                                className="w-full h-full object-cover object-center lg:object-[75%_center]"
                             />
                         </motion.div>
                     )}
@@ -281,21 +281,41 @@ const Hero = ({ lang = 'ru' }) => {
             </div>
 
             {/* NAVIGATSIYA */}
+            {/* NAVIGATSIYA TUGMALARI (EKRAN O'RTASIDA IKKI CHETDA) */}
             {bgImages.length > 1 && (
-                <div className="absolute bottom-6 lg:bottom-12 left-0 right-0 z-40 px-6 lg:px-12 flex flex-row justify-between items-end pointer-events-none w-full">
+                <div className="absolute inset-y-0 left-0 right-0 z-40 flex items-center justify-between px-4 lg:px-10 pointer-events-none">
+                    {/* Chap tugma */}
+                    <button
+                        onClick={prevSlide}
+                        className="w-10 h-10 lg:w-14 lg:h-14 border border-white/20 rounded-full flex items-center justify-center text-white bg-black/20 hover:bg-[#0061A4] backdrop-blur-md transition-all active:scale-90 shadow-2xl pointer-events-auto group"
+                    >
+                        <ChevronLeft size={28} className="group-hover:-translate-x-0.5 transition-transform" />
+                    </button>
+
+                    {/* O'ng tugma */}
+                    <button
+                        onClick={nextSlide}
+                        className="w-10 h-10 lg:w-14 lg:h-14 border border-white/20 rounded-full flex items-center justify-center text-white bg-black/20 hover:bg-[#0061A4] backdrop-blur-md transition-all active:scale-90 shadow-2xl pointer-events-auto group"
+                    >
+                        <ChevronRight size={28} className="group-hover:translate-x-0.5 transition-transform" />
+                    </button>
+                </div>
+            )}
+
+            {/* PASTDAGI DOTS (FAQAT NUQTALAR QOLADI) */}
+            {bgImages.length > 1 && (
+                <div className="absolute bottom-6 lg:bottom-12 left-0 right-0 z-40 px-6 lg:px-12 flex justify-start lg:justify-start pointer-events-none w-full">
                     <div className="flex gap-2 pointer-events-auto items-center">
                         {bgImages.map((_, idx) => (
-                            <div key={idx} onClick={() => { if (transitionEnabled) setCurrent(idx + bgImages.length); }}
-                                className={`cursor-pointer transition-all duration-500 rounded-full ${idx === current % bgImages.length ? 'w-8 lg:w-16 h-[3px] bg-[#0061A4]' : 'w-4 lg:w-8 h-[2px] bg-white/20'}`} />
+                            <div
+                                key={idx}
+                                onClick={() => { if (transitionEnabled) setCurrent(idx + bgImages.length); }}
+                                className={`cursor-pointer transition-all duration-500 rounded-full ${idx === current % bgImages.length
+                                        ? 'w-8 lg:w-16 h-[3px] bg-[#0061A4]'
+                                        : 'w-4 lg:w-8 h-[2px] bg-white/20'
+                                    }`}
+                            />
                         ))}
-                    </div>
-                    <div className="hidden lg:flex gap-3 pointer-events-auto">
-                        <button onClick={prevSlide} className="w-12 h-12 border border-white/10 rounded-full flex items-center justify-center text-white hover:bg-[#0061A4] backdrop-blur-md transition-all active:scale-90 shadow-2xl">
-                            <ChevronLeft size={24} />
-                        </button>
-                        <button onClick={nextSlide} className="w-12 h-12 border border-white/10 rounded-full flex items-center justify-center text-white hover:bg-[#0061A4] backdrop-blur-md transition-all active:scale-90 shadow-2xl">
-                            <ChevronRight size={24} />
-                        </button>
                     </div>
                 </div>
             )}
