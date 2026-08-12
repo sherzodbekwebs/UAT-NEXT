@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
@@ -13,7 +12,7 @@ import staticslayd from '../../../public/staticslayder.webp';
 const translations = {
     uz: {
         seoTitle: "UzAuto TRAILER — Yarim tirkamalar va maxsus texnikalar ishlab chiqaruvchisi",
-        metaDesc: "UzAuto TRAILER — O‘zbekistondagi og‘ir yuk tashish sanoatida ishonchli hamkor. Sifatli yarim tirkamalar, konteynerlar va maxsus transport vositalari ishlab chiqarish.",
+        metaDesc: "UzAuto TRAILER — O‘zbekistondagi og‘ir yuk tashish sanoatida ishonchli hamkor.",
         catalogBtn: "Katalog",
         contactBtn: "Aloqa",
         description: "UzAuto TRAILER — og'ir yuk tashish sanoatida ishonchli hamkoringiz.\nBiz kuch va innovatsiyani birlashtiramiz.",
@@ -22,18 +21,18 @@ const translations = {
             "Katta vazifalar uchun muhandislik quvvati",
             "Yo'llar ishonadigan yuk texnikasi",
             "Logistikangizning ishonchli poydevori",
-            "Biznesni oldinga boshlaymiz yangi avlod texnikasi",
+            "Biznesni oldinga boshlaymiz",
             "Sizning yo'lingiz — bizning texnologiyalar",
             "Biznesingiz imkoniyatlarini kengaytiramiz",
             "Harakatdagi kuch",
-            "UzAuto TRAILER\nYo'llardan bir qadam oldinda",
+            "UzAuto TRAILER\nSifat va ishonch",
             "Logistika energiyasi. Texnologiyalar quvvati",
-            "Kichik yuklardan katta g'alabalargacha: barcha yo'llar uchun texnika"
+            "Barcha yo'llar uchun texnika"
         ]
     },
     ru: {
         seoTitle: "UzAuto TRAILER — Производитель полуприцепов и спецтехники в Узбекистане",
-        metaDesc: "UzAuto TRAILER — ваш надежный партнер в индустрии большегрузных перевозок. Производство высококачественных полуприцепов и контейнеров.",
+        metaDesc: "UzAuto TRAILER — ваш надежный партнер в индустрии большегрузных перевозок.",
         catalogBtn: "Каталог",
         contactBtn: "Контакты",
         description: "UzAuto TRAILER — ваш надежный партнер в индустрии большегрузных перевозок.\nМы объединяем силу и инновации.",
@@ -42,18 +41,18 @@ const translations = {
             "Инженерная мощь для больших задач",
             "Грузовая техника, которой доверяют дороги",
             "Надежный фундамент вашей логистики",
-            "Двигаем бизнес вперед техника нового поколения",
+            "Двигаем бизнес вперед",
             "Ваш путь — наши технологии",
             "Масштабируем возможности вашего бизнеса",
             "Сила в движении",
-            "UzAuto TRAILER\nНа шаг впереди дорог",
+            "UzAuto TRAILER\nКачество и надежность",
             "Энергия логистики. Мощь технологий",
-            "От малых грузов до больших побед: техника для любых дорог"
+            "Техника для любых дорог"
         ]
     },
     en: {
-        seoTitle: "UzAuto TRAILER — Leading Semi-trailer & Special Equipment Manufacturer",
-        metaDesc: "UzAuto TRAILER is a leading manufacturer of high-quality semi-trailers, containers, and specialized transport equipment in Uzbekistan.",
+        seoTitle: "UzAuto TRAILER — Semi-trailers Manufacturer",
+        metaDesc: "UzAuto TRAILER is a leading manufacturer of high-quality equipment.",
         catalogBtn: "Catalog",
         contactBtn: "Contact",
         description: "UzAuto TRAILER is your reliable partner in the heavy haulage industry.\nWe combine strength and innovation.",
@@ -62,13 +61,13 @@ const translations = {
             "Engineering power for big tasks",
             "Heavy equipment that roads trust",
             "A reliable foundation for your logistics",
-            "Moving business forward next-generation equipment",
+            "Moving business forward",
             "Your way — our technologies",
             "Scaling your business opportunities",
             "Power in motion",
-            "UzAuto TRAILER\nOne step ahead of the roads",
+            "UzAuto TRAILER\nQuality and Reliability",
             "Logistics energy. Power of technology",
-            "From small loads to big wins: equipment for all roads"
+            "Equipment for all roads"
         ]
     }
 };
@@ -76,19 +75,14 @@ const translations = {
 const Hero = ({ lang = 'ru' }) => {
     const t = translations[lang] || translations.ru;
 
-    // API'dan ma'lumot olish
     const { data: bgImages = [], isLoading: queryLoading } = useQuery({
         queryKey: ['sliders'],
         queryFn: async () => {
             if (!API_URL) return [];
             try {
                 const res = await API.get('/sliders');
-                const payload = Array.isArray(res?.data) ? res.data : res?.data?.data || [];
-                return payload.filter(item => item?.isActive !== false);
-            } catch (error) {
-                console.error('Sliderlarni yuklashda xatolik:', error);
-                return [];
-            }
+                return res?.data?.filter(item => item?.isActive !== false) || [];
+            } catch (error) { return []; }
         },
         staleTime: 1000 * 60 * 10,
     });
@@ -97,8 +91,6 @@ const Hero = ({ lang = 'ru' }) => {
     const [isDragging, setIsDragging] = useState(false);
     const [transitionEnabled, setTransitionEnabled] = useState(false);
     const [firstLoad, setFirstLoad] = useState(true);
-
-    // MUHIM: Birinchi rasm yuklanganini aniqlash uchun state
     const [isFirstImageLoaded, setIsFirstImageLoaded] = useState(false);
 
     const slides = useMemo(() => {
@@ -107,28 +99,18 @@ const Hero = ({ lang = 'ru' }) => {
     }, [bgImages]);
 
     useEffect(() => {
-        if (bgImages.length > 0 && current === 0) {
-            setCurrent(bgImages.length);
-        }
+        if (bgImages.length > 0 && current === 0) setCurrent(bgImages.length);
     }, [bgImages, current]);
 
     const getFullImagePath = (img) => {
-        const rawValue = typeof img === 'string'
-            ? img
-            : img?.image || img?.url || img?.src || img?.path || '';
+        const rawValue = typeof img === 'string' ? img : img?.image || img?.url || '';
         if (!rawValue) return staticslayd.src;
-        if (rawValue.startsWith('http') || rawValue.startsWith('data:')) return rawValue;
-        const cleanBaseUrl = API_URL.endsWith('/') ? API_URL.slice(0, -1) : API_URL;
-        return `${cleanBaseUrl}${rawValue.startsWith('/') ? rawValue : `/${rawValue}`}`;
+        return `${API_URL.replace(/\/$/, '')}/${rawValue.replace(/^\//, '')}`;
     };
 
     useEffect(() => {
         if (!queryLoading) {
-            const timeout = setTimeout(() => {
-                setTransitionEnabled(true);
-                setFirstLoad(false);
-            }, 50);
-            return () => clearTimeout(timeout);
+            setTimeout(() => { setTransitionEnabled(true); setFirstLoad(false); }, 50);
         }
     }, [queryLoading]);
 
@@ -142,7 +124,6 @@ const Hero = ({ lang = 'ru' }) => {
     const prevSlide = () => { if (transitionEnabled) setCurrent(prev => prev - 1); };
 
     const handleUpdate = () => {
-        if (queryLoading || !bgImages.length) return;
         if (current >= bgImages.length * 2) {
             setTransitionEnabled(false);
             setCurrent(current - bgImages.length);
@@ -153,87 +134,54 @@ const Hero = ({ lang = 'ru' }) => {
     };
 
     useEffect(() => {
-        if (!transitionEnabled && !queryLoading) {
-            const timeout = setTimeout(() => setTransitionEnabled(true), 20);
-            return () => clearTimeout(timeout);
-        }
+        if (!transitionEnabled && !queryLoading) setTimeout(() => setTransitionEnabled(true), 20);
     }, [transitionEnabled, queryLoading]);
-
-    const onDragEnd = (e, info) => {
-        if (queryLoading) return;
-        setIsDragging(false);
-        const { offset, velocity } = info;
-        if (offset.x < -40 || velocity.x < -400) nextSlide();
-        else if (offset.x > 40 || velocity.x > 400) prevSlide();
-    };
 
     const currentTitle = useMemo(() => {
         if (bgImages.length === 0) return t.titles[0];
-        const index = current % bgImages.length;
-        return t.titles[index % t.titles.length];
+        return t.titles[(current % bgImages.length) % t.titles.length];
     }, [current, bgImages.length, t]);
 
     return (
-        <section className="relative w-full flex flex-col lg:h-screen lg:block overflow-hidden bg-[#0a0a0a] font-roboto">
+        <section className="relative w-full flex flex-col lg:h-screen lg:block overflow-hidden bg-[#050505] font-roboto">
             <Helmet>
                 <title>{t.seoTitle}</title>
                 <meta name="description" content={t.metaDesc} />
-                {/* API serveriga oldindan ulanish */}
-                {API_URL && <link rel="preconnect" href={API_URL} />}
-                <link rel="canonical" href="https://uzautotrailer.uz/" />
             </Helmet>
 
-            <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap');
-                * { font-family: 'Roboto', sans-serif !important; }
-            `}</style>
-
+            {/* BACKGROUND SLIDER */}
             <div className="relative w-full aspect-video sm:aspect-[16/8] lg:aspect-auto lg:h-full lg:absolute lg:inset-0 z-10 overflow-hidden cursor-grab active:cursor-grabbing">
-
-                {/* 1. STATIK PLACEHOLDER: Rasm yuklanguncha ko'rinib turadi */}
                 <AnimatePresence>
                     {(!isFirstImageLoaded || queryLoading) && (
-                        <motion.div
-                            initial={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.6 }}
-                            className="absolute inset-0 z-30 w-full h-full bg-[#0a0a0a]"
-                        >
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent lg:bg-gradient-to-r lg:from-black/80 lg:via-black/20 lg:to-transparent z-10" />
-                            <img
-                                src={staticslayd.src}
-                                alt="UzAuto Trailer Loading"
-                                className="w-full h-full object-cover object-center lg:object-[75%_center]"
-                            />
+                        <motion.div exit={{ opacity: 0 }} className="absolute inset-0 z-30 w-full h-full bg-[#0a0a0a]">
+                             <img src={staticslayd.src} className="w-full h-full object-cover object-[80%_center]" />
+                             <div className="absolute inset-0 bg-black/30 z-10" />
                         </motion.div>
                     )}
                 </AnimatePresence>
 
-                {/* 2. DINAMIK SLIDER: Orqafonda yuklanishni boshlaydi */}
                 {bgImages.length > 0 && (
                     <motion.div
                         drag="x"
                         dragMomentum={false}
-                        onDragStart={() => setIsDragging(true)}
-                        onDragEnd={onDragEnd}
+                        onDragEnd={(e, info) => {
+                            setIsDragging(false);
+                            if (info.offset.x < -40) nextSlide();
+                            else if (info.offset.x > 40) prevSlide();
+                        }}
                         animate={{ x: `-${current * 100}%` }}
                         onAnimationComplete={handleUpdate}
-                        transition={(transitionEnabled && !firstLoad) ? { type: "spring", bounce: 0, duration: 0.7 } : { duration: 0 }}
+                        transition={transitionEnabled ? { type: "spring", bounce: 0, duration: 0.7 } : { duration: 0 }}
                         className="flex h-full w-full"
                     >
                         {slides.map((img, idx) => (
                             <div key={idx} className="relative h-full w-full shrink-0">
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent lg:bg-gradient-to-r lg:from-black/80 lg:via-black/20 lg:to-transparent z-10" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent lg:bg-gradient-to-r lg:from-black lg:via-black/40 lg:to-transparent z-10" />
                                 <img
-                                    src={getFullImagePath(img.image)}
-                                    alt="UzAuto Trailer Truck"
-                                    // Birinchi ko'rinadigan rasmga ustuvorlik beramiz
-                                    fetchPriority={idx === current ? "high" : "low"}
-                                    loading="eager"
-                                    onLoad={() => {
-                                        if (idx === current) setIsFirstImageLoaded(true);
-                                    }}
-                                    className="w-full h-full object-cover object-center lg:object-[75%_center] pointer-events-none select-none"
+                                    src={getFullImagePath(img)}
+                                    alt="UzAuto Trailer"
+                                    onLoad={() => { if (idx === current) setIsFirstImageLoaded(true); }}
+                                    className="w-full h-full object-cover object-[80%_center] lg:object-[75%_center] pointer-events-none select-none"
                                 />
                             </div>
                         ))}
@@ -241,77 +189,64 @@ const Hero = ({ lang = 'ru' }) => {
                 )}
             </div>
 
-            {/* MATN QISMI */}
-            <div className="relative z-20 -mt-24 sm:-mt-28 lg:mt-0 lg:h-full max-w-[1600px] mx-auto px-6 lg:px-12 flex flex-col justify-start lg:justify-start lg:pt-[200px] items-center lg:items-start text-center lg:text-left bg-transparent pb-16 lg:pb-0 pointer-events-none font-roboto">
-                <div className="max-w-4xl pointer-events-auto w-full">
-                    <div className="min-h-[90px] sm:min-h-[120px] lg:min-h-0 flex items-center lg:items-start justify-center lg:justify-start">
+            {/* CONTENT - MATN QISMI (YUQORIGA SURILGAN) */}
+            <div className="relative z-20 -mt-12 sm:-mt-36 lg:mt-0 lg:h-full max-w-[1600px] mx-auto px-6 lg:px-12 flex flex-col justify-start lg:justify-center items-center lg:items-start text-center lg:text-left bg-transparent pt-4 lg:pt-0 pb-20 lg:pb-0 pointer-events-none">
+                <div className="max-w-4xl pointer-events-auto w-full px-4 sm:px-14 lg:px-0">
+                    <div className="min-h-[90px] lg:min-h-0 flex items-center lg:items-start justify-center lg:justify-start">
                         <AnimatePresence mode="wait">
                             <motion.h1
                                 key={currentTitle}
                                 initial={{ opacity: 0, y: 15 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -15 }}
-                                transition={{ duration: 0.5 }}
-                                className="text-[24px] sm:text-5xl lg:text-[58px] font-black text-white leading-[1.1] mb-0 drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)] whitespace-pre-line"
+                                className="text-[26px] sm:text-4xl lg:text-[50px] font-black text-white leading-[1.1] mb-2 drop-shadow-[0_4px_16px_rgba(0,0,0,1)] whitespace-pre-line"
                             >
                                 {currentTitle}
                             </motion.h1>
                         </AnimatePresence>
                     </div>
 
-                    <div className="min-h-[50px] sm:min-h-[60px] lg:min-h-0 mt-3 lg:mt-6 mb-6 lg:mb-10 flex items-center justify-center lg:justify-start">
-                        <motion.p
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="text-[14px] lg:text-lg text-white/90 font-medium leading-relaxed px-4 lg:px-0 drop-shadow-lg mx-auto lg:mx-0 whitespace-pre-line"
-                        >
-                            {t.description}
-                        </motion.p>
-                    </div>
+                    <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="text-[12px] lg:text-xl text-white/90 font-medium leading-relaxed mt-2 mb-8 lg:mb-12 drop-shadow-lg mx-auto lg:mx-0 whitespace-pre-line"
+                    >
+                        {t.description}
+                    </motion.p>
 
-                    <div className="flex flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4 w-full sm:w-auto px-2 lg:px-0">
-                        <Link href="/products" className="flex-1 sm:flex-none min-w-[130px] sm:min-w-[180px] bg-[#0061A4] hover:bg-blue-600 text-white px-4 sm:px-12 py-3.5 rounded-sm font-bold transition-all text-[12px] tracking-widest shadow-xl uppercase text-center flex items-center justify-center">
+                    <div className="flex flex-row items-center justify-center lg:justify-start gap-4">
+                        <Link href="/products" className="flex-1 sm:flex-none min-w-[140px] sm:min-w-[190px] bg-[#0061A4] hover:bg-blue-600 text-white px-4 sm:px-12 py-3.5 sm:py-4 rounded-sm font-bold transition-all text-[12px] tracking-widest shadow-2xl uppercase flex items-center justify-center">
                             {t.catalogBtn}
                         </Link>
-                        <Link href="/contacts" className="flex-1 sm:flex-none min-w-[130px] sm:min-w-[180px] bg-[#E88B3A] hover:bg-[#d47a2e] text-white px-4 sm:px-12 py-3.5 rounded-sm font-bold transition-all text-[12px] tracking-widest shadow-xl uppercase text-center flex items-center justify-center">
+                        <Link href="/contacts" className="flex-1 sm:flex-none min-w-[140px] sm:min-w-[190px] bg-[#E88B3A] hover:bg-[#d47a2e] text-white px-4 sm:px-12 py-3.5 sm:py-4 rounded-sm font-bold transition-all text-[12px] tracking-widest shadow-2xl uppercase flex items-center justify-center">
                             {t.contactBtn}
                         </Link>
                     </div>
                 </div>
             </div>
 
-            {/* NAVIGATSIYA */}
-            {/* NAVIGATSIYA TUGMALARI (EKRAN O'RTASIDA IKKI CHETDA) */}
+            {/* NAV TUGMALARI (PASTKI O'NGDA) */}
             {bgImages.length > 1 && (
-                <div className="absolute inset-y-0 left-0 right-0 z-40 flex items-center justify-between px-4 lg:px-10 pointer-events-none">
-                    {/* Chap tugma */}
-                    <button
-                        onClick={prevSlide}
-                        className="w-10 h-10 lg:w-14 lg:h-14 border border-white/20 rounded-full flex items-center justify-center text-white bg-black/20 hover:bg-[#0061A4] backdrop-blur-md transition-all active:scale-90 shadow-2xl pointer-events-auto group"
-                    >
-                        <ChevronLeft size={28} className="group-hover:-translate-x-0.5 transition-transform" />
+                <div className="absolute bottom-6 lg:bottom-12 right-6 lg:right-12 z-40 flex gap-4 pointer-events-none">
+                    <button onClick={prevSlide} className="w-10 h-10 lg:w-14 lg:h-14 border border-white/20 rounded-full flex items-center justify-center text-white bg-black/40 hover:bg-[#0061A4] backdrop-blur-md transition-all active:scale-90 shadow-2xl pointer-events-auto group">
+                        <ChevronLeft size={24} className="group-hover:-translate-x-0.5 transition-transform" />
                     </button>
-
-                    {/* O'ng tugma */}
-                    <button
-                        onClick={nextSlide}
-                        className="w-10 h-10 lg:w-14 lg:h-14 border border-white/20 rounded-full flex items-center justify-center text-white bg-black/20 hover:bg-[#0061A4] backdrop-blur-md transition-all active:scale-90 shadow-2xl pointer-events-auto group"
-                    >
-                        <ChevronRight size={28} className="group-hover:translate-x-0.5 transition-transform" />
+                    <button onClick={nextSlide} className="w-10 h-10 lg:w-14 lg:h-14 border border-white/20 rounded-full flex items-center justify-center text-white bg-black/40 hover:bg-[#0061A4] backdrop-blur-md transition-all active:scale-90 shadow-2xl pointer-events-auto group">
+                        <ChevronRight size={24} className="group-hover:translate-x-0.5 transition-transform" />
                     </button>
                 </div>
             )}
 
-            {/* PASTDAGI DOTS (FAQAT NUQTALAR QOLADI) */}
+            {/* DOTS (PASTKI CHAPDA) */}
             {bgImages.length > 1 && (
-                <div className="absolute bottom-6 lg:bottom-12 left-0 right-0 z-40 px-6 lg:px-12 flex justify-start lg:justify-start pointer-events-none w-full">
-                    <div className="flex gap-2 pointer-events-auto items-center">
+                <div className="absolute bottom-10 lg:bottom-16 left-6 lg:left-12 z-40 flex justify-start pointer-events-none">
+                    <div className="flex gap-2 pointer-events-auto">
                         {bgImages.map((_, idx) => (
                             <div
                                 key={idx}
                                 onClick={() => { if (transitionEnabled) setCurrent(idx + bgImages.length); }}
                                 className={`cursor-pointer transition-all duration-500 rounded-full ${idx === current % bgImages.length
-                                        ? 'w-8 lg:w-16 h-[3px] bg-[#0061A4]'
+                                        ? 'w-10 lg:w-20 h-[4px] bg-[#0061A4]'
                                         : 'w-4 lg:w-8 h-[2px] bg-white/20'
                                     }`}
                             />

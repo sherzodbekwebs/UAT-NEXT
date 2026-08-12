@@ -114,7 +114,7 @@ const Footer = ({ lang = 'ru' }) => {
     const t = translations[lang] || translations.ru;
 
     return (
-        <footer className="w-full bg-[#F8FAFC] text-[#1a2e44] pt-32 pb-16 px-6 lg:px-16 font-inter border-t border-gray-200">
+        <footer className="w-full bg-[#F8FAFC] text-[#1a2e44] pt-20 pb-5 px-6 lg:px-16 font-inter border-t border-gray-200">
             <div className="max-w-[1440px] mx-auto">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 pb-24">
 
