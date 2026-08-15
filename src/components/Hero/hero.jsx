@@ -155,7 +155,7 @@ const Hero = ({ lang = 'ru' }) => {
                     {(!isFirstImageLoaded || queryLoading) && (
                         <motion.div exit={{ opacity: 0 }} className="absolute inset-0 z-30 w-full h-full bg-[#0a0a0a]">
                              <img src={staticslayd.src} className="w-full h-full object-cover object-[80%_center]" />
-                             <div className="absolute inset-0 bg-black/30 z-10" />
+                             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent lg:bg-gradient-to-r lg:from-black/60 lg:via-black/20 lg:to-transparent z-10" />
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -176,7 +176,7 @@ const Hero = ({ lang = 'ru' }) => {
                     >
                         {slides.map((img, idx) => (
                             <div key={idx} className="relative h-full w-full shrink-0">
-                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent lg:bg-gradient-to-r lg:from-black lg:via-black/40 lg:to-transparent z-10" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent lg:bg-gradient-to-r lg:from-black/60 lg:via-black/20 lg:to-transparent z-10" />
                                 <img
                                     src={getFullImagePath(img)}
                                     alt="UzAuto Trailer"
@@ -199,7 +199,7 @@ const Hero = ({ lang = 'ru' }) => {
                                 initial={{ opacity: 0, y: 15 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -15 }}
-                                className="text-[26px] sm:text-4xl lg:text-[50px] font-black text-white leading-[1.1] mb-2 drop-shadow-[0_4px_16px_rgba(0,0,0,1)] whitespace-pre-line"
+                                className="text-[22px] sm:text-4xl lg:text-[50px] font-black text-white leading-[1.1] mb-2 drop-shadow-[0_4px_16px_rgba(0,0,0,1)] whitespace-pre-line"
                             >
                                 {currentTitle}
                             </motion.h1>
@@ -218,7 +218,7 @@ const Hero = ({ lang = 'ru' }) => {
                         <Link href="/products" className="flex-1 sm:flex-none min-w-[140px] sm:min-w-[190px] bg-[#0061A4] hover:bg-blue-600 text-white px-4 sm:px-12 py-3.5 sm:py-4 rounded-sm font-bold transition-all text-[12px] tracking-widest shadow-2xl uppercase flex items-center justify-center">
                             {t.catalogBtn}
                         </Link>
-                        <Link href="/contacts" className="flex-1 sm:flex-none min-w-[140px] sm:min-w-[190px] bg-[#E88B3A] hover:bg-[#d47a2e] text-white px-4 sm:px-12 py-3.5 sm:py-4 rounded-sm font-bold transition-all text-[12px] tracking-widest shadow-2xl uppercase flex items-center justify-center">
+                        <Link href="/contacts" className="flex-1 sm:flex-none min-w-[140px] sm:min-w-[190px] bg-white hover:bg-gray-100 text-[#0061A4] px-4 sm:px-12 py-3.5 sm:py-4 rounded-sm font-bold transition-all text-[12px] tracking-widest shadow-2xl uppercase flex items-center justify-center">
                             {t.contactBtn}
                         </Link>
                     </div>

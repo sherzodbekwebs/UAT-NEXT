@@ -6,14 +6,13 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import {
-    ChevronLeft, ChevronRight, ArrowUpRight, Box,
-    Signal, LayoutGrid, List, X, ChevronDown, Layers,
-    Heart, Gauge, Fuel, SlidersHorizontal, Check
+    ChevronLeft, ChevronRight, ArrowUpRight, BedDouble, Box,
+    Signal, LayoutGrid, List, X, ChevronDown, Layers, Gauge, Fuel, SlidersHorizontal, Check, Weight,
 } from 'lucide-react';
 import API, { API_URL } from '../../api/axios';
 import { useLanguage } from '../../context/LanguageContext';
 import SEO from '../SEO';
-import { ShieldCheck, Factory, Truck, Award } from "lucide-react";
+import { ShieldCheck, Factory, Award } from "lucide-react";
 
 const localTranslations = {
     uz: {
@@ -68,16 +67,16 @@ const localTranslations = {
 
 
 const menuVariants = {
-    open: { 
-        height: "auto", 
+    open: {
+        height: "auto",
         opacity: 1,
         transition: {
             height: { duration: 0.3, ease: [0.4, 0, 0.2, 1] },
             opacity: { duration: 0.2, delay: 0.1 }
         }
     },
-    collapsed: { 
-        height: 0, 
+    collapsed: {
+        height: 0,
         opacity: 0,
         transition: {
             height: { duration: 0.3, ease: [0.4, 0, 0.2, 1] },
@@ -96,6 +95,41 @@ const getField = (item, field, lang) => {
 
 function cn(...classes) {
     return classes.filter(Boolean).join(' ');
+}
+
+// Sahifalarni aqlli qisqartirish: 1 ... 4 5 6 ... 10 ko'rinishida
+function getPaginationRange(current, total) {
+    const siblingCount = 1;
+    const totalNumbers = siblingCount * 2 + 5; // first, last, current, 2*siblings, 2*dots
+
+    if (total <= totalNumbers) {
+        return Array.from({ length: total }, (_, i) => i + 1);
+    }
+
+    const leftSibling = Math.max(current - siblingCount, 1);
+    const rightSibling = Math.min(current + siblingCount, total);
+
+    const showLeftDots = leftSibling > 2;
+    const showRightDots = rightSibling < total - 1;
+
+    if (!showLeftDots && showRightDots) {
+        const leftRange = Array.from({ length: 3 + siblingCount * 2 }, (_, i) => i + 1);
+        return [...leftRange, 'dots', total];
+    }
+
+    if (showLeftDots && !showRightDots) {
+        const rightRange = Array.from(
+            { length: 3 + siblingCount * 2 },
+            (_, i) => total - (3 + siblingCount * 2) + i + 1
+        );
+        return [1, 'dots', ...rightRange];
+    }
+
+    const middleRange = Array.from(
+        { length: rightSibling - leftSibling + 1 },
+        (_, i) => leftSibling + i
+    );
+    return [1, 'dots', ...middleRange, 'dots', total];
 }
 
 const formatImgUrl = (path) => {
@@ -277,14 +311,14 @@ const ProductsPageContent = () => {
     };
 
     const toggleGroup = (groupId) => {
-    setExpandedGroups(prev => {
-        // Agar bir vaqtda faqat bitta guruh ochiq turishini xohlasangiz:
-        // return { [groupId]: !prev[groupId] }; 
-        
-        // Agar bir nechta guruh ochiq turishi mumkin bo'lsa:
-        return { ...prev, [groupId]: !prev[groupId] };
-    });
-};
+        setExpandedGroups(prev => {
+            // Agar bir vaqtda faqat bitta guruh ochiq turishini xohlasangiz:
+            // return { [groupId]: !prev[groupId] }; 
+
+            // Agar bir nechta guruh ochiq turishi mumkin bo'lsa:
+            return { ...prev, [groupId]: !prev[groupId] };
+        });
+    };
 
     const clearFilters = () => {
         router.push(pathname);
@@ -295,110 +329,110 @@ const ProductsPageContent = () => {
 
 
     ///////////////////////  SIDEBAR: CATEGORIES  ///////////////////////
-const CategoryList = () => (
-    // motion.div va layout prop'i ichidagi elementlar surilganda ularni silliq qiladi
-    <motion.div layout className="flex flex-col gap-3"> 
-        {/* 1. Barcha mahsulotlar tugmasi */}
-        <motion.button
-            layout
-            onClick={() => handleFilterChange({ category: 'all' }, true)}
-            className={cn(
-                "w-full flex items-center justify-between px-5 py-4 rounded-2xl transition-all border shadow-sm",
-                activeCategory === 'all'
-                    ? "bg-[#0061A4] border-[#0061A4] text-white shadow-blue-100"
-                    : "bg-white border-gray-100 text-slate-700 hover:border-[#0061A4]/30"
-            )}
-        >
-            <div className="flex items-center gap-3">
-                <LayoutGrid size={18} className={activeCategory === 'all' ? "text-white" : "text-[#0061A4]"} />
-                <span className="text-[14px] font-black tracking-tight">{curT.allModels}</span>
-            </div>
-            <span className={cn("px-2.5 py-0.5 rounded-lg text-[11px] font-black", activeCategory === 'all' ? "bg-white/20 text-white" : "bg-blue-50 text-[#0061A4]")}>
-                {products.length}
-            </span>
-        </motion.button>
+    const CategoryList = () => (
+        // motion.div va layout prop'i ichidagi elementlar surilganda ularni silliq qiladi
+        <motion.div layout className="flex flex-col gap-3">
+            {/* 1. Barcha mahsulotlar tugmasi */}
+            <motion.button
+                layout
+                onClick={() => handleFilterChange({ category: 'all' }, true)}
+                className={cn(
+                    "w-full flex items-center justify-between px-4 sm:px-5 py-3.5 sm:py-4 rounded-2xl transition-all border shadow-sm",
+                    activeCategory === 'all'
+                        ? "bg-[#0061A4] border-[#0061A4] text-white shadow-blue-100"
+                        : "bg-white border-gray-100 text-slate-700 hover:border-[#0061A4]/30"
+                )}
+            >
+                <div className="flex items-center gap-3">
+                    <LayoutGrid size={18} className={activeCategory === 'all' ? "text-white" : "text-[#0061A4]"} />
+                    <span className="text-[13px] sm:text-[14px] font-black tracking-tight">{curT.allModels}</span>
+                </div>
+                <span className={cn("px-2.5 py-0.5 rounded-lg text-[11px] font-black", activeCategory === 'all' ? "bg-white/20 text-white" : "bg-blue-50 text-[#0061A4]")}>
+                    {products.length}
+                </span>
+            </motion.button>
 
-        {/* 2. Kategoriyalar */}
-        {groupedCategories.map((group) => {
-            const isGroupActive = activeCategory === group.id;
-            
-            // Faqat lokal state orqali ochilishini nazorat qilamiz
-            const isExpanded = expandedGroups[group.id];
+            {/* 2. Kategoriyalar */}
+            {groupedCategories.map((group) => {
+                const isGroupActive = activeCategory === group.id;
 
-            return (
-                <motion.div layout key={group.id} className="flex flex-col gap-1">
-                    <div className={cn(
-                        "flex items-center rounded-2xl transition-all border shadow-sm overflow-hidden",
-                        isGroupActive ? "bg-[#0061A4] border-[#0061A4] text-white" : "bg-white border-gray-100"
-                    )}>
-                        <button
-                            onClick={() => {
-                                // 1. Filtrlash (URL o'zgaradi)
-                                handleFilterChange({ category: group.id }, false);
-                                // 2. Lokal ochish/yopish (Animatsiya uchun)
-                                toggleGroup(group.id);
-                            }}
-                            className="flex-1 flex items-center gap-3 text-left px-5 py-4 text-[14px] font-bold"
-                        >
-                            <Box size={18} className={isGroupActive ? "text-white" : "text-[#0061A4]"} />
-                            {lang === 'ru' ? group.ru : lang === 'en' ? group.en : group.uz}
-                        </button>
+                // Faqat lokal state orqali ochilishini nazorat qilamiz
+                const isExpanded = expandedGroups[group.id];
 
-                        {group.items.length > 0 && (
+                return (
+                    <motion.div layout key={group.id} className="flex flex-col gap-1">
+                        <div className={cn(
+                            "flex items-center rounded-2xl transition-all border shadow-sm overflow-hidden",
+                            isGroupActive ? "bg-[#0061A4] border-[#0061A4] text-white" : "bg-white border-gray-100"
+                        )}>
                             <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
+                                onClick={() => {
+                                    // 1. Filtrlash (URL o'zgaradi)
+                                    handleFilterChange({ category: group.id }, false);
+                                    // 2. Lokal ochish/yopish (Animatsiya uchun)
                                     toggleGroup(group.id);
                                 }}
-                                className={cn(
-                                    "p-4 border-l transition-transform duration-300",
-                                    isExpanded ? "rotate-180" : "rotate-0",
-                                    isGroupActive ? "border-white/10" : "border-gray-50"
-                                )}
+                                className="flex-1 flex items-center gap-3 text-left px-4 sm:px-5 py-3.5 sm:py-4 text-[13px] sm:text-[14px] font-bold min-w-0"
                             >
-                                <ChevronDown size={14} />
+                                <Box size={18} className={cn("shrink-0", isGroupActive ? "text-white" : "text-[#0061A4]")} />
+                                <span className="truncate">{lang === 'ru' ? group.ru : lang === 'en' ? group.en : group.uz}</span>
                             </button>
-                        )}
-                    </div>
 
-                    <AnimatePresence initial={false}>
-                        {isExpanded && group.items.length > 0 && (
-                            <motion.div
-                                key={`content-${group.id}`}
-                                initial="collapsed"
-                                animate="open"
-                                exit="collapsed"
-                                variants={menuVariants}
-                                className="overflow-hidden bg-gray-50/50 mx-2 rounded-b-2xl border-x border-b border-blue-50"
-                            >
-                                <div className="flex flex-col gap-1 px-2 pt-2 pb-3">
-                                    {group.items.map(cat => (
-                                        <button
-                                            key={cat.id}
-                                            onClick={() => handleFilterChange({ category: String(cat.id) }, true)}
-                                            className={cn(
-                                                "flex items-center gap-3 px-4 py-3 rounded-xl text-[13px] font-bold transition-all text-left",
-                                                String(activeCategory) === String(cat.id)
-                                                    ? "bg-blue-100/50 text-[#0054A6]"
-                                                    : "text-slate-500 hover:bg-gray-100"
-                                            )}
-                                        >
-                                            <div className={cn(
-                                                "w-1.5 h-1.5 rounded-full transition-all",
-                                                String(activeCategory) === String(cat.id) ? "bg-[#0054A6] scale-125" : "bg-slate-300"
-                                            )} />
-                                            {getField(cat, 'title', lang)}
-                                        </button>
-                                    ))}
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </motion.div>
-            );
-        })}
-    </motion.div>
-);
+                            {group.items.length > 0 && (
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        toggleGroup(group.id);
+                                    }}
+                                    className={cn(
+                                        "p-4 border-l transition-transform duration-300 shrink-0",
+                                        isExpanded ? "rotate-180" : "rotate-0",
+                                        isGroupActive ? "border-white/10" : "border-gray-50"
+                                    )}
+                                >
+                                    <ChevronDown size={14} />
+                                </button>
+                            )}
+                        </div>
+
+                        <AnimatePresence initial={false}>
+                            {isExpanded && group.items.length > 0 && (
+                                <motion.div
+                                    key={`content-${group.id}`}
+                                    initial="collapsed"
+                                    animate="open"
+                                    exit="collapsed"
+                                    variants={menuVariants}
+                                    className="overflow-hidden bg-gray-50/50 mx-2 rounded-b-2xl border-x border-b border-blue-50"
+                                >
+                                    <div className="flex flex-col gap-1 px-2 pt-2 pb-3">
+                                        {group.items.map(cat => (
+                                            <button
+                                                key={cat.id}
+                                                onClick={() => handleFilterChange({ category: String(cat.id) }, true)}
+                                                className={cn(
+                                                    "flex items-center gap-3 px-4 py-3 rounded-xl text-[13px] font-bold transition-all text-left",
+                                                    String(activeCategory) === String(cat.id)
+                                                        ? "bg-blue-100/50 text-[#0054A6]"
+                                                        : "text-slate-500 hover:bg-gray-100"
+                                                )}
+                                            >
+                                                <div className={cn(
+                                                    "w-1.5 h-1.5 rounded-full transition-all shrink-0",
+                                                    String(activeCategory) === String(cat.id) ? "bg-[#0054A6] scale-125" : "bg-slate-300"
+                                                )} />
+                                                <span className="truncate">{getField(cat, 'title', lang)}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </motion.div>
+                );
+            })}
+        </motion.div>
+    );
 
     ///////////////////////  SIDEBAR: BRANDS (checkbox style)  ///////////////////////
     const BrandList = () => (
@@ -410,8 +444,8 @@ const CategoryList = () => (
                 <div className={cn("w-[18px] h-[18px] rounded-md border-2 flex items-center justify-center shrink-0 transition-all", activeBrand === 'all' ? "bg-[#0061A4] border-[#0061A4]" : "border-gray-300")}>
                     {activeBrand === 'all' && <Check size={12} className="text-white" strokeWidth={3} />}
                 </div>
-                <span className="text-[13px] font-bold text-gray-700">{t('all') || 'Barchasi'}</span>
-                <span className="ml-auto text-[12px] font-bold text-gray-400">{products.length}</span>
+                <span className="text-[13px] font-bold text-gray-700 truncate">{t('all') || 'Barchasi'}</span>
+                <span className="ml-auto text-[12px] font-bold text-gray-400 shrink-0">{products.length}</span>
             </button>
 
             {brands.map((b) => {
@@ -426,99 +460,126 @@ const CategoryList = () => (
                         <div className={cn("w-[18px] h-[18px] rounded-md border-2 flex items-center justify-center shrink-0 transition-all", isActive ? "bg-[#0061A4] border-[#0061A4]" : "border-gray-300")}>
                             {isActive && <Check size={12} className="text-white" strokeWidth={3} />}
                         </div>
-                        <span className="text-[13px] font-bold text-gray-700">{b.name}</span>
-                        <span className="ml-auto text-[12px] font-bold text-gray-400">{count}</span>
+                        <span className="text-[13px] font-bold text-gray-700 truncate">{b.name}</span>
+                        <span className="ml-auto text-[12px] font-bold text-gray-400 shrink-0">{count}</span>
                     </button>
                 );
             })}
         </div>
     );
 
+    const specTargets = [
+        { key: "стандарт евро", icon: ShieldCheck },
+        { key: "колесная формула", icon: Layers },
+        { key: "мощность", icon: Gauge },
+        { key: ["полная масса автомобиля", "полная масса автосамосвала"], icon: Weight },
+        { key: ["исполнение", "исполненение", "комфорт"], icon: BedDouble, label: "Тип кабины" },
+        { key: ["вместимость топливных баков", "вместимость топливного бака", "объём топливного бака", "объем топливного бака", "топливный бак", "ёмкость топливного бака"], icon: Fuel, label: "Объем бака" },
+    ];
+
+    const trailerSpecTargets = [
+        { key: ["объем кузова", "объём кузова", "площадь кузова", "тип контейнеров"], icon: Box, label: "Объем кузова" },
+        { key: ["грузоподъемность", "грузоподъёмность", "масса перевозимого груза (техн.)", "масса перевозимого груза (техническая)"], icon: Weight, label: "Грузоподъемность" },
+        { key: ["материал кузова"], icon: ShieldCheck, label: "Материал кузова" },
+        { key: ["количество осей"], icon: Layers, label: "Количество осей" },
+        { key: ["полная масса", "технически допустимая максимальная масса", "полная масса полуприцепа (техн.)"], icon: Gauge, label: "Полная масса" },
+        { key: ["тормозная система"], icon: SlidersHorizontal, label: "Тормозная система" },
+    ];
+
     ///////////////////////  PRODUCT CARD (grid)  ///////////////////////
     const ProductCard = ({ p, idx, t, lang }) => {
+        const productCategory = categories.find(c => String(c.id) === String(p.categoryId));
+        const isTrailer = /прицеп/i.test(productCategory?.titleRu || '');
+        const activeSpecTargets = isTrailer ? trailerSpecTargets : specTargets;
+
         const getTargetSpecs = () => {
             if (!p.techSpecs) return [];
-            const targets = [
-                "грузоподъемность",
-                "грузоподъёмность",
-                "снаряженная масса",
-                "снаряжённая масса",
-                "нагрузка на ссу",
-                "масса снаряженного полуприцепа",
-                "масса снаряжённого полуприцепа",
-                "нагрузка на седло",
-                "нагрузка на седельно-сцепное устройство",
-                "масса перевозимого груза",
-                "нагрузка на ось",
-                "объём кузова",
-                "количество пассажиров",
-                "масса снаряженного прицепа",
-                "номинальная вместимость цистерны",
-            ];
-            return p.techSpecs.filter(spec =>
-                targets.some(target => spec.keyRu?.toLowerCase().includes(target))
-            ).slice(0, 2);
+            const result = [];
+            for (const { key, icon, label } of activeSpecTargets) {
+                const keywords = Array.isArray(key) ? key : [key];
+                const found = p.techSpecs.find(spec =>
+                    keywords.some(k => spec.keyRu?.toLowerCase().includes(k))
+                );
+                if (found) result.push({ spec: found, icon, label });
+            }
+            return result;
         };
 
         const displaySpecs = getTargetSpecs();
 
         return (
-            <div className="bg-white rounded-2xl border border-gray-200 flex flex-col h-full overflow-hidden hover:border-blue-100 transition-all">
+            <div className="bg-white rounded-2xl border border-gray-200 flex flex-col h-full overflow-hidden hover:border-blue-200 hover:shadow-lg hover:shadow-blue-50 transition-all duration-300">
                 {/* Rasm qismi */}
-                <div className="relative h-[180px] bg-[#F9FAFB] flex items-center justify-center p-4 shrink-0 border-b border-gray-50">
+                <div className="relative h-[150px] sm:h-[170px] lg:h-[180px] bg-[#F9FAFB] flex items-center justify-center p-4 shrink-0 border-b border-gray-50">
                     <Link href={`/product/${p.slug || p.id}`} className="w-full h-full flex items-center justify-center">
                         <img
                             src={`${API_URL}/${p.image}`.replace(/([^:]\/)\/+/g, "$1")}
                             alt={getField(p, 'title', lang)}
-                            className="max-w-[85%] max-h-full object-contain"
+                            loading="lazy"
+                            className="max-w-[88%] max-h-full object-contain"
                         />
                     </Link>
                 </div>
 
-                <div className="p-6 flex flex-col flex-1">
-                    <span className="text-[#0061A4] text-[10px] font-bold tracking-widest mb-1.5 opacity-60">
-                        {p.brand?.name || 'UzAuto TRAILER'}
-                    </span>
-
+                <div className="p-4 sm:p-5 lg:p-6 flex flex-col flex-1">
                     <Link href={`/product/${p.slug || p.id}`} className="group/title">
-                        <h3 className="text-[17px] font-black text-slate-800 leading-tight mb-5 group-hover/title:text-[#0061A4] transition-colors line-clamp-2 min-h-[42px] flex items-center">
+                        <h3 className="text-[15px] sm:text-[16px] lg:text-[17px] font-black text-slate-800 leading-tight mb-4 sm:mb-5 group-hover/title:text-[#0061A4] transition-colors line-clamp-2 min-h-[38px] sm:min-h-[42px] flex items-center">
                             {getField(p, 'title', lang)}
                         </h3>
                     </Link>
 
-                    {/* --- TEXNIK KO'RSATKICHLAR (Kattalashtirildi) --- */}
-                    <div className="flex flex-col gap-4 mb-6 min-h-[90px]">
-                        {displaySpecs.map((spec, i) => (
-                            <div key={i} className="flex items-start gap-3">
-                                <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
-                                <div className="flex flex-col min-w-0">
-                                    <span className="text-[11px] font-bold text-gray-400 uppercase leading-none mb-1.5 tracking-wide">
-                                        {getField(spec, 'key', lang)}
-                                    </span>
-                                    <p className="text-[14px] font-black text-slate-700 leading-tight">
-                                        {getField(spec, 'val', lang)}
-                                    </p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                    {/* --- TEXNIK KO'RSATKICHLAR (icon grid, 2 ustun, jadval chizig'i bilan) --- */}
+                    {displaySpecs.length > 0 && (
+                        <div className="grid grid-cols-2 mb-4 sm:mb-6">
+                            {displaySpecs.map(({ spec, icon: Icon, label }, i) => {
+                                const isLeftCol = i % 2 === 0;
+                                const isLastRow = i >= displaySpecs.length - 2;
+                                return (
+                                    <div
+                                        key={i}
+                                        className={cn(
+                                            "flex items-center gap-2 sm:gap-2.5 min-w-0 min-h-[56px] sm:min-h-[64px] py-2.5 sm:py-3",
+                                            isLeftCol ? "pr-2.5 sm:pr-4" : "pl-2.5 sm:pl-4",
+                                            isLeftCol && "border-r border-gray-100",
+                                            !isLastRow && "border-b border-gray-100"
+                                        )}
+                                    >
+                                        <div className="w-[16px] h-[16px] sm:w-[18px] sm:h-[18px] flex items-center justify-center shrink-0">
+                                            <Icon size={16} className="text-[#0061A4] sm:hidden" />
+                                            <Icon size={18} className="text-[#0061A4] hidden sm:block" />
+                                        </div>
+                                        <div className="flex flex-col min-w-0">
+                                            <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 leading-none mb-1 sm:mb-1.5 truncate">
+                                                {label || getField(spec, 'key', lang)}
+                                            </span>
+                                            <p className="text-[12px] sm:text-[13px] font-black text-slate-700 leading-tight line-clamp-2">
+                                                {getField(spec, 'val', lang)}
+                                            </p>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
 
-                    {/* --- NARX (Ko'k rang berildi) --- */}
-                    <div className="mt-auto pt-5 border-t border-gray-50 flex items-center justify-between">
-                        <span className="text-[18px] font-black text-[#0061A4] tabular-nums tracking-tight">
+                    {/* --- NARX --- */}
+                    <div className="mt-auto pt-4 sm:pt-5 border-t border-gray-50 flex items-center justify-between gap-2">
+                        <span className="text-[15px] sm:text-[16px] lg:text-[18px] font-black text-[#0061A4] tabular-nums tracking-tight truncate">
                             {p.price ? `${p.price} ${curT.currency}` : curT.agreed}
                         </span>
 
                         <Link
                             href={`/product/${p.slug || p.id}`}
-                            className="text-[#0061A4] hover:text-blue-800 transition-colors flex items-center gap-1.5 text-[12px] font-black uppercase tracking-tighter"
+                            className="text-[#0061A4] hover:text-blue-800 transition-colors flex items-center gap-1.5 text-[11px] sm:text-[12px] font-black uppercase tracking-tighter shrink-0"
                         >
-                            {curT.more} <ArrowUpRight size={18} />
+                            {curT.more} <ArrowUpRight size={16} className="sm:hidden" />
+                            <ArrowUpRight size={18} className="hidden sm:block" />
                         </Link>
                     </div>
                 </div>
             </div>
         );
+
     };
     return (
         <div className="min-h-screen text-[#1A1C1E] font-roboto overflow-x-hidden"
@@ -562,13 +623,16 @@ const CategoryList = () => (
                 .skeleton { background: linear-gradient(90deg, #f6f7f8 25%, #edeef1 50%, #f6f7f8 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite linear; }
                 .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
                 @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+                @media (max-width: 380px) {
+                    .grid-cols-1.sm\\:grid-cols-2 { grid-template-columns: 1fr; }
+                }
             `}</style>
 
             <ScanlineOverlay />
 
             <section
                 ref={heroRef}
-                className="relative overflow-hidden border-b border-[#E7EEF5] bg-gradient-to-br from-white via-[#F8FBFE] to-[#F2F8FD] pt-20 lg:pt-20 pb-12 lg:pb-16 font-roboto"
+                className="relative overflow-hidden border-b border-[#E7EEF5] bg-gradient-to-br from-white via-[#F8FBFE] to-[#F2F8FD] pt-16 sm:pt-20 pb-10 sm:pb-12 lg:pb-16 font-roboto"
             >
                 {/* Background */}
                 <motion.div
@@ -638,8 +702,8 @@ const CategoryList = () => (
                     </svg>
                 </motion.div>
 
-                <div className="relative z-10 max-w-[1600px] mx-auto px-6 lg:px-10">
-                    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-10 lg:gap-12">
+                <div className="relative z-10 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">
+                    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8 sm:gap-10 lg:gap-12">
 
                         {/* LEFT SIDE */}
                         <div className="w-full lg:max-w-3xl text-left">
@@ -651,7 +715,7 @@ const CategoryList = () => (
                                 <Signal size={12} className="text-[#0061A4] animate-pulse" />
                             </div>
 
-                            <h1 className="text-[36px] sm:text-[48px] lg:text-[70px] font-black leading-[1.1] lg:leading-none tracking-tight">
+                            <h1 className="text-[32px] sm:text-[48px] lg:text-[70px] font-black leading-[1.1] lg:leading-none tracking-tight">
                                 <span className="bg-gradient-to-r from-slate-900 via-slate-800 to-[#0061A4] bg-clip-text text-transparent">
                                     <GlitchText>
                                         <span>{t("products")}</span>
@@ -659,15 +723,16 @@ const CategoryList = () => (
                                 </span>
                             </h1>
 
-                            <p className="mt-4 lg:mt-6 max-w-2xl text-[15px] lg:text-[17px] leading-relaxed lg:leading-8 text-slate-800">
+                            <p className="mt-4 lg:mt-6 max-w-2xl text-[14px] sm:text-[15px] lg:text-[17px] leading-relaxed lg:leading-8 text-slate-800">
                                 {curT.heroDesc}
                             </p>
 
                             {/* Feature stats (Icon based) */}
-                            <div className="mt-8 lg:mt-10 flex flex-wrap items-center gap-x-6 lg:gap-x-8 gap-y-6">
+                            <div className="mt-6 sm:mt-8 lg:mt-10 flex flex-wrap items-center gap-x-5 sm:gap-x-6 lg:gap-x-8 gap-y-5 sm:gap-y-6">
                                 <div className="flex items-center gap-3">
-                                    <ShieldCheck size={22} className="text-[#0061A4] shrink-0" />
-                                    <div className="text-[13px] lg:text-sm text-slate-800 font-medium leading-tight">
+                                    <ShieldCheck size={20} className="text-[#0061A4] shrink-0 sm:hidden" />
+                                    <ShieldCheck size={22} className="text-[#0061A4] shrink-0 hidden sm:block" />
+                                    <div className="text-[12px] sm:text-[13px] lg:text-sm text-slate-800 font-medium leading-tight whitespace-pre-line">
                                         {curT.guarantee}
                                     </div>
                                 </div>
@@ -675,25 +740,19 @@ const CategoryList = () => (
                                 <div className="hidden md:block w-px h-8 bg-slate-200" />
 
                                 <div className="flex items-center gap-3">
-                                    <Factory size={22} className="text-[#0061A4] shrink-0" />
-                                    <div className="text-[13px] lg:text-sm text-slate-800 font-medium leading-tight">
+                                    <Factory size={20} className="text-[#0061A4] shrink-0 sm:hidden" />
+                                    <Factory size={22} className="text-[#0061A4] shrink-0 hidden sm:block" />
+                                    <div className="text-[12px] sm:text-[13px] lg:text-sm text-slate-800 font-medium leading-tight whitespace-pre-line">
                                         {curT.production}
                                     </div>
                                 </div>
 
-
-                                {/* <div className="flex items-center gap-3">
-                        <Truck size={22} className="text-[#0061A4] shrink-0" />
-                        <div className="text-[13px] lg:text-sm text-slate-800 font-medium leading-tight">
-                            Доставка по<br className="hidden sm:block" />Узбекистану
-                        </div>
-                    </div> */}
-
                                 <div className="hidden md:block w-px h-8 bg-slate-200" />
 
                                 <div className="flex items-center gap-3">
-                                    <Award size={22} className="text-[#0061A4] shrink-0" />
-                                    <div className="text-[13px] lg:text-sm text-slate-800 font-medium leading-tight">
+                                    <Award size={20} className="text-[#0061A4] shrink-0 sm:hidden" />
+                                    <Award size={22} className="text-[#0061A4] shrink-0 hidden sm:block" />
+                                    <div className="text-[12px] sm:text-[13px] lg:text-sm text-slate-800 font-medium leading-tight whitespace-pre-line">
                                         {curT.modelsCount}
                                     </div>
                                 </div>
@@ -701,13 +760,13 @@ const CategoryList = () => (
                         </div>
 
                         {/* RIGHT SIDE */}
-                        <div className="w-full lg:w-auto flex flex-col gap-6 items-start lg:items-end">
+                        <div className="w-full lg:w-auto flex flex-col gap-5 sm:gap-6 items-start lg:items-end">
                             <div className="w-full lg:w-auto bg-white/80 backdrop-blur-sm border border-slate-200 rounded-2xl p-2 lg:p-3 shadow-xl shadow-blue-100/40">
                                 <div className="flex flex-wrap gap-2">
                                     <button
                                         onClick={() => handleFilterChange({ brand: "all" }, true)}
                                         className={cn(
-                                            "flex-1 lg:flex-none px-4 lg:px-6 py-2.5 rounded-xl text-[10px] lg:text-[11px] font-bold tracking-widest border transition-all cursor-pointer whitespace-nowrap",
+                                            "flex-1 lg:flex-none px-3.5 sm:px-4 lg:px-6 py-2.5 rounded-xl text-[10px] lg:text-[11px] font-bold tracking-widest border transition-all cursor-pointer whitespace-nowrap",
                                             activeBrand === "all"
                                                 ? "bg-[#0061A4] text-white border-[#0061A4]"
                                                 : "bg-white border-gray-200 hover:border-[#0061A4] text-slate-700"
@@ -721,7 +780,7 @@ const CategoryList = () => (
                                             key={b.id}
                                             onClick={() => handleFilterChange({ brand: String(b.id) }, true)}
                                             className={cn(
-                                                "flex-1 lg:flex-none px-4 lg:px-6 py-2.5 rounded-xl text-[10px] lg:text-[11px] font-bold tracking-widest border transition-all cursor-pointer whitespace-nowrap",
+                                                "flex-1 lg:flex-none px-3.5 sm:px-4 lg:px-6 py-2.5 rounded-xl text-[10px] lg:text-[11px] font-bold tracking-widest border transition-all cursor-pointer whitespace-nowrap",
                                                 String(activeBrand) === String(b.id)
                                                     ? "bg-[#0061A4] text-white border-[#0061A4]"
                                                     : "bg-white border-gray-200 hover:border-[#0061A4] text-slate-700"
@@ -737,7 +796,7 @@ const CategoryList = () => (
                                 <div className="lg:hidden w-full">
                                     <button
                                         onClick={() => setSidebarOpen(true)}
-                                        className="flex items-center justify-center gap-3 w-full px-10 py-4 bg-[#0061A4] text-white rounded-2xl font-black text-[10px] tracking-[0.2em] shadow-xl active:scale-95 transition-transform"
+                                        className="flex items-center justify-center gap-3 w-full px-6 sm:px-10 py-3.5 sm:py-4 bg-[#0061A4] text-white rounded-2xl font-black text-[10px] tracking-[0.2em] shadow-xl active:scale-95 transition-transform"
                                     >
                                         <LayoutGrid size={16} />
                                         {t("categories_label")}
@@ -755,7 +814,7 @@ const CategoryList = () => (
                 {sidebarOpen && (
                     <>
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSidebarOpen(false)} className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm lg:hidden" />
-                        <motion.aside initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }} className="fixed top-0 left-0 bottom-0 z-[101] w-[85%] max-w-[340px] bg-white p-6 overflow-y-auto lg:hidden">
+                        <motion.aside initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }} className="fixed top-0 left-0 bottom-0 z-[101] w-[88%] max-w-[340px] bg-white p-5 sm:p-6 overflow-y-auto lg:hidden">
                             <div className="flex items-center justify-between mb-6 border-b pb-4">
                                 <span className="text-xs font-black tracking-widest text-[#0061A4]">{t('categories_label')}</span>
                                 <button onClick={() => setSidebarOpen(false)} className="p-2 bg-gray-50 rounded-full text-black"><X size={20} /></button>
@@ -776,11 +835,11 @@ const CategoryList = () => (
             </AnimatePresence>
 
             {/* ============ MAIN CONTENT ============ */}
-            <div className="max-w-[1600px] mx-auto px-6 lg:px-10 py-10 lg:py-14 font-roboto">
-                <div className="flex gap-8 items-start">
+            <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 py-8 sm:py-10 lg:py-14 font-roboto">
+                <div className="flex gap-6 lg:gap-8 items-start">
 
                     {/* ---- DESKTOP SIDEBAR ---- */}
-                    <aside className="hidden lg:block w-[300px] shrink-0 sticky top-32">
+                    <aside className="hidden lg:block w-[280px] xl:w-[300px] shrink-0 sticky top-32">
                         {/* 1. Sarlavha qismi - Endi u tugmalardan alohida tepada turadi */}
                         <div className="flex items-center gap-3 mb-8 px-1">
                             <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
@@ -816,18 +875,18 @@ const CategoryList = () => (
                     >
 
                         {/* Top bar: count + sort + view toggle */}
-                        <div className="flex items-center justify-between gap-4 mb-6">
-                            <div className="flex items-center gap-3">
-                                <h2 className="text-[18px] font-black text-slate-900">
+                        <div className="flex items-center justify-between gap-3 mb-5 sm:mb-6 flex-wrap">
+                            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                                <h2 className="text-[16px] sm:text-[18px] font-black text-slate-900 truncate">
                                     {currentTitle}
                                 </h2>
-                                <span className="bg-blue-50 text-[#0061A4] px-3 py-0.5 rounded-full text-[11px] font-black">
+                                <span className="bg-blue-50 text-[#0061A4] px-2.5 sm:px-3 py-0.5 rounded-full text-[10px] sm:text-[11px] font-black shrink-0">
                                     {filteredProducts.length} {curT.total}
                                 </span>
                             </div>
 
                             {/* Sort o'chirildi, faqat View toggle qoldi */}
-                            <div className="flex items-center gap-1 p-1 bg-gray-50 rounded-lg border border-gray-100">
+                            <div className="hidden sm:flex items-center gap-1 p-1 bg-gray-50 rounded-lg border border-gray-100 shrink-0">
                                 <button onClick={() => setViewMode('grid')} className={cn("p-1.5 rounded transition-all", viewMode === 'grid' ? "bg-white text-[#0061A4] shadow-sm" : "text-gray-400")}>
                                     <LayoutGrid size={16} />
                                 </button>
@@ -838,16 +897,16 @@ const CategoryList = () => (
                         </div>
 
                         {loading ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
-                                {[1, 2, 3, 4, 5, 6, 7, 8].map(n => <div key={n} className="w-full h-[340px] skeleton rounded-2xl" />)}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+                                {[1, 2, 3, 4, 5, 6, 7, 8].map(n => <div key={n} className="w-full h-[320px] sm:h-[340px] skeleton rounded-2xl" />)}
                             </div>
                         ) : (
                             <>
                                 <AnimatePresence mode="popLayout">
                                     <div className={cn(
-                                        "grid gap-8", // Masofani biroz ochdik (gap-8)
+                                        "grid gap-4 sm:gap-6 lg:gap-8",
                                         viewMode === 'grid'
-                                            ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" // Bir qatorda 3 ta
+                                            ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
                                             : "grid-cols-1"
                                     )}>
                                         {paginatedProducts.map((p, idx) => (
@@ -857,49 +916,53 @@ const CategoryList = () => (
                                 </AnimatePresence>
 
                                 {paginatedProducts.length === 0 && (
-                                    <div className="w-full py-24 flex flex-col items-center justify-center text-center gap-3">
+                                    <div className="w-full py-16 sm:py-24 flex flex-col items-center justify-center text-center gap-3">
                                         <Box size={40} className="text-gray-300" />
                                         <p className="text-gray-400 font-bold text-sm">{t('no_products_found') || 'Mahsulotlar topilmadi'}</p>
                                     </div>
                                 )}
 
                                 {totalPages > 1 && (
-                                    <div className="flex items-center justify-center gap-2 mt-12 py-6 border-t border-gray-100">
+                                    <div className="flex items-center justify-center gap-1.5 sm:gap-2 mt-10 sm:mt-12 py-6 border-t border-gray-100">
                                         <button
                                             onClick={() => handlePageChange(currentPage - 1)}
                                             disabled={currentPage === 1}
-                                            className="p-3 rounded-xl border hover:bg-gray-50 disabled:opacity-30 transition-all cursor-pointer"
+                                            className="shrink-0 w-9 h-9 sm:w-11 sm:h-11 lg:w-12 lg:h-12 flex items-center justify-center rounded-xl border border-gray-100 text-slate-500 hover:bg-gray-50 hover:border-blue-200 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:border-gray-100 transition-all cursor-pointer"
+                                            aria-label="Previous page"
                                         >
-                                            <ChevronLeft size={20} />
+                                            <ChevronLeft size={18} />
                                         </button>
 
-                                        <div className="flex items-center gap-1.5">
-                                            {[...Array(totalPages)].map((_, i) => {
-                                                const pageNum = i + 1;
-                                                // Faqat joriy sahifa atrofidagi tugmalarni ko'rsatish (ixtiyoriy, agar sahifalar ko'p bo'lsa)
-                                                return (
+                                        <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto scrollbar-hide max-w-full px-0.5">
+                                            {getPaginationRange(currentPage, totalPages).map((item, i) =>
+                                                item === 'dots' ? (
+                                                    <span key={`dots-${i}`} className="w-8 sm:w-9 flex items-center justify-center text-slate-300 font-bold text-[13px] select-none">
+                                                        •••
+                                                    </span>
+                                                ) : (
                                                     <button
-                                                        key={pageNum}
-                                                        onClick={() => handlePageChange(pageNum)}
+                                                        key={item}
+                                                        onClick={() => handlePageChange(item)}
                                                         className={cn(
-                                                            "w-10 h-10 sm:w-12 sm:h-12 rounded-xl font-bold text-[13px] transition-all border cursor-pointer",
-                                                            currentPage === pageNum
-                                                                ? "bg-[#0061A4] text-white border-[#0061A4] shadow-lg shadow-blue-100"
-                                                                : "bg-white text-slate-600 border-gray-100 hover:border-blue-400"
+                                                            "shrink-0 w-9 h-9 sm:w-11 sm:h-11 lg:w-12 lg:h-12 rounded-xl font-bold text-[12px] sm:text-[13px] transition-all border cursor-pointer",
+                                                            currentPage === item
+                                                                ? "bg-[#0061A4] text-white border-[#0061A4] shadow-lg shadow-blue-100/60"
+                                                                : "bg-white text-slate-600 border-gray-100 hover:border-blue-300 hover:text-[#0061A4]"
                                                         )}
                                                     >
-                                                        {pageNum}
+                                                        {item}
                                                     </button>
-                                                );
-                                            })}
+                                                )
+                                            )}
                                         </div>
 
                                         <button
                                             onClick={() => handlePageChange(currentPage + 1)}
                                             disabled={currentPage === totalPages}
-                                            className="p-3 rounded-xl border hover:bg-gray-50 disabled:opacity-30 transition-all cursor-pointer"
+                                            className="shrink-0 w-9 h-9 sm:w-11 sm:h-11 lg:w-12 lg:h-12 flex items-center justify-center rounded-xl border border-gray-100 text-slate-500 hover:bg-gray-50 hover:border-blue-200 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:border-gray-100 transition-all cursor-pointer"
+                                            aria-label="Next page"
                                         >
-                                            <ChevronRight size={20} />
+                                            <ChevronRight size={18} />
                                         </button>
                                     </div>
                                 )}
