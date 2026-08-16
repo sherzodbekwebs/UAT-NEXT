@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     ChevronLeft,
@@ -11,7 +11,8 @@ import {
     Users,
     BarChart3,
     Clock,
-    X 
+    X,
+    Expand
 } from 'lucide-react';
 
 // Markaziy API va URL ni import qilamiz
@@ -62,11 +63,17 @@ const translations = {
     }
 };
 
+const SLIDE_DURATION = 5000; // ms
+
 const HomeMission = ({ lang = 'ru' }) => {
     const [missionImages, setMissionImages] = useState([]);
     const [index, setIndex] = useState(0);
+    const [direction, setDirection] = useState(1);
     const [isViewerOpen, setIsViewerOpen] = useState(false);
+    const [progressKey, setProgressKey] = useState(0);
+    const [isPaused, setIsPaused] = useState(false);
     const t = translations[lang] || translations.ru;
+    const touchStartX = useRef(null);
 
     useEffect(() => {
         const fetchImages = async () => {
@@ -74,15 +81,15 @@ const HomeMission = ({ lang = 'ru' }) => {
                 // native fetch o'rniga sozlangan Axios (API) ishlatamiz
                 const res = await API.get('/anniversary-sliders');
                 const data = res.data;
-                
+
                 if (data && data.length > 0) {
                     const fetchedImages = data.map(item => {
                         const imgPath = item.image || item.url || item.photo || item;
                         if (!imgPath) return null;
-                        
+
                         // URL xavfsizligini ta'minlaymiz (ikki marta // tushib qolmasligi uchun)
-                        return imgPath.startsWith('http') 
-                            ? imgPath 
+                        return imgPath.startsWith('http')
+                            ? imgPath
                             : `${API_URL}/${imgPath}`.replace(/([^:]\/)\/+/g, "$1");
                     }).filter(Boolean);
                     setMissionImages(fetchedImages);
@@ -95,16 +102,43 @@ const HomeMission = ({ lang = 'ru' }) => {
         fetchImages();
     }, []);
 
-    useEffect(() => {
-        if (missionImages.length === 0 || isViewerOpen) return;
-        const interval = setInterval(() => {
-            setIndex((prev) => (prev + 1) % missionImages.length);
-        }, 5000);
-        return () => clearInterval(interval);
-    }, [index, missionImages.length, isViewerOpen]);
+    const goTo = useCallback((newIndex) => {
+        setDirection(newIndex > index ? 1 : -1);
+        setIndex(newIndex);
+        setProgressKey(k => k + 1);
+    }, [index]);
 
-    const next = () => setIndex((index + 1) % missionImages.length);
-    const prev = () => setIndex((index - 1 + missionImages.length) % missionImages.length);
+    const next = useCallback(() => {
+        setDirection(1);
+        setIndex(prev => (prev + 1) % missionImages.length);
+        setProgressKey(k => k + 1);
+    }, [missionImages.length]);
+
+    const prev = useCallback(() => {
+        setDirection(-1);
+        setIndex(prev => (prev - 1 + missionImages.length) % missionImages.length);
+        setProgressKey(k => k + 1);
+    }, [missionImages.length]);
+
+    useEffect(() => {
+        if (missionImages.length <= 1 || isViewerOpen || isPaused) return;
+        const timer = setTimeout(next, SLIDE_DURATION);
+        return () => clearTimeout(timer);
+    }, [progressKey, missionImages.length, isViewerOpen, isPaused, next]);
+
+    const onTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
+    const onTouchEnd = (e) => {
+        if (touchStartX.current === null) return;
+        const delta = e.changedTouches[0].clientX - touchStartX.current;
+        if (Math.abs(delta) > 40) delta < 0 ? next() : prev();
+        touchStartX.current = null;
+    };
+
+    const variants = {
+        enter: (dir) => ({ opacity: 0, scale: 1.04, x: dir > 0 ? 24 : -24 }),
+        center: { opacity: 1, scale: 1, x: 0 },
+        exit: (dir) => ({ opacity: 0, scale: 0.98, x: dir > 0 ? -24 : 24 })
+    };
 
     return (
         <section id="mission-section" className="w-full bg-[#F8FAFC] py-12 md:py-20 px-4 md:px-6 lg:px-16 font-inter overflow-hidden">
@@ -132,27 +166,62 @@ const HomeMission = ({ lang = 'ru' }) => {
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-10 items-center">
 
-                    {/* IMAGE SECTION */}
+                    {/* IMAGE SLIDER */}
                     <div className="lg:col-span-5 relative">
-                        <div className="relative aspect-[3/2] overflow-hidden rounded-[20px] md:rounded-[30px] shadow-xl bg-gray-200 border-2 md:border-4 border-white cursor-pointer group">
-                            <AnimatePresence initial={false} mode="wait">
+                        <div
+                            className="relative aspect-[3/2] overflow-hidden rounded-[20px] md:rounded-[30px] shadow-2xl shadow-[#0054A6]/10 bg-[#0d1b2a] group"
+                            onMouseEnter={() => setIsPaused(true)}
+                            onMouseLeave={() => setIsPaused(false)}
+                            onTouchStart={onTouchStart}
+                            onTouchEnd={onTouchEnd}
+                        >
+                            {/* Progress segments — story style, ties to "11 years" narrative */}
+                            {missionImages.length > 1 && (
+                                <div className="absolute top-3 left-3 right-3 md:top-4 md:left-4 md:right-4 z-20 flex gap-1.5">
+                                    {missionImages.map((_, i) => (
+                                        <button
+                                            key={i}
+                                            onClick={() => goTo(i)}
+                                            className="relative h-[3px] flex-1 rounded-full bg-white/25 overflow-hidden cursor-pointer"
+                                            aria-label={`Slide ${i + 1}`}
+                                        >
+                                            {i === index && !isViewerOpen && (
+                                                <motion.span
+                                                    key={progressKey}
+                                                    className="absolute inset-y-0 left-0 bg-white rounded-full"
+                                                    initial={{ width: '0%' }}
+                                                    animate={{ width: isPaused ? undefined : '100%' }}
+                                                    transition={{ duration: SLIDE_DURATION / 1000, ease: 'linear' }}
+                                                />
+                                            )}
+                                            {i < index && <span className="absolute inset-0 bg-white rounded-full" />}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+
+                            <AnimatePresence initial={false} custom={direction} mode="popLayout">
                                 {missionImages.length > 0 && (
                                     <motion.img
                                         key={index}
                                         src={missionImages[index]}
-                                        onClick={() => setIsViewerOpen(true)}
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        exit={{ opacity: 0 }}
-                                        transition={{ duration: 0.6, ease: "easeInOut" }}
+                                        custom={direction}
+                                        variants={variants}
+                                        initial="enter"
+                                        animate="center"
+                                        exit="exit"
+                                        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
                                         className="absolute inset-0 w-full h-full object-cover"
                                         alt="Mission"
                                     />
                                 )}
                             </AnimatePresence>
 
-                            {/* Badge */}
-                            <div className="absolute top-3 left-3 md:top-5 md:left-5 bg-black/30 backdrop-blur-md border border-white/30 px-3 py-1.5 md:px-4 md:py-2.5 rounded-lg md:rounded-xl text-white shadow-lg z-10 flex flex-col justify-center items-center pointer-events-none">
+                            {/* Subtle bottom gradient for legibility */}
+                            <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
+
+                            {/* Anniversary badge */}
+                            <div className="absolute top-9 left-3 md:top-11 md:left-4 bg-white/10 backdrop-blur-md border border-white/25 px-3 py-1.5 md:px-4 md:py-2.5 rounded-lg md:rounded-xl text-white shadow-lg z-10 flex flex-col justify-center items-center pointer-events-none">
                                 <div className="text-xl md:text-3xl font-black leading-none">
                                     {t.badgeYear}
                                 </div>
@@ -161,17 +230,34 @@ const HomeMission = ({ lang = 'ru' }) => {
                                 </div>
                             </div>
 
+                            {/* Counter + expand */}
+                            <div className="absolute bottom-3 left-3 md:bottom-5 md:left-5 z-10 flex items-center gap-2 text-white/80 text-[11px] md:text-xs font-semibold tracking-wide tabular-nums">
+                                <span>{String(index + 1).padStart(2, '0')}</span>
+                                <span className="w-4 h-px bg-white/40" />
+                                <span>{String(missionImages.length).padStart(2, '0')}</span>
+                            </div>
+
+                            <button
+                                onClick={() => setIsViewerOpen(true)}
+                                className="absolute bottom-3 right-3 md:bottom-5 md:right-16 p-1.5 md:p-2 bg-white/10 hover:bg-white text-white hover:text-black backdrop-blur-md rounded-full transition-all cursor-pointer shadow-lg active:scale-90 z-10 opacity-0 group-hover:opacity-100 md:opacity-100"
+                                aria-label="Kattalashtirish"
+                            >
+                                <Expand className="w-4 h-4 md:w-5 md:h-5" />
+                            </button>
+
                             {/* Arrows */}
                             <div className="absolute bottom-3 right-3 md:bottom-5 md:right-5 flex gap-1.5 md:gap-2 z-10">
                                 <button
                                     onClick={(e) => { e.stopPropagation(); prev(); }}
-                                    className="p-1.5 md:p-2 bg-white/20 hover:bg-white text-white hover:text-black backdrop-blur-md rounded-full transition-all cursor-pointer shadow-lg active:scale-90"
+                                    className="p-1.5 md:p-2 bg-white/10 hover:bg-white text-white hover:text-black backdrop-blur-md rounded-full transition-all cursor-pointer shadow-lg active:scale-90"
+                                    aria-label="Oldingi"
                                 >
                                     <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
                                 </button>
                                 <button
                                     onClick={(e) => { e.stopPropagation(); next(); }}
-                                    className="p-1.5 md:p-2 bg-white/20 hover:bg-white text-white hover:text-black backdrop-blur-md rounded-full transition-all cursor-pointer shadow-lg active:scale-90"
+                                    className="p-1.5 md:p-2 bg-white/10 hover:bg-white text-white hover:text-black backdrop-blur-md rounded-full transition-all cursor-pointer shadow-lg active:scale-90"
+                                    aria-label="Keyingi"
                                 >
                                     <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
                                 </button>
@@ -214,14 +300,14 @@ const HomeMission = ({ lang = 'ru' }) => {
                         exit={{ opacity: 0 }}
                         className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 md:p-10"
                     >
-                        <button 
+                        <button
                             onClick={() => setIsViewerOpen(false)}
                             className="absolute top-5 right-5 text-white/50 hover:text-white p-2 transition-colors cursor-pointer z-[10000]"
                         >
                             <X size={36} className="w-8 h-8 md:w-10 md:h-10" />
                         </button>
 
-                        <button 
+                        <button
                             onClick={(e) => { e.stopPropagation(); prev(); }}
                             className="absolute left-2 md:left-5 text-white/50 hover:text-white p-3 transition-colors cursor-pointer z-[10000]"
                         >
@@ -239,7 +325,7 @@ const HomeMission = ({ lang = 'ru' }) => {
                             />
                         )}
 
-                        <button 
+                        <button
                             onClick={(e) => { e.stopPropagation(); next(); }}
                             className="absolute right-2 md:right-5 text-white/50 hover:text-white p-3 transition-colors cursor-pointer z-[10000]"
                         >

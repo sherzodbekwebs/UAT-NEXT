@@ -245,6 +245,11 @@ const ProductsPageContent = () => {
     const heroY = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
     const heroOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0.2]);
 
+    const activeProducts = useMemo(
+        () => products.filter(p => p.isActive === true),
+        [products]
+    );
+
     const filteredProducts = useMemo(() => {
         return products.filter((p) => {
             const isActiveMatch = p.isActive === true;
@@ -348,7 +353,7 @@ const ProductsPageContent = () => {
                     <span className="text-[13px] sm:text-[14px] font-black tracking-tight">{curT.allModels}</span>
                 </div>
                 <span className={cn("px-2.5 py-0.5 rounded-lg text-[11px] font-black", activeCategory === 'all' ? "bg-white/20 text-white" : "bg-blue-50 text-[#0061A4]")}>
-                    {products.length}
+                    {activeProducts.length}
                 </span>
             </motion.button>
 
@@ -523,7 +528,7 @@ const ProductsPageContent = () => {
 
                 <div className="p-4 sm:p-5 lg:p-6 flex flex-col flex-1">
                     <Link href={`/product/${p.slug || p.id}`} className="group/title">
-                        <h3 className="text-[15px] sm:text-[16px] lg:text-[17px] font-black text-slate-800 leading-tight mb-4 sm:mb-5 group-hover/title:text-[#0061A4] transition-colors line-clamp-2 min-h-[38px] sm:min-h-[42px] flex items-center">
+                        <h3 className="text-[15px] sm:text-[16px] lg:text-[17px] font-black text-slate-800 leading-tight group-hover/title:text-[#0061A4] transition-colors line-clamp-2 min-h-[38px] sm:min-h-[42px] flex items-center">
                             {getField(p, 'title', lang)}
                         </h3>
                     </Link>
@@ -563,7 +568,7 @@ const ProductsPageContent = () => {
                     )}
 
                     {/* --- NARX --- */}
-                    <div className="mt-auto pt-4 sm:pt-5 border-t border-gray-50 flex items-center justify-between gap-2">
+                    <div className="mt-auto border-t border-gray-50 flex items-center justify-between gap-2">
                         <span className="text-[15px] sm:text-[16px] lg:text-[18px] font-black text-[#0061A4] tabular-nums tracking-tight truncate">
                             {p.price ? `${p.price} ${curT.currency}` : curT.agreed}
                         </span>

@@ -13,17 +13,28 @@ import {
     Instagram,
     Send,
     Youtube,
-    PlayCircle
+    PlayCircle,
+    Check
 } from 'lucide-react';
 
 import API, { API_URL } from '../../api/axios';
 import { useLanguage } from '../../context/LanguageContext';
+
+// Brend rangi Hero komponenti bilan bir xil — sayt bo'ylab yagona vizual til.
+const BRAND = '#0061A4';
+const BRAND_LIGHT = '#5CC2FF';
 
 const socialLinks = [
     { icon: Send, url: "https://t.me/uatproductsbot", color: "#0088cc" },
     { icon: Instagram, url: "https://www.instagram.com/uzautotrailer_official", color: "#E1306C" },
     { icon: Facebook, url: "https://www.facebook.com/UzAutoTrailerofficial", color: "#1877F2" },
     { icon: Youtube, url: "https://www.youtube.com/@UzAutoTrailer/videos", color: "#FF0000" }
+];
+
+const languageOptions = [
+    { code: 'uz', label: "O'zbekcha" },
+    { code: 'ru', label: 'Русский' },
+    { code: 'en', label: 'English' },
 ];
 
 const translations = {
@@ -136,13 +147,19 @@ const toCyrillic = (text) => {
  */
 const NavItem = ({ label, open, isCurrent, onEnter, onLeave, children }) => (
     <li className="relative h-full flex items-center font-bold" onMouseEnter={onEnter} onMouseLeave={onLeave}>
-        <div className={`relative py-2 flex items-center gap-1 group cursor-pointer h-full transition-colors ${isCurrent ? 'text-[#0054A6]' : 'text-[#1a2e44] hover:text-[#0054A6]'}`}>
+        <div
+            role="button"
+            tabIndex={0}
+            aria-haspopup="true"
+            aria-expanded={open}
+            className={`relative py-2 flex items-center gap-1 group cursor-pointer h-full transition-colors duration-200 outline-none ${isCurrent ? 'text-[#0061A4]' : 'text-[#1a2e44] hover:text-[#0061A4]'}`}
+        >
             <span>{label}</span>
-            <ChevronRight className={`w-3 h-3 transition-transform duration-300 ${open ? 'rotate-90 text-[#0054A6]' : 'text-gray-400'}`} />
+            <ChevronRight className={`w-3 h-3 transition-transform duration-300 ${open ? 'rotate-90 text-[#0061A4]' : 'text-gray-400'}`} />
             {isCurrent && (
                 <motion.span
                     layoutId="nav-active-indicator"
-                    className="absolute -bottom-[2px] left-0 right-0 h-[3px] rounded-full bg-gradient-to-r from-[#0054A6] to-[#3B82F6]"
+                    className="absolute -bottom-[2px] left-0 right-0 h-[3px] rounded-full bg-gradient-to-r from-[#0061A4] to-[#5CC2FF]"
                     transition={{ type: 'spring', stiffness: 380, damping: 32 }}
                 />
             )}
@@ -160,12 +177,12 @@ const NavItem = ({ label, open, isCurrent, onEnter, onLeave, children }) => (
 /** Oddiy (dropdownsiz) nav link — joriy sahifa bo'lsa ko'k rangda va tagida chiziqcha bilan. */
 const SimpleNavLink = ({ href, label, isCurrent }) => (
     <Link href={href}>
-        <li className={`relative py-2 transition-colors ${isCurrent ? 'text-[#0054A6]' : 'hover:text-[#0054A6]'}`}>
+        <li className={`relative py-2 transition-colors duration-200 ${isCurrent ? 'text-[#0061A4]' : 'hover:text-[#0061A4]'}`}>
             {label}
             {isCurrent && (
                 <motion.span
                     layoutId="nav-active-indicator"
-                    className="absolute -bottom-[2px] left-0 right-0 h-[3px] rounded-full bg-gradient-to-r from-[#0054A6] to-[#3B82F6]"
+                    className="absolute -bottom-[2px] left-0 right-0 h-[3px] rounded-full bg-gradient-to-r from-[#0061A4] to-[#5CC2FF]"
                     transition={{ type: 'spring', stiffness: 380, damping: 32 }}
                 />
             )}
@@ -183,7 +200,7 @@ const SearchResults = ({ suggestions, t, getLangField, handleResultClick }) => (
                             <img src={`${API_URL}${p.image}`} className="w-full h-full object-contain p-1" alt="" />
                         </div>
                         <div className="flex flex-col gap-0.5 text-black min-w-0">
-                            <span className="text-[14px] font-bold text-gray-700 group-hover:text-[#0054A6] line-clamp-1">{getLangField(p, 'title')}</span>
+                            <span className="text-[14px] font-bold text-gray-700 group-hover:text-[#0061A4] line-clamp-1">{getLangField(p, 'title')}</span>
                             <span className="text-[12px] text-gray-400 font-medium flex items-center gap-1">
                                 Batafsil ko'rish <ArrowRight size={10} className="group-hover:translate-x-0.5 transition-transform" />
                             </span>
@@ -202,13 +219,13 @@ const SearchResults = ({ suggestions, t, getLangField, handleResultClick }) => (
 
 const MobileNavItem = ({ icon: Icon, label, isOpen, isCurrent, onClick, children }) => (
     <div className="rounded-2xl overflow-hidden transition-all duration-300">
-        <button onClick={onClick} className={`w-full flex justify-between items-center p-4 rounded-2xl transition-all ${isOpen ? 'bg-blue-50 text-[#0054A6]' : isCurrent ? 'bg-blue-50/60 text-[#0054A6]' : 'text-[#1a2e44] hover:bg-gray-50'}`}>
+        <button onClick={onClick} aria-expanded={isOpen} className={`w-full flex justify-between items-center p-4 rounded-2xl transition-all ${isOpen ? 'bg-blue-50 text-[#0061A4]' : isCurrent ? 'bg-blue-50/60 text-[#0061A4]' : 'text-[#1a2e44] hover:bg-gray-50'}`}>
             <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-xl transition-colors ${isOpen || isCurrent ? 'bg-[#0054A6] text-white' : 'bg-gray-100 text-[#0054A6]'}`}><Icon size={18} /></div>
+                <div className={`p-2 rounded-xl transition-colors ${isOpen || isCurrent ? 'bg-[#0061A4] text-white' : 'bg-gray-100 text-[#0061A4]'}`}><Icon size={18} /></div>
                 <span className="text-[16px] font-bold">{label}</span>
-                {isCurrent && <span className="w-1.5 h-1.5 rounded-full bg-[#0054A6]" />}
+                {isCurrent && <span className="w-1.5 h-1.5 rounded-full bg-[#0061A4]" />}
             </div>
-            <ChevronRight size={18} className={`transition-transform duration-300 ${isOpen ? 'rotate-90 text-[#0054A6]' : 'text-gray-300'}`} />
+            <ChevronRight size={18} className={`transition-transform duration-300 ${isOpen ? 'rotate-90 text-[#0061A4]' : 'text-gray-300'}`} />
         </button>
         <AnimatePresence>
             {isOpen && (
@@ -221,13 +238,13 @@ const MobileNavItem = ({ icon: Icon, label, isOpen, isCurrent, onClick, children
 );
 
 const SimpleMobileLink = ({ href, icon: Icon, label, isCurrent, onClick }) => (
-    <Link href={href} onClick={onClick} className={`flex items-center justify-between p-4 rounded-2xl transition-all group ${isCurrent ? 'bg-blue-50/70 text-[#0054A6]' : 'hover:bg-gray-50 text-[#1a2e44]'}`}>
+    <Link href={href} onClick={onClick} className={`flex items-center justify-between p-4 rounded-2xl transition-all group ${isCurrent ? 'bg-blue-50/70 text-[#0061A4]' : 'hover:bg-gray-50 text-[#1a2e44]'}`}>
         <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-xl transition-all ${isCurrent ? 'bg-[#0054A6] text-white' : 'bg-gray-100 text-[#0054A6] group-hover:bg-[#0054A6] group-hover:text-white'}`}><Icon size={18} /></div>
+            <div className={`p-2 rounded-xl transition-all ${isCurrent ? 'bg-[#0061A4] text-white' : 'bg-gray-100 text-[#0061A4] group-hover:bg-[#0061A4] group-hover:text-white'}`}><Icon size={18} /></div>
             <span className="text-[16px] font-bold">{label}</span>
-            {isCurrent && <span className="w-1.5 h-1.5 rounded-full bg-[#0054A6]" />}
+            {isCurrent && <span className="w-1.5 h-1.5 rounded-full bg-[#0061A4]" />}
         </div>
-        <ArrowRight size={18} className={`transition-transform ${isCurrent ? 'text-[#0054A6]' : 'text-gray-300 group-hover:translate-x-1'}`} />
+        <ArrowRight size={18} className={`transition-transform ${isCurrent ? 'text-[#0061A4]' : 'text-gray-300 group-hover:translate-x-1'}`} />
     </Link>
 );
 
@@ -336,6 +353,8 @@ const Navbar = () => {
         setActiveMenu(null); setIsLangOpen(false); setIsMobileMenuOpen(false);
     }, [pathname]);
 
+    const currentLangLabel = languageOptions.find(l => l.code === lang)?.label || lang;
+
     return (
         <>
             <style>{`
@@ -354,6 +373,15 @@ const Navbar = () => {
                                 box-shadow 0.4s ease,
                                 background-color 0.4s ease,
                                 border-color 0.4s ease;
+                }
+
+                /* Klaviatura bilan navigatsiya qilayotganlar uchun aniq va brendga mos fokus holati. */
+                .navbar-roboto-container a:focus-visible,
+                .navbar-roboto-container button:focus-visible,
+                .navbar-roboto-container [role="button"]:focus-visible {
+                    outline: 2px solid ${BRAND};
+                    outline-offset: 2px;
+                    border-radius: 6px;
                 }
             `}</style>
 
@@ -379,7 +407,7 @@ const Navbar = () => {
                         {/* LOGO */}
                         <div className="flex items-center shrink-0">
                             <Link href="/">
-                                <img src={logo.src || logo} alt="Logo" className="w-auto h-9 min-[1201px]:h-12 object-contain cursor-pointer transition-transform hover:scale-105" />
+                                <img src={logo.src || logo} alt="UzAuto Trailer" className="w-auto h-9 min-[1201px]:h-12 object-contain cursor-pointer transition-transform duration-300 hover:scale-105" />
                             </Link>
                         </div>
 
@@ -392,8 +420,8 @@ const Navbar = () => {
                                             const active = isPathActive(item.link);
                                             return (
                                                 <Link key={i} href={item.link}>
-                                                    <div className={`px-4 py-3 font-bold text-[14px] rounded-xl transition-all cursor-pointer flex items-center gap-2 ${active ? 'bg-blue-50 text-[#0054A6]' : 'hover:bg-gray-50 text-[#004A99]'}`}>
-                                                        {active && <span className="w-1.5 h-1.5 rounded-full bg-[#0054A6] shrink-0" />}
+                                                    <div className={`px-4 py-3 font-bold text-[14px] rounded-xl transition-all duration-200 cursor-pointer flex items-center gap-2 ${active ? 'bg-blue-50 text-[#0061A4]' : 'hover:bg-gray-50 text-[#004A99]'}`}>
+                                                        {active && <span className="w-1.5 h-1.5 rounded-full bg-[#0061A4] shrink-0" />}
                                                         {item.title}
                                                     </div>
                                                 </Link>
@@ -406,12 +434,12 @@ const Navbar = () => {
                                     <ul className="py-4 w-72">
                                         {t.prodItems.map((item, i) => (
                                             item.sub ? (
-                                                <li key={i} className="relative px-6 py-3.5 hover:bg-gray-50 text-[#004A99] font-bold transition-all cursor-pointer text-sm flex items-center justify-between" onMouseEnter={() => setActiveSubMenu(item.label)} onMouseLeave={() => setActiveSubMenu(null)}>
+                                                <li key={i} className="relative px-6 py-3.5 hover:bg-gray-50 text-[#004A99] font-bold transition-all duration-200 cursor-pointer text-sm flex items-center justify-between" onMouseEnter={() => setActiveSubMenu(item.label)} onMouseLeave={() => setActiveSubMenu(null)}>
                                                     <span className="flex items-center gap-2">
-                                                        {item.sub.some(s => isPathActive(s.link)) && <span className="w-1.5 h-1.5 rounded-full bg-[#0054A6]" />}
+                                                        {item.sub.some(s => isPathActive(s.link)) && <span className="w-1.5 h-1.5 rounded-full bg-[#0061A4]" />}
                                                         {item.label}
                                                     </span>
-                                                    <ChevronRight size={14} className={activeSubMenu === item.label ? 'rotate-90' : ''} />
+                                                    <ChevronRight size={14} className={`transition-transform duration-300 ${activeSubMenu === item.label ? 'rotate-90' : ''}`} />
                                                     <AnimatePresence>
                                                         {activeSubMenu === item.label && (
                                                             <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.16 }} className="absolute top-0 left-full ml-2 w-80 bg-white shadow-[0_18px_45px_-12px_rgba(15,35,65,0.28)] border border-gray-100 py-3 z-[110] rounded-3xl overflow-hidden">
@@ -419,7 +447,7 @@ const Navbar = () => {
                                                                     const active = isPathActive(subItem.link || "#");
                                                                     return (
                                                                         <Link key={j} href={subItem.link || "#"}>
-                                                                            <div className={`px-6 py-3 font-bold text-sm border-b border-gray-50 last:border-0 transition-all ${active ? 'bg-blue-50 text-[#0054A6]' : 'hover:bg-gray-50 text-[#004A99]'}`}>{subItem.title}</div>
+                                                                            <div className={`px-6 py-3 font-bold text-sm border-b border-gray-50 last:border-0 transition-all duration-200 ${active ? 'bg-blue-50 text-[#0061A4]' : 'hover:bg-gray-50 text-[#004A99]'}`}>{subItem.title}</div>
                                                                         </Link>
                                                                     );
                                                                 })}
@@ -429,7 +457,7 @@ const Navbar = () => {
                                                 </li>
                                             ) : (
                                                 <Link key={i} href={item.link}>
-                                                    <div className={`px-6 py-3.5 font-bold text-sm transition-all ${isPathActive(item.link) ? 'bg-blue-50 text-[#0054A6]' : 'hover:bg-gray-50 text-[#004A99]'}`}>{item.label}</div>
+                                                    <div className={`px-6 py-3.5 font-bold text-sm transition-all duration-200 ${isPathActive(item.link) ? 'bg-blue-50 text-[#0061A4]' : 'hover:bg-gray-50 text-[#004A99]'}`}>{item.label}</div>
                                                 </Link>
                                             )
                                         ))}
@@ -445,9 +473,17 @@ const Navbar = () => {
                         {/* RIGHT SECTION: Search, Language, Burger */}
                         <div className="flex items-center gap-3 min-[1201px]:gap-5 justify-end">
                             <div className="relative hidden min-[1201px]:block w-44 xl:w-52 h-9" ref={searchWrapperRef}>
-                                <div className={`absolute right-0 top-0 flex items-center rounded-full px-4 py-2 transition-all duration-300 border ${showSuggestions ? 'w-[380px] bg-white border-[#0054A6]/40 shadow-xl' : 'w-full bg-gray-50 border-gray-100 hover:border-gray-200'}`}>
+                                <div className={`absolute right-0 top-0 flex items-center rounded-full px-4 py-2 transition-all duration-300 border ${showSuggestions ? 'w-[380px] bg-white border-[#0061A4]/40 shadow-xl' : 'w-full bg-gray-50 border-gray-100 hover:border-gray-200'}`}>
                                     <Search className="w-4 h-4 text-gray-400 shrink-0" />
-                                    <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} onFocus={() => searchTerm.length > 1 && setShowSuggestions(true)} placeholder={t.searchPlaceholder} className="bg-transparent border-none outline-none w-full text-[13px] ml-3 font-medium text-gray-800 placeholder:text-gray-400" />
+                                    <input
+                                        type="text"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        onFocus={() => searchTerm.length > 1 && setShowSuggestions(true)}
+                                        placeholder={t.searchPlaceholder}
+                                        aria-label={t.searchPlaceholder}
+                                        className="bg-transparent border-none outline-none w-full text-[13px] ml-3 font-medium text-gray-800 placeholder:text-gray-400"
+                                    />
                                 </div>
                                 <AnimatePresence>
                                     {showSuggestions && <SearchResults suggestions={suggestions} t={t} getLangField={getLangField} handleResultClick={handleResultClick} />}
@@ -455,16 +491,26 @@ const Navbar = () => {
                             </div>
 
                             <div className="relative" ref={dropdownRef}>
-                                <button onClick={() => setIsLangOpen(!isLangOpen)} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full font-bold text-[11px] uppercase transition-all bg-gray-50 border border-gray-100 hover:bg-white hover:border-gray-200 text-black">
-                                    <GlobeIcon size={14} className="text-[#0054A6]" />
+                                <button
+                                    onClick={() => setIsLangOpen(!isLangOpen)}
+                                    aria-haspopup="true"
+                                    aria-expanded={isLangOpen}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold text-[11px] uppercase tracking-wide transition-all duration-200 bg-gray-50 border border-gray-100 hover:bg-white hover:border-gray-200 text-black"
+                                >
+                                    <GlobeIcon size={14} className="text-[#0061A4]" />
                                     <span>{lang}</span>
                                 </button>
                                 <AnimatePresence>
                                     {isLangOpen && (
-                                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.16 }} className="absolute right-0 mt-3 w-32 bg-white shadow-[0_18px_45px_-12px_rgba(15,35,65,0.28)] rounded-3xl p-1.5 z-[120] border border-gray-100">
-                                            {['uz', 'ru', 'en'].map((item) => (
-                                                <button key={item} onClick={() => { setLang(item); setIsLangOpen(false); }} className={`w-full text-left px-4 py-2.5 rounded-2xl text-[12px] font-bold uppercase transition-all ${lang === item ? 'bg-blue-50 text-[#0054A6]' : 'hover:bg-gray-50 text-black'}`}>
-                                                    {item}
+                                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.16 }} className="absolute right-0 mt-3 w-44 bg-white shadow-[0_18px_45px_-12px_rgba(15,35,65,0.28)] rounded-3xl p-1.5 z-[120] border border-gray-100">
+                                            {languageOptions.map(({ code, label }) => (
+                                                <button
+                                                    key={code}
+                                                    onClick={() => { setLang(code); setIsLangOpen(false); }}
+                                                    className={`w-full flex items-center justify-between gap-2 text-left px-4 py-2.5 rounded-2xl text-[13px] font-bold transition-all duration-200 ${lang === code ? 'bg-blue-50 text-[#0061A4]' : 'hover:bg-gray-50 text-black'}`}
+                                                >
+                                                    {label}
+                                                    {lang === code && <Check size={14} className="text-[#0061A4]" />}
                                                 </button>
                                             ))}
                                         </motion.div>
@@ -472,7 +518,7 @@ const Navbar = () => {
                                 </AnimatePresence>
                             </div>
 
-                            <button onClick={() => setIsMobileMenuOpen(true)} className="min-[1201px]:hidden p-2 text-black rounded-full hover:bg-gray-50 transition-colors">
+                            <button onClick={() => setIsMobileMenuOpen(true)} aria-label="Menu" className="min-[1201px]:hidden p-2 text-black rounded-full hover:bg-gray-50 transition-colors duration-200">
                                 <MenuIcon className="w-6 h-6" />
                             </button>
                         </div>
@@ -498,15 +544,15 @@ const Navbar = () => {
                 {isMobileMenuOpen && (
                     <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: "spring", damping: 25 }} className="navbar-roboto-container fixed inset-0 bg-white z-[9999] min-[1201px]:hidden flex flex-col">
                         <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100">
-                            <img src={logo.src || logo} alt="Logo" className="h-10 w-auto" />
-                            <button onClick={() => setIsMobileMenuOpen(false)} className="text-black p-2 rounded-lg hover:bg-gray-50 transition-colors"><XIcon size={22} /></button>
+                            <img src={logo.src || logo} alt="UzAuto Trailer" className="h-10 w-auto" />
+                            <button onClick={() => setIsMobileMenuOpen(false)} aria-label="Close menu" className="text-black p-2 rounded-lg hover:bg-gray-50 transition-colors duration-200"><XIcon size={22} /></button>
                         </div>
                         <div className="flex-1 overflow-y-auto px-6 py-5">
                             <div className="space-y-1">
                                 <MobileNavItem icon={Info} label={t.about} isOpen={mobileAccordion === 'about'} isCurrent={isAboutActive} onClick={() => setMobileAccordion(mobileAccordion === 'about' ? null : 'about')}>
                                     {fullAboutItems.map((item, i) => (
-                                        <Link key={i} href={item.link} onClick={() => setIsMobileMenuOpen(false)} className={`flex items-center gap-2 py-2 font-semibold transition-colors ${isPathActive(item.link) ? 'text-[#0054A6]' : 'text-gray-500'}`}>
-                                            {isPathActive(item.link) && <span className="w-1 h-1 rounded-full bg-[#0054A6]" />}
+                                        <Link key={i} href={item.link} onClick={() => setIsMobileMenuOpen(false)} className={`flex items-center gap-2 py-2 font-semibold transition-colors duration-200 ${isPathActive(item.link) ? 'text-[#0061A4]' : 'text-gray-500'}`}>
+                                            {isPathActive(item.link) && <span className="w-1 h-1 rounded-full bg-[#0061A4]" />}
                                             {item.title}
                                         </Link>
                                     ))}
@@ -516,13 +562,13 @@ const Navbar = () => {
                                         <div key={i} className="mb-4">
                                             {item.sub ? (
                                                 <>
-                                                    <div className="text-xs font-black text-blue-400 uppercase mb-2">{item.label}</div>
+                                                    <div className="text-xs font-black text-blue-400 uppercase tracking-wide mb-2">{item.label}</div>
                                                     {item.sub.map((sub, j) => (
-                                                        <Link key={j} href={sub.link} onClick={() => setIsMobileMenuOpen(false)} className={`block py-1 transition-colors ${isPathActive(sub.link) ? 'text-[#0054A6] font-bold' : 'text-gray-500'}`}>{sub.title}</Link>
+                                                        <Link key={j} href={sub.link} onClick={() => setIsMobileMenuOpen(false)} className={`block py-1 transition-colors duration-200 ${isPathActive(sub.link) ? 'text-[#0061A4] font-bold' : 'text-gray-500'}`}>{sub.title}</Link>
                                                     ))}
                                                 </>
                                             ) : (
-                                                <Link href={item.link} onClick={() => setIsMobileMenuOpen(false)} className={`block font-bold ${isPathActive(item.link) ? 'text-[#0054A6]' : 'text-black'}`}>{item.label}</Link>
+                                                <Link href={item.link} onClick={() => setIsMobileMenuOpen(false)} className={`block font-bold ${isPathActive(item.link) ? 'text-[#0061A4]' : 'text-black'}`}>{item.label}</Link>
                                             )}
                                         </div>
                                     ))}
@@ -534,7 +580,7 @@ const Navbar = () => {
                         </div>
                         <div className="px-6 py-5 border-t border-gray-100 flex items-center justify-center gap-5">
                             {socialLinks.map((social, index) => (
-                                <a key={index} href={social.url} target="_blank" rel="noopener noreferrer" className="text-gray-400 transition-all duration-300 hover:scale-110" onMouseEnter={(e) => e.currentTarget.style.color = social.color} onMouseLeave={(e) => e.currentTarget.style.color = ''}>
+                                <a key={index} href={social.url} target="_blank" rel="noopener noreferrer" aria-label={social.url} className="text-gray-400 transition-all duration-300 hover:scale-110" onMouseEnter={(e) => e.currentTarget.style.color = social.color} onMouseLeave={(e) => e.currentTarget.style.color = ''}>
                                     <social.icon size={20} strokeWidth={2.2} />
                                 </a>
                             ))}
