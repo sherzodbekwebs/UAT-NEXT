@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Suspense, useState, useRef, useMemo } from 'react';
+import React, { Suspense, useState, useRef, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
@@ -13,6 +13,8 @@ import API, { API_URL } from '../../api/axios';
 import { useLanguage } from '../../context/LanguageContext';
 import SEO from '../SEO';
 import { ShieldCheck, Factory, Award } from "lucide-react";
+
+const SITE_URL = 'https://uzautotrailer.uz'; // <-- domeningizga moslang
 
 const localTranslations = {
     uz: {
@@ -315,6 +317,23 @@ const ProductsPageContent = () => {
         }
     };
 
+    // === MUAMMO 2 UCHUN TUZATISH ===
+    // Refresh yoki filtr o'zgarishidan keyin URL'dagi `page` qiymati
+    // yangi `totalPages` chegarasidan katta bo'lib qolishi mumkin edi
+    // (masalan page=3 turibdi-yu, filtr natijasida totalPages=1 bo'lib qoladi).
+    // Bu holatda pagination tugmalari "ishlamayotgandek" ko'rinardi,
+    // chunki handlePageChange ichidagi shart (newPage <= totalPages) bajarilmasdi.
+    // Quyidagi effekt bunday holatlarni avtomatik tuzatadi.
+    useEffect(() => {
+        if (loading) return;
+        if (totalPages === 0) return;
+        if (currentPage > totalPages) {
+            const params = new URLSearchParams(searchParams.toString());
+            params.set('page', String(totalPages));
+            router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+        }
+    }, [loading, totalPages, currentPage, pathname, searchParams, router]);
+
     const toggleGroup = (groupId) => {
         setExpandedGroups(prev => {
             // Agar bir vaqtda faqat bitta guruh ochiq turishini xohlasangiz:
@@ -586,6 +605,17 @@ const ProductsPageContent = () => {
         );
 
     };
+
+    // === MUAMMO 1 UCHUN TUZATISH ===
+    // Ilgari bu yerda `typeof window !== 'undefined' ? ... : ''` ishlatilgan edi.
+    // Bu server va client HTML'ini bir-biriga mos kelmasligiga (hydration mismatch)
+    // olib kelardi: server har doim '' render qiladi, client esa haqiqiy URL'ni.
+    // Refresh qilinganda shu nomuvofiqlik tufayli pastdagi komponentlar
+    // to'liq hydrate bo'lmay qolishi (ya'ni onClick tugmalar ishlamay qolishi) mumkin edi.
+    // Endi faqat server/client'da bir xil bo'ladigan pathname/searchParams ishlatilmoqda.
+    const currentQueryString = searchParams.toString();
+    const canonicalUrl = `${SITE_URL}${pathname}${currentQueryString ? `?${currentQueryString}` : ''}`;
+
     return (
         <div className="min-h-screen text-[#1A1C1E] font-roboto overflow-x-hidden"
             style={{
@@ -599,7 +629,7 @@ const ProductsPageContent = () => {
                 description="UzAuto Trailer mahsulotlari katalogi..."
                 keywords="uat, uzauto, trailer"
                 image="/uzbg1.png"
-                canonical={typeof window !== 'undefined' ? `${window.location.origin}${pathname}?page=${currentPage}` : ''}
+                canonical={canonicalUrl}
             />
 
             <script
@@ -612,7 +642,7 @@ const ProductsPageContent = () => {
                         "itemListElement": paginatedProducts.map((p, i) => ({
                             "@type": "ListItem",
                             "position": i + 1,
-                            "url": typeof window !== 'undefined' ? `${window.location.origin}/product/${p.slug || p.id}` : ''
+                            "url": `${SITE_URL}/product/${p.slug || p.id}`
                         }))
                     })
                 }}
