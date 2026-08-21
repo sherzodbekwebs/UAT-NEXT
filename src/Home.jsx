@@ -2,7 +2,7 @@
 
 import React, { Suspense, useEffect } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
-import Script from 'next/script'; // 🟢 Script komponentini import qildik
+import Script from 'next/script'; 
 import SEO from './components/SEO';
 
 // 🟢 Komponentlar importi
