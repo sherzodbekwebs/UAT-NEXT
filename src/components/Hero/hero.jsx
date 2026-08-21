@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowUpRight } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { useQuery } from '@tanstack/react-query';
 import API, { API_URL } from '../../api/axios';
@@ -143,19 +143,22 @@ const Hero = ({ lang = 'ru' }) => {
     }, [current, bgImages.length, t]);
 
     return (
-        <section className="relative w-full flex flex-col lg:h-screen lg:block overflow-hidden bg-[#050505] font-roboto">
+        // 1. Endi barcha ekranlarda (mobil, planshet, desktop) to'liq ekran balandligi.
+        // h-[100svh] mobil brauzerlarning manzil panelidan kelib chiqadigan
+        // sakrashlarni oldini oladi, h-screen esa fallback sifatida qoldirilgan.
+        <section className="relative w-full h-screen h-[100svh] overflow-hidden bg-[#050505] font-roboto">
             <Helmet>
                 <title>{t.seoTitle}</title>
                 <meta name="description" content={t.metaDesc} />
             </Helmet>
 
-            {/* BACKGROUND SLIDER */}
-            <div className="relative w-full aspect-video sm:aspect-[16/8] lg:aspect-auto lg:h-full lg:absolute lg:inset-0 z-10 overflow-hidden cursor-grab active:cursor-grabbing">
+            {/* BACKGROUND SLIDER — har doim to'liq orqa fonda */}
+            <div className="absolute inset-0 z-10 overflow-hidden cursor-grab active:cursor-grabbing">
                 <AnimatePresence>
                     {(!isFirstImageLoaded || queryLoading) && (
                         <motion.div exit={{ opacity: 0 }} className="absolute inset-0 z-30 w-full h-full bg-[#0a0a0a]">
-                             <img src={staticslayd.src} className="w-full h-full object-cover object-[80%_center]" />
-                             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent lg:bg-gradient-to-r lg:from-black/60 lg:via-black/20 lg:to-transparent z-10" />
+                            <img src={staticslayd.src} alt="" className="w-full h-full object-cover object-[80%_center]" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-black/10 lg:bg-gradient-to-r lg:from-black/70 lg:via-black/30 lg:to-transparent z-10" />
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -164,6 +167,7 @@ const Hero = ({ lang = 'ru' }) => {
                     <motion.div
                         drag="x"
                         dragMomentum={false}
+                        onDragStart={() => setIsDragging(true)}
                         onDragEnd={(e, info) => {
                             setIsDragging(false);
                             if (info.offset.x < -40) nextSlide();
@@ -176,7 +180,8 @@ const Hero = ({ lang = 'ru' }) => {
                     >
                         {slides.map((img, idx) => (
                             <div key={idx} className="relative h-full w-full shrink-0">
-                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent lg:bg-gradient-to-r lg:from-black/60 lg:via-black/20 lg:to-transparent z-10" />
+                                {/* Matn yaxshi o'qilishi uchun gradient kuchaytirilgan */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-black/10 lg:bg-gradient-to-r lg:from-black/70 lg:via-black/30 lg:to-transparent z-10" />
                                 <img
                                     src={getFullImagePath(img)}
                                     alt="UzAuto Trailer"
@@ -189,8 +194,9 @@ const Hero = ({ lang = 'ru' }) => {
                 )}
             </div>
 
-            {/* CONTENT - MATN QISMI (YUQORIGA SURILGAN) */}
-            <div className="relative z-20 -mt-12 sm:-mt-36 lg:mt-0 lg:h-full max-w-[1600px] mx-auto px-6 lg:px-12 flex flex-col justify-start lg:justify-center items-center lg:items-start text-center lg:text-left bg-transparent pt-4 lg:pt-0 pb-20 lg:pb-0 pointer-events-none">
+            {/* 2. CONTENT — negative margin "hack" olib tashlandi.
+                Endi flex + justify-center orqali haqiqiy vertikal markazga joylashadi. */}
+            <div className="relative z-20 h-full w-full max-w-[1600px] mx-auto px-6 lg:px-12 flex flex-col justify-center items-center lg:items-start text-center lg:text-left pointer-events-none">
                 <div className="max-w-4xl pointer-events-auto w-full px-4 sm:px-14 lg:px-0">
                     <div className="min-h-[90px] lg:min-h-0 flex items-center lg:items-start justify-center lg:justify-start">
                         <AnimatePresence mode="wait">
@@ -199,7 +205,8 @@ const Hero = ({ lang = 'ru' }) => {
                                 initial={{ opacity: 0, y: 15 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -15 }}
-                                className="text-[22px] sm:text-4xl lg:text-[50px] font-black text-white leading-[1.1] mb-2 drop-shadow-[0_4px_16px_rgba(0,0,0,1)] whitespace-pre-line"
+                                transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                                className="text-[26px] sm:text-4xl lg:text-[56px] font-black text-white leading-[1.1] mb-2 drop-shadow-[0_4px_16px_rgba(0,0,0,1)] whitespace-pre-line"
                             >
                                 {currentTitle}
                             </motion.h1>
@@ -209,14 +216,18 @@ const Hero = ({ lang = 'ru' }) => {
                     <motion.p
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="text-[12px] lg:text-xl text-white/90 font-medium leading-relaxed mt-2 mb-8 lg:mb-12 drop-shadow-lg mx-auto lg:mx-0 whitespace-pre-line"
+                        className="text-[13px] lg:text-xl text-white/90 font-medium leading-relaxed mt-2 mb-8 lg:mb-12 drop-shadow-lg mx-auto lg:mx-0 whitespace-pre-line"
                     >
                         {t.description}
                     </motion.p>
 
                     <div className="flex flex-row items-center justify-center lg:justify-start gap-4">
-                        <Link href="/products" className="flex-1 sm:flex-none min-w-[140px] sm:min-w-[190px] bg-[#0061A4] hover:bg-blue-600 text-white px-4 sm:px-12 py-3.5 sm:py-4 rounded-sm font-bold transition-all text-[12px] tracking-widest shadow-2xl uppercase flex items-center justify-center">
+                        <Link
+                            href="/products"
+                            className="group flex-1 sm:flex-none min-w-[140px] sm:min-w-[190px] bg-[#0061A4] hover:bg-blue-600 text-white px-4 sm:px-12 py-3.5 sm:py-4 rounded-sm font-bold transition-all text-[12px] tracking-widest shadow-2xl uppercase flex items-center justify-center gap-2"
+                        >
                             {t.catalogBtn}
+                            <ArrowUpRight size={15} className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                         </Link>
                         <Link href="/contacts" className="flex-1 sm:flex-none min-w-[140px] sm:min-w-[190px] bg-white hover:bg-gray-100 text-[#0061A4] px-4 sm:px-12 py-3.5 sm:py-4 rounded-sm font-bold transition-all text-[12px] tracking-widest shadow-2xl uppercase flex items-center justify-center">
                             {t.contactBtn}
@@ -228,10 +239,10 @@ const Hero = ({ lang = 'ru' }) => {
             {/* NAV TUGMALARI (PASTKI O'NGDA) */}
             {bgImages.length > 1 && (
                 <div className="absolute bottom-6 lg:bottom-12 right-6 lg:right-12 z-40 flex gap-4 pointer-events-none">
-                    <button onClick={prevSlide} className="w-10 h-10 lg:w-14 lg:h-14 border border-white/20 rounded-full flex items-center justify-center text-white bg-black/40 hover:bg-[#0061A4] backdrop-blur-md transition-all active:scale-90 shadow-2xl pointer-events-auto group">
+                    <button onClick={prevSlide} aria-label="Oldingi slayd" className="w-10 h-10 lg:w-14 lg:h-14 border border-white/20 rounded-full flex items-center justify-center text-white bg-black/40 hover:bg-[#0061A4] backdrop-blur-md transition-all active:scale-90 shadow-2xl pointer-events-auto group">
                         <ChevronLeft size={24} className="group-hover:-translate-x-0.5 transition-transform" />
                     </button>
-                    <button onClick={nextSlide} className="w-10 h-10 lg:w-14 lg:h-14 border border-white/20 rounded-full flex items-center justify-center text-white bg-black/40 hover:bg-[#0061A4] backdrop-blur-md transition-all active:scale-90 shadow-2xl pointer-events-auto group">
+                    <button onClick={nextSlide} aria-label="Keyingi slayd" className="w-10 h-10 lg:w-14 lg:h-14 border border-white/20 rounded-full flex items-center justify-center text-white bg-black/40 hover:bg-[#0061A4] backdrop-blur-md transition-all active:scale-90 shadow-2xl pointer-events-auto group">
                         <ChevronRight size={24} className="group-hover:translate-x-0.5 transition-transform" />
                     </button>
                 </div>
@@ -259,8 +270,6 @@ const Hero = ({ lang = 'ru' }) => {
 };
 
 export default Hero;
-
-
 
 
 

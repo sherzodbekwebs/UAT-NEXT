@@ -11,6 +11,7 @@ import ProductionStats from '@/components/ProductionStats/ProductionStats';
 import CallCenter from '@/components/CallCenter/CallCenter';
 import NewsSection from '@/components/NewsSection/NewsSection';
 import Partners from '@/components/Partners/Partners';
+import ChatWidget from '@/components/ChatWidget';
 
 export default function HomeClient() {
     const { lang } = useLanguage();
@@ -36,6 +37,7 @@ export default function HomeClient() {
             <CallCenter lang={lang} />
             <NewsSection lang={lang} />
             <Partners lang={lang} />
+             {/* <ChatWidget /> */}
         </>
     );
 }

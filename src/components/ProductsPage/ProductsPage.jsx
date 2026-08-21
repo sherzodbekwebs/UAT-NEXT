@@ -177,6 +177,35 @@ const ProductsPageContent = () => {
     const [expandedGroups, setExpandedGroups] = useState({});
     const [viewMode, setViewMode] = useState('grid');
 
+    // === CPANEL/LITESPEED KESH MUAMMOSI UCHUN TUZATISH ===
+    // Ilgari activeCategory/activeBrand/currentPage to'g'ridan-to'g'ri
+    // `searchParams`dan olinardi va har bir filtr/pagination bosilganda
+    // `router.push(...)` chaqirilardi. router.push Next.js'da server bilan
+    // ichki RSC so'rovi orqali ishlaydi — cPanel (LiteSpeed) kesh shu ichki
+    // so'rovlarni ham keshlab qo'yib, refreshdan keyin javob noto'g'ri/kech
+    // kelishiga sabab bo'lardi. Natijada tugma bosiladi, lekin URL va
+    // sahifa hech qachon yangilanmasdi.
+    // Endi activeCategory/activeBrand/currentPage local state sifatida
+    // saqlanadi va URL faqat window.history.pushState orqali (Next.js
+    // serveriga umuman murojaat qilmasdan) yangilanadi. Bu keshdan
+    // butunlay mustaqil ishlaydi.
+    const [activeCategory, setActiveCategory] = useState(() => searchParams.get('category') || 'all');
+    const [activeBrand, setActiveBrand] = useState(() => searchParams.get('brand') || 'all');
+    const [currentPage, setCurrentPage] = useState(() => Number(searchParams.get('page')) || 1);
+
+    // Brauzerning orqaga/oldinga tugmalari bosilganda ham state URL bilan
+    // sinxron bo'lishi uchun.
+    useEffect(() => {
+        const onPopState = () => {
+            const params = new URLSearchParams(window.location.search);
+            setActiveCategory(params.get('category') || 'all');
+            setActiveBrand(params.get('brand') || 'all');
+            setCurrentPage(Number(params.get('page')) || 1);
+        };
+        window.addEventListener('popstate', onPopState);
+        return () => window.removeEventListener('popstate', onPopState);
+    }, []);
+
     const scrollToProducts = () => {
         if (productsTopRef.current) {
             const navbarHeight = 130; // Navbaringiz balandligi + zapas
@@ -237,9 +266,6 @@ const ProductsPageContent = () => {
         }));
     }, [categories]);
 
-    const activeCategory = searchParams.get('category') || 'all';
-    const activeBrand = searchParams.get('brand') || 'all';
-    const currentPage = Number(searchParams.get('page')) || 1;
     const itemsPerPage = 6;
 
     const heroRef = useRef(null);
@@ -288,15 +314,19 @@ const ProductsPageContent = () => {
     }, [activeCategory, groupedCategories, categories, lang, curT.allModels]);
 
     const handleFilterChange = (newParams, sidebarClose = true) => {
-        const params = new URLSearchParams(searchParams.toString());
+        const url = new URL(window.location.href);
         Object.entries(newParams).forEach(([key, value]) => {
-            if (value === 'all') params.delete(key);
-            else params.set(key, value);
+            if (value === 'all') url.searchParams.delete(key);
+            else url.searchParams.set(key, value);
         });
-        params.set('page', '1');
+        url.searchParams.set('page', '1');
 
-        // { scroll: false } Next.js avtomatik sakrashini to'xtatadi
-        router.push(`${pathname}?${params.toString()}`, { scroll: false });
+        // Next.js serveriga murojaat qilmasdan, faqat brauzer URL'ini yangilaymiz
+        window.history.pushState({}, '', url.toString());
+
+        if (newParams.category !== undefined) setActiveCategory(newParams.category);
+        if (newParams.brand !== undefined) setActiveBrand(newParams.brand);
+        setCurrentPage(1);
 
         if (sidebarClose) setSidebarOpen(false);
 
@@ -306,11 +336,11 @@ const ProductsPageContent = () => {
 
     const handlePageChange = (newPage) => {
         if (newPage >= 1 && newPage <= totalPages) {
-            const params = new URLSearchParams(searchParams.toString());
-            params.set('page', String(newPage));
+            const url = new URL(window.location.href);
+            url.searchParams.set('page', String(newPage));
 
-            // Next.js tepaga sakrashini o'chiramiz
-            router.push(`${pathname}?${params.toString()}`, { scroll: false });
+            window.history.pushState({}, '', url.toString());
+            setCurrentPage(newPage);
 
             // Biz xohlagan joygacha smoth scroll qilamiz
             setTimeout(scrollToProducts, 100);
@@ -323,16 +353,18 @@ const ProductsPageContent = () => {
     // (masalan page=3 turibdi-yu, filtr natijasida totalPages=1 bo'lib qoladi).
     // Bu holatda pagination tugmalari "ishlamayotgandek" ko'rinardi,
     // chunki handlePageChange ichidagi shart (newPage <= totalPages) bajarilmasdi.
-    // Quyidagi effekt bunday holatlarni avtomatik tuzatadi.
+    // Quyidagi effekt bunday holatlarni avtomatik tuzatadi (endi router
+    // o'rniga window.history.replaceState ishlatiladi — keshga bog'liq emas).
     useEffect(() => {
         if (loading) return;
         if (totalPages === 0) return;
         if (currentPage > totalPages) {
-            const params = new URLSearchParams(searchParams.toString());
-            params.set('page', String(totalPages));
-            router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+            const url = new URL(window.location.href);
+            url.searchParams.set('page', String(totalPages));
+            window.history.replaceState({}, '', url.toString());
+            setCurrentPage(totalPages);
         }
-    }, [loading, totalPages, currentPage, pathname, searchParams, router]);
+    }, [loading, totalPages, currentPage]);
 
     const toggleGroup = (groupId) => {
         setExpandedGroups(prev => {
@@ -345,7 +377,10 @@ const ProductsPageContent = () => {
     };
 
     const clearFilters = () => {
-        router.push(pathname);
+        window.history.pushState({}, '', pathname);
+        setActiveCategory('all');
+        setActiveBrand('all');
+        setCurrentPage(1);
         setSidebarOpen(false);
     };
 
@@ -496,18 +531,54 @@ const ProductsPageContent = () => {
         { key: "стандарт евро", icon: ShieldCheck },
         { key: "колесная формула", icon: Layers },
         { key: "мощность", icon: Gauge },
-        { key: ["полная масса автомобиля", "полная масса автосамосвала"], icon: Weight },
-        { key: ["исполнение", "исполненение", "комфорт"], icon: BedDouble, label: "Тип кабины" },
-        { key: ["вместимость топливных баков", "вместимость топливного бака", "объём топливного бака", "объем топливного бака", "топливный бак", "ёмкость топливного бака"], icon: Fuel, label: "Объем бака" },
+        {
+            key: ["полная масса автомобиля", "полная масса автосамосвала"],
+            icon: Weight,
+            label: { uz: "To'liq massa", ru: "Полная масса", en: "Gross weight" }
+        },
+        {
+            key: ["исполнение", "исполненение", "комфорт"],
+            icon: BedDouble,
+            label: { uz: "Kabina turi", ru: "Тип кабины", en: "Cab type" }
+        },
+        {
+            key: ["вместимость топливных баков", "вместимость топливного бака", "объём топливного бака", "объем топливного бака", "топливный бак", "ёмкость топливного бака"],
+            icon: Fuel,
+            label: { uz: "Bak hajmi", ru: "Объем бака", en: "Fuel tank" }
+        },
     ];
 
     const trailerSpecTargets = [
-        { key: ["объем кузова", "объём кузова", "площадь кузова", "тип контейнеров"], icon: Box, label: "Объем кузова" },
-        { key: ["грузоподъемность", "грузоподъёмность", "масса перевозимого груза (техн.)", "масса перевозимого груза (техническая)"], icon: Weight, label: "Грузоподъемность" },
-        { key: ["материал кузова"], icon: ShieldCheck, label: "Материал кузова" },
-        { key: ["количество осей"], icon: Layers, label: "Количество осей" },
-        { key: ["полная масса", "технически допустимая максимальная масса", "полная масса полуприцепа (техн.)"], icon: Gauge, label: "Полная масса" },
-        { key: ["тормозная система"], icon: SlidersHorizontal, label: "Тормозная система" },
+        {
+            key: ["объем кузова", "объём кузова", "площадь кузова", "тип контейнеров"],
+            icon: Box,
+            label: { uz: "Kuzov hajmi", ru: "Объем кузова", en: "Body volume" }
+        },
+        {
+            key: ["грузоподъемность", "грузоподъёмность", "масса перевозимого груза (техн.)", "масса перевозимого груза (техническая)"],
+            icon: Weight,
+            label: { uz: "Yuk ko'tarish qobiliyati", ru: "Грузоподъемность", en: "Payload capacity" }
+        },
+        {
+            key: ["материал кузова"],
+            icon: ShieldCheck,
+            label: { uz: "Kuzov materiali", ru: "Материал кузова", en: "Body material" }
+        },
+        {
+            key: ["количество осей"],
+            icon: Layers,
+            label: { uz: "O'qlar soni", ru: "Количество осей", en: "Number of axles" }
+        },
+        {
+            key: ["полная масса", "технически допустимая максимальная масса", "полная масса полуприцепа (техн.)"],
+            icon: Gauge,
+            label: { uz: "To'liq massa", ru: "Полная масса", en: "Gross weight" }
+        },
+        {
+            key: ["тормозная система"],
+            icon: SlidersHorizontal,
+            label: { uz: "Tormoz tizimi", ru: "Тормозная система", en: "Brake system" }
+        },
     ];
 
     ///////////////////////  PRODUCT CARD (grid)  ///////////////////////
@@ -574,7 +645,7 @@ const ProductsPageContent = () => {
                                         </div>
                                         <div className="flex flex-col min-w-0">
                                             <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 leading-none mb-1 sm:mb-1.5 truncate">
-                                                {label || getField(spec, 'key', lang)}
+                                                {(typeof label === 'object' ? label?.[lang] || label?.ru : label) || getField(spec, 'key', lang)}
                                             </span>
                                             <p className="text-[12px] sm:text-[13px] font-black text-slate-700 leading-tight line-clamp-2">
                                                 {getField(spec, 'val', lang)}

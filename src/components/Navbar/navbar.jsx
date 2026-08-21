@@ -20,7 +20,6 @@ import {
 import API, { API_URL } from '../../api/axios';
 import { useLanguage } from '../../context/LanguageContext';
 
-// Brend rangi Hero komponenti bilan bir xil — sayt bo'ylab yagona vizual til.
 const BRAND = '#0061A4';
 const BRAND_LIGHT = '#5CC2FF';
 

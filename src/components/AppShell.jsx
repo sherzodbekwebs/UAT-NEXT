@@ -19,7 +19,7 @@ export default function AppShell({ children }) {
     defaultOptions: {
       queries: {
         staleTime: 1000 * 60 * 5,
-        gcTime: 1000 * 60 * 30, // 🟢 cacheTime nomi gcTime ga o'zgargan (v5+)
+        gcTime: 1000 * 60 * 30, 
         refetchOnWindowFocus: false,
       },
     },

@@ -2,11 +2,11 @@
 
 import React, { Suspense, useEffect } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
-import SEO from './components/SEO'; 
+import Script from 'next/script'; // 🟢 Script komponentini import qildik
+import SEO from './components/SEO';
 
-// 🟢 DIQQAT: Papka va fayl nomlari sidebar'da qanday bo'lsa, aynan shunday yozing
-// Masalan: Hero/Hero yoki Hero/hero. 
-import Hero from './components/Hero/Hero'; 
+// 🟢 Komponentlar importi
+import Hero from './components/Hero/Hero';
 import HomeMission from './components/HomeMission/HomeMission';
 import ProductionStats from './components/ProductionStats/ProductionStats';
 import CallCenter from './components/CallCenter/CallCenter';
@@ -18,9 +18,8 @@ const HomeScrollHandler = () => {
     const searchParams = useSearchParams();
 
     useEffect(() => {
-        // Hash'ni useEffect ichida olish xavfsizroq
         const hash = typeof window !== 'undefined' ? window.location.hash : '';
-        
+
         if (hash) {
             const id = hash.replace('#', '');
             const scrollToElement = () => {
@@ -32,7 +31,6 @@ const HomeScrollHandler = () => {
                 return false;
             };
 
-            // Agar element hali DOM'da yuklanmagan bo'lsa, bir necha bor urinib ko'radi
             if (!scrollToElement()) {
                 let attempts = 0;
                 const interval = setInterval(() => {
@@ -47,19 +45,20 @@ const HomeScrollHandler = () => {
                 window.scrollTo(0, 0);
             }
         }
-    }, [pathname, searchParams]); // Hash o'zgarganda yoki sahifa almashganda ishlaydi
+    }, [pathname, searchParams]);
 
     return null;
 };
 
 const Home = ({ lang = 'ru' }) => {
+    const chatbotId = "jW72KvBd2BQJgDQe98Jcv";
+
     return (
         <>
             <Suspense fallback={null}>
                 <HomeScrollHandler />
             </Suspense>
 
-            {/* SEO mantiqi saqlab qolindi */}
             <SEO
                 title="UzAuto TRAILER - Yuk mashinalari va Pritseplar | Юк машиналари ва Прицеплар"
                 description="UzAuto TRAILER (UAT) – O'zbekistonda yuk mashinalari, pritseplar va yarim tirkamalar ishlab chiqaruvchi yetakchi zavod. Sifatli texnika va zamonaviy yechimlar."
@@ -73,6 +72,37 @@ const Home = ({ lang = 'ru' }) => {
             <CallCenter lang={lang} />
             <NewsSection lang={lang} />
             <Partners lang={lang} />
+
+            {/* 🔵 CHAT AI BOT - ENG TO'G'RI VARIANT */}
+            <Script id="chatbase-init" strategy="afterInteractive">
+                {`
+                (function(){
+                    if(!window.chatbase || window.chatbase("getState") !== "initialized"){
+                        window.chatbase = (...arguments) => {
+                            if(!window.chatbase.q){window.chatbase.q=[]}
+                            window.chatbase.q.push(arguments)
+                        };
+                        window.chatbase = new Proxy(window.chatbase, {
+                            get(target, prop){
+                                if(prop === "q"){return target.q}
+                                return (...args) => target(prop, ...args)
+                            }
+                        })
+                    }
+                    window.embeddedChatbotConfig = {
+                        chatbotId: "${chatbotId}",
+                        domain: "www.chatbase.co"
+                    }
+                })()
+                `}
+            </Script>
+            <Script
+                src="https://www.chatbase.co/embed.min.js"
+                id={chatbotId}
+                domain="www.chatbase.co"
+                strategy="afterInteractive"
+                defer
+            />
         </>
     );
 };

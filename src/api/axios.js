@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 // 1. URL'ni aniqlash va EXPORT qilish (Chunki boshqa komponentlar buni ishlatyapti)
+// export const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000').replace(/\/+$/, '');
 export const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'https://api.uzautotrailer.uz').replace(/\/+$/, '');
 
 // 2. Axios instance yaratish
