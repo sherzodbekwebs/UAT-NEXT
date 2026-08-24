@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import logo from '../../assets/Logo.png';
+import ContactModal from '../ContactModal/ContactModal';
 import {
     ArrowRight, ChevronRight, Globe as GlobeIcon,
     Search, Menu as MenuIcon, X as XIcon,
@@ -143,8 +144,17 @@ const toCyrillic = (text) => {
  * Dropdown-li nav item. `isCurrent` — shu bo'limga tegishli sahifada turilganini bildiradi
  * va pastida doimiy ko'k chiziqcha (indicator) chiqadi. `open` — sichqoncha ustida
  * turilganda dropdown ochiq holatini bildiradi.
+ *
+ * `clipOverflow` — MUHIM: agar dropdown ichida yana bir darajali (nested) submenyu
+ * bo'lsa (masalan "Ishlab chiqarish" > "Sifat nazorati" > uning ichidagi sahifalar),
+ * o'sha ichki submenyu asosiy dropdownning CHAP/O'NG chegarasidan tashqariga
+ * (left-full orqali) chiqib ochiladi. Agar bu yerda overflow-hidden qo'yilsa,
+ * o'sha tashqariga chiqqan qism kesib tashlanadi va foydalanuvchiga umuman
+ * ko'rinmay qoladi — aynan shuning uchun "Sifat nazorati" ichidagi sahifalar
+ * chiqmagan edi. Shu sabab bunday nested submenyusi bor itemlar uchun
+ * clipOverflow={false} beriladi.
  */
-const NavItem = ({ label, open, isCurrent, onEnter, onLeave, children }) => (
+const NavItem = ({ label, open, isCurrent, onEnter, onLeave, clipOverflow = true, children }) => (
     <li className="relative h-full flex items-center font-bold" onMouseEnter={onEnter} onMouseLeave={onLeave}>
         <div
             role="button"
@@ -165,7 +175,13 @@ const NavItem = ({ label, open, isCurrent, onEnter, onLeave, children }) => (
         </div>
         <AnimatePresence>
             {open && (
-                <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.18, ease: 'easeOut' }} className="absolute top-full left-0 mt-3 min-w-64 bg-white shadow-[0_18px_45px_-12px_rgba(15,35,65,0.28)] rounded-3xl border border-gray-100 z-[100] overflow-hidden">
+                <motion.div
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ duration: 0.18, ease: 'easeOut' }}
+                    className={`absolute top-full left-0 mt-3 min-w-64 bg-white shadow-[0_18px_45px_-12px_rgba(15,35,65,0.28)] rounded-3xl border border-gray-100 z-[100] ${clipOverflow ? 'overflow-hidden' : ''}`}
+                >
                     {children}
                 </motion.div>
             )}
@@ -392,8 +408,8 @@ const Navbar = () => {
             <header className={`navbar-roboto-container fixed top-0 left-0 w-full z-[1000] transition-all duration-300 ${isScrolled ? 'pt-3 px-4' : 'pt-0 px-0'}`}>
                 <nav
                     className={`nav-transition mx-auto border flex items-center h-16 min-[1201px]:h-20 ${isScrolled
-                            ? 'max-w-[1500px] rounded-full bg-white/95 backdrop-blur-xl border-gray-100 shadow-2xl'
-                            : 'max-w-[1500px] rounded-full bg-white border-transparent border-b-gray-100 shadow-none border-none'
+                        ? 'max-w-[1500px] rounded-full bg-white/95 backdrop-blur-xl border-gray-100 shadow-2xl'
+                        : 'max-w-[1500px] rounded-full bg-white border-transparent border-b-gray-100 shadow-none border-none'
                         }`}
                 >
                     {/*
@@ -429,7 +445,20 @@ const Navbar = () => {
                                     </div>
                                 </NavItem>
 
-                                <NavItem label={t.production} open={activeMenu === 'prod'} isCurrent={isProdActive} onEnter={() => setActiveMenu('prod')} onLeave={() => { setActiveMenu(null); setActiveSubMenu(null); }}>
+                                {/*
+                                    MUHIM: clipOverflow={false} — bu menyu ichida "Sifat nazorati" kabi
+                                    ikkinchi darajali (nested) submenyu bor. Agar overflow-hidden qolsa,
+                                    o'sha ichki submenyu (left-full orqali o'ngga chiqadigan qism)
+                                    tashqi dropdown chegarasida kesilib, foydalanuvchiga ko'rinmaydi.
+                                */}
+                                <NavItem
+                                    label={t.production}
+                                    open={activeMenu === 'prod'}
+                                    isCurrent={isProdActive}
+                                    onEnter={() => setActiveMenu('prod')}
+                                    onLeave={() => { setActiveMenu(null); setActiveSubMenu(null); }}
+                                    clipOverflow={false}
+                                >
                                     <ul className="py-4 w-72">
                                         {t.prodItems.map((item, i) => (
                                             item.sub ? (
@@ -516,6 +545,8 @@ const Navbar = () => {
                                     )}
                                 </AnimatePresence>
                             </div>
+
+                            <ContactModal lang={lang} />
 
                             <button onClick={() => setIsMobileMenuOpen(true)} aria-label="Menu" className="min-[1201px]:hidden p-2 text-black rounded-full hover:bg-gray-50 transition-colors duration-200">
                                 <MenuIcon className="w-6 h-6" />
