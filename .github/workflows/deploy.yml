@@ -20,9 +20,8 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: 20
-        cache: 'npm' # Bu npm paketlarni keshga oladi
+        cache: 'npm'
 
-    # 1-YANGILIK: Next.js build keshini qo'shish
     - name: ⚡ Restore Next.js build cache
       uses: actions/cache@v4
       with:
@@ -33,7 +32,7 @@ jobs:
           ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
 
     - name: 📦 Install dependencies
-      run: npm ci # npm install o'rniga tezroq ishlaydi
+      run: npm ci
 
     - name: 🏗️ Build Project
       run: npm run build
@@ -46,6 +45,13 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./out/
           server-dir: ./
-          # Faqat quyidagilarni qoldiring, bular xato bermaydi:
+          # --- YANGI QO'SHILGAN OPTIMALLASHTIRISHLAR ---
+          timeout: 900000      # 15 daqiqagacha ulanishni kutadi (Timeout-ni oldini oladi)
           state-name: .ftp-deploy-sync-state.json
-          dry-run: false
+          log-level: verbose   # Jarayonni batafsil ko'rish uchun
+          dangerous-clean-slate: false # Serverdagi narsalarni o'chirmaydi
+          exclude: |           # Keraksiz fayllarni yubormaslik
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            .github/**
