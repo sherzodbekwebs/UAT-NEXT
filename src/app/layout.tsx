@@ -4,7 +4,7 @@ import AppShell from '../components/AppShell';
 import type { ReactNode } from "react";
 import Script from 'next/script';
 import { Metadata } from 'next';
-import AIChatBot from '../components/AIChatBot';
+import ChatWidget from "@/components/ChatWidget";
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const roboto = Roboto({ subsets: ['latin'], weight: ['300', '400', '500', '700', '900'], variable: '--font-roboto' });
@@ -70,6 +70,7 @@ export default function RootLayout({
       <body>
         <AppShell>{children}</AppShell>
         {/* <AIChatBot /> */}
+        {/* <ChatWidget /> */}
 
         {/* Yandex Metrika */}
         <Script id="yandex-metrika-main" strategy="afterInteractive">

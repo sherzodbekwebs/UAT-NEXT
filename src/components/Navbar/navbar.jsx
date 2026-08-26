@@ -18,6 +18,16 @@ import {
     Check
 } from 'lucide-react';
 
+// 7 ta kategoriya uchun O'ZINGIZNING rasmlaringiz — public/ papkasiga qo'ying.
+// Fayl nomini o'zgartirsangiz, shu yerdagi import yo'lini ham mos ravishda o'zgartiring.
+import tortuvchi_icon from '../../../public/tortuvchi_icon.png';
+import samosval_icon from '../../../public/samosval_icon.png';
+import furgon_icon from '../../../public/furgon_icon.png';
+import maxsus_icon from '../../../public/maxsus_icon.png';
+import shassi_icon from '../../../public/shassi_icon.png';
+import pritsep_icon from '../../../public/pritsep_icon.png';
+import mini_icon from '../../../public/mini_icon.png';
+
 import API, { API_URL } from '../../api/axios';
 import { useLanguage } from '../../context/LanguageContext';
 
@@ -37,12 +47,64 @@ const languageOptions = [
     { code: 'en', label: 'English' },
 ];
 
+
+const CategoryIcon = ({ icon, size = 22, className = '' }) => {
+    const src = icon?.src || icon;
+    return (
+        <img
+            src={src}
+            alt=""
+            className={className}
+        />
+    );
+};
+
+
+const productCategoryGroups = [
+    {
+        id: 'tractors',
+        icon: tortuvchi_icon,
+        label: { ru: 'Седельные тягачи', uz: 'Egarli tortuvchilar', en: 'Truck Tractors' }
+    },
+    {
+        id: 'dumpers',
+        icon: samosval_icon,
+        label: { ru: 'Автосамосвал', uz: 'Avtosamosvallar', en: 'Dump Trucks' }
+    },
+    {
+        id: 'vans',
+        icon: furgon_icon,
+        label: { ru: 'Фургоны и бортовые', uz: 'Furgon va bortli avtomobillar', en: 'Vans and Flatbed Trucks' }
+    },
+    {
+        id: 'special',
+        icon: maxsus_icon,
+        label: { ru: 'Специальная техника', uz: 'Maxsus texnikalar', en: 'Special Purpose Vehicles' }
+    },
+    {
+        id: 'chassis',
+        icon: shassi_icon,
+        label: { ru: 'Шасси', uz: 'Shassi', en: 'Chassis' }
+    },
+    {
+        id: 'trailers',
+        icon: pritsep_icon,
+        label: { ru: 'Прицепная техника', uz: 'Tirkama texnikalari', en: 'Towed Equipment' }
+    },
+    {
+        id: 'mini-trucks',
+        icon: mini_icon,
+        label: { ru: 'Мини-грузовики', uz: 'Mini yuk mashinalari', en: 'Mini Trucks' }
+    },
+];
+
 const translations = {
     ru: {
         about: "О компании", production: "Производство", news: "Новости", products: "Продукция",
         dealers: "Дилеры", contacts: "Контакты", videorolik: "Видеоролики",
         searchPlaceholder: "Поиск...", noResults: "Ничего не найдено",
         callUsQuery: "Есть вопросы? Звоните нам",
+        allProductsLink: "Все модели",
         staticAbout: [
             { title: "Общая информация", link: "/page/general_information" },
             { title: "История", link: "/page/history" },
@@ -71,6 +133,7 @@ const translations = {
         dealers: "Dilerlar", contacts: "Aloqa", videorolik: "Videoroliklar",
         searchPlaceholder: "Qidirish...", noResults: "Hech narsa topilmadi",
         callUsQuery: "Savollaringiz bormi? Qo'ng'iroq qiling",
+        allProductsLink: "Barcha modellar",
         staticAbout: [
             { title: "Umumiy ma'lumot", link: "/page/general_information" },
             { title: "Tarix", link: "/page/history" },
@@ -99,6 +162,7 @@ const translations = {
         dealers: "Dealers", contacts: "Contacts", videorolik: "Videos",
         searchPlaceholder: "Search...", noResults: "Nothing found",
         callUsQuery: "Have any query? Call us",
+        allProductsLink: "All models",
         staticAbout: [
             { title: "General Information", link: "/page/general_information" },
             { title: "History", link: "/page/history" },
@@ -154,7 +218,7 @@ const toCyrillic = (text) => {
  * chiqmagan edi. Shu sabab bunday nested submenyusi bor itemlar uchun
  * clipOverflow={false} beriladi.
  */
-const NavItem = ({ label, open, isCurrent, onEnter, onLeave, clipOverflow = true, children }) => (
+const NavItem = ({ label, open, isCurrent, onEnter, onLeave, clipOverflow = true, panelClassName = 'min-w-64', children }) => (
     <li className="relative h-full flex items-center font-bold" onMouseEnter={onEnter} onMouseLeave={onLeave}>
         <div
             role="button"
@@ -180,7 +244,7 @@ const NavItem = ({ label, open, isCurrent, onEnter, onLeave, clipOverflow = true
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
                     transition={{ duration: 0.18, ease: 'easeOut' }}
-                    className={`absolute top-full left-0 mt-3 min-w-64 bg-white shadow-[0_18px_45px_-12px_rgba(15,35,65,0.28)] rounded-3xl border border-gray-100 z-[100] ${clipOverflow ? 'overflow-hidden' : ''}`}
+                    className={`absolute top-full left-0 mt-3 bg-white shadow-[0_18px_45px_-12px_rgba(15,35,65,0.28)] rounded-3xl border border-gray-100 z-[100] ${panelClassName} ${clipOverflow ? 'overflow-hidden' : ''}`}
                 >
                     {children}
                 </motion.div>
@@ -203,6 +267,40 @@ const SimpleNavLink = ({ href, label, isCurrent }) => (
             )}
         </li>
     </Link>
+);
+
+/**
+ * Tesla navbaridagi "Vehicles" hover-menyusiga o'xshash mega-panel:
+ * har bir kategoriya uchun icon (doira ichida) + nom, gridda joylashgan.
+ * Bosilganda /products?category=<id> ga olib boradi.
+ */
+const ProductsMegaPanel = ({ groups, getCategoryLabel, allLabel, isPathActiveCategory, onNavigate }) => (
+    <div className="p-6 w-[92vw] max-w-[760px]">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {groups.map((group) => {
+                const active = isPathActiveCategory(group.id);
+                return (
+                    <Link key={group.id} href={`/products?category=${group.id}`} onClick={onNavigate}>
+                        <div className={`flex flex-col items-center text-center gap-2.5 px-3 py-4 rounded-2xl transition-all duration-200 cursor-pointer ${active ? 'bg-blue-50' : 'hover:bg-gray-50'}`}>
+                            <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${active ? 'bg-[#0061A4] text-white' : 'bg-blue-50 text-[#0061A4]'}`}>
+                                <CategoryIcon icon={group.icon} size={30} />
+                            </div>
+                            <span className={`text-[12.5px] font-bold leading-tight ${active ? 'text-[#0061A4]' : 'text-[#1a2e44]'}`}>
+                                {getCategoryLabel(group)}
+                            </span>
+                        </div>
+                    </Link>
+                );
+            })}
+        </div>
+        <div className="mt-3 pt-3 border-t border-gray-100 flex justify-center">
+            <Link href="/products" onClick={onNavigate}>
+                <span className="inline-flex items-center gap-1.5 text-[13px] font-bold text-[#0061A4] hover:gap-2.5 transition-all px-4 py-2 rounded-full hover:bg-blue-50">
+                    {allLabel} <ArrowRight size={14} />
+                </span>
+            </Link>
+        </div>
+    </div>
 );
 
 const SearchResults = ({ suggestions, t, getLangField, handleResultClick }) => (
@@ -282,6 +380,7 @@ const Navbar = () => {
 
     const router = useRouter();
     const pathname = usePathname();
+    const searchParamsString = typeof window !== 'undefined' ? window.location.search : '';
     const dropdownRef = useRef(null);
     const searchWrapperRef = useRef(null);
     const t = translations[lang] || translations.ru;
@@ -304,6 +403,8 @@ const Navbar = () => {
         const currentSuffix = lang.charAt(0).toUpperCase() + lang.slice(1);
         return obj[`${field}${currentSuffix}`] || obj[`${field}Ru`] || obj[`${field}Uz`] || obj[`${field}En`] || "";
     };
+
+    const getCategoryLabel = (group) => group.label[lang] || group.label.ru;
 
     useEffect(() => {
         const query = searchTerm.trim().toLowerCase();
@@ -343,13 +444,27 @@ const Navbar = () => {
     // --- Joriy sahifani aniqlash mantig'i ---
     const isPathActive = (href) => pathname === href || pathname?.startsWith(href + '/');
 
+    // Mahsulotlar mega-menyusida qaysi kategoriya joriy ekanini aniqlash uchun
+    // (pathname /products bo'lishi va URL'dagi ?category= shu group id'ga teng bo'lishi kerak)
+    const isCategoryActive = (groupId) => {
+        if (pathname !== '/products') return false;
+        try {
+            const params = new URLSearchParams(searchParamsString);
+            return params.get('category') === groupId;
+        } catch {
+            return false;
+        }
+    };
+    const isProductsActive = pathname === '/products' || pathname?.startsWith('/product/');
+
     const prodLinks = t.prodItems.flatMap(item => item.sub ? item.sub.map(s => s.link) : [item.link]);
     const isAboutActive = fullAboutItems.some(item => isPathActive(item.link));
     const isProdActive = prodLinks.some(link => isPathActive(link));
 
-    const simpleLinks = [
+    const simpleLinksBefore = [
         { href: '/news', label: t.news, icon: Info },
-        { href: '/products', label: t.products, icon: Package },
+    ];
+    const simpleLinksAfter = [
         { href: '/dealers', label: t.dealers, icon: MapPin },
         { href: '/videos', label: t.videorolik, icon: PlayCircle },
         { href: '/contacts', label: t.contacts, icon: Phone },
@@ -429,7 +544,7 @@ const Navbar = () => {
                         {/* DESKTOP MENU */}
                         <div className="hidden min-[1201px]:flex flex-1 justify-center h-full">
                             <ul className="flex items-center gap-x-6 xl:gap-x-8 text-[#1a2e44] font-semibold text-[15px] xl:text-[16px] h-full whitespace-nowrap">
-                                <NavItem label={t.about} open={activeMenu === 'about'} isCurrent={isAboutActive} onEnter={() => setActiveMenu('about')} onLeave={() => setActiveMenu(null)}>
+                                <NavItem label={t.about} open={activeMenu === 'about'} isCurrent={isAboutActive} onEnter={() => setActiveMenu('about')} onLeave={() => setActiveMenu(null)} panelClassName="min-w-64">
                                     <div className="p-8 bg-white w-[600px] grid grid-cols-2 gap-x-8 gap-y-2">
                                         {fullAboutItems.map((item, i) => {
                                             const active = isPathActive(item.link);
@@ -458,6 +573,7 @@ const Navbar = () => {
                                     onEnter={() => setActiveMenu('prod')}
                                     onLeave={() => { setActiveMenu(null); setActiveSubMenu(null); }}
                                     clipOverflow={false}
+                                    panelClassName="min-w-64"
                                 >
                                     <ul className="py-4 w-72">
                                         {t.prodItems.map((item, i) => (
@@ -492,7 +608,29 @@ const Navbar = () => {
                                     </ul>
                                 </NavItem>
 
-                                {simpleLinks.map((l) => (
+                                {simpleLinksBefore.map((l) => (
+                                    <SimpleNavLink key={l.href} href={l.href} label={l.label} isCurrent={isPathActive(l.href)} />
+                                ))}
+
+                                {/* MAHSULOTLAR — Tesla "Vehicles" uslubidagi mega-dropdown, 7 ta kategoriya + icon */}
+                                <NavItem
+                                    label={t.products}
+                                    open={activeMenu === 'products'}
+                                    isCurrent={isProductsActive}
+                                    onEnter={() => setActiveMenu('products')}
+                                    onLeave={() => setActiveMenu(null)}
+                                    panelClassName="left-1/2 -translate-x-1/2 min-w-64"
+                                >
+                                    <ProductsMegaPanel
+                                        groups={productCategoryGroups}
+                                        getCategoryLabel={getCategoryLabel}
+                                        allLabel={t.allProductsLink}
+                                        isPathActiveCategory={isCategoryActive}
+                                        onNavigate={() => setActiveMenu(null)}
+                                    />
+                                </NavItem>
+
+                                {simpleLinksAfter.map((l) => (
                                     <SimpleNavLink key={l.href} href={l.href} label={l.label} isCurrent={isPathActive(l.href)} />
                                 ))}
                             </ul>
@@ -556,20 +694,6 @@ const Navbar = () => {
                 </nav>
             </header>
 
-            {/*
-                SPACER: header `fixed` bo'lgani uchun sahifa oqimidan chiqadi — shuning uchun undan keyingi
-                content navbar ostiga yashirinib qolmasligi uchun aynan shuncha joy band qilinadi.
-                Qiymatlar navbar balandligi (h-16/h-20) + skrolda qo'shiladigan pt-4 (16px) bilan ANIQ mos:
-                h-16 (64px) + 16px = h-20 (80px); h-20 (80px) + 16px = h-24 (96px).
-                Shu sababli scroll paytida ortiqcha oq bo'shliq yoki content sakrashi bo'lmaydi.
-                ESLATMA: agar sahifangizda Navbar tagida qo'lda qo'yilgan pt-20 / mt-20 kabi bo'shliq bo'lsa,
-                uni olib tashlang — endi shu spacer o'zi kifoya.
-            */}
-            {/* <div
-                aria-hidden="true"
-                className={`w-full transition-all duration-300 ${isScrolled ? 'h-20 min-[1201px]:h-24' : 'h-16 min-[1201px]:h-20'}`}
-            /> */}
-
             <AnimatePresence>
                 {isMobileMenuOpen && (
                     <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: "spring", damping: 25 }} className="navbar-roboto-container fixed inset-0 bg-white z-[9999] min-[1201px]:hidden flex flex-col">
@@ -603,7 +727,39 @@ const Navbar = () => {
                                         </div>
                                     ))}
                                 </MobileNavItem>
-                                {simpleLinks.map((l) => (
+
+                                {simpleLinksBefore.map((l) => (
+                                    <SimpleMobileLink key={l.href} href={l.href} icon={l.icon} label={l.label} isCurrent={isPathActive(l.href)} onClick={() => setIsMobileMenuOpen(false)} />
+                                ))}
+
+                                {/* MAHSULOTLAR — mobil accordion, har bir kategoriya o'z icon'i bilan */}
+                                <MobileNavItem icon={Package} label={t.products} isOpen={mobileAccordion === 'products'} isCurrent={isProductsActive} onClick={() => setMobileAccordion(mobileAccordion === 'products' ? null : 'products')}>
+                                    <div className="grid grid-cols-2 gap-2 py-1">
+                                        {productCategoryGroups.map((group) => {
+                                            const active = isCategoryActive(group.id);
+                                            return (
+                                                <Link
+                                                    key={group.id}
+                                                    href={`/products?category=${group.id}`}
+                                                    onClick={() => setIsMobileMenuOpen(false)}
+                                                    className={`flex flex-col items-center text-center gap-2 px-2 py-3 rounded-xl transition-all ${active ? 'bg-blue-100/60' : 'hover:bg-white'}`}
+                                                >
+                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${active ? 'bg-[#0061A4] text-white' : 'bg-white text-[#0061A4]'}`}>
+                                                        <CategoryIcon icon={group.icon} size={18} />
+                                                    </div>
+                                                    <span className={`text-[11px] font-bold leading-tight ${active ? 'text-[#0061A4]' : 'text-gray-600'}`}>
+                                                        {getCategoryLabel(group)}
+                                                    </span>
+                                                </Link>
+                                            );
+                                        })}
+                                    </div>
+                                    <Link href="/products" onClick={() => setIsMobileMenuOpen(false)} className="mt-2 flex items-center justify-center gap-1.5 text-[13px] font-bold text-[#0061A4] py-2">
+                                        {t.allProductsLink} <ArrowRight size={14} />
+                                    </Link>
+                                </MobileNavItem>
+
+                                {simpleLinksAfter.map((l) => (
                                     <SimpleMobileLink key={l.href} href={l.href} icon={l.icon} label={l.label} isCurrent={isPathActive(l.href)} onClick={() => setIsMobileMenuOpen(false)} />
                                 ))}
                             </div>

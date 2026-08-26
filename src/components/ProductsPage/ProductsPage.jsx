@@ -366,6 +366,16 @@ const ProductsPageContent = () => {
         }
     }, [loading, totalPages, currentPage]);
 
+    useEffect(() => {
+        const categoryParam = searchParams.get('category') || 'all';
+        const brandParam = searchParams.get('brand') || 'all';
+        const pageParam = Number(searchParams.get('page')) || 1;
+
+        setActiveCategory(prev => (prev !== categoryParam ? categoryParam : prev));
+        setActiveBrand(prev => (prev !== brandParam ? brandParam : prev));
+        setCurrentPage(prev => (prev !== pageParam ? pageParam : prev));
+    }, [searchParams]);
+
     const toggleGroup = (groupId) => {
         setExpandedGroups(prev => {
             // Agar bir vaqtda faqat bitta guruh ochiq turishini xohlasangiz:
