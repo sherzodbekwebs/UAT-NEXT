@@ -1,4 +1,4 @@
-name: Deploy Next.js to cPanel
+name: Deploy Next.js via SFTP SSH
 
 on:
   push:
@@ -10,6 +10,7 @@ jobs:
     name: 🎉 Deploy
     runs-on: ubuntu-latest
     env:
+      # Build vaqtida API manzili kerak bo'lsa:
       NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
 
     steps:
@@ -37,20 +38,21 @@ jobs:
     - name: 🏗️ Build Project
       run: npm run build
 
-    - name: 📂 Sync files to cPanel
-      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+    - name: 📂 Sync files via SSH (SFTP)
+      uses: easingthemes/ssh-deploy@main
       with:
-              server: ${{ secrets.FTP_SERVER }}
-              username: ${{ secrets.FTP_USERNAME }}
-              password: ${{ secrets.FTP_PASSWORD }}
-              local-dir: ./out/
-              server-dir: public_html/  
-              timeout: 600000            
-              state-name: .ftp-deploy-sync-state.json
-              # Yangi qo'shimchalar:
-              exclude: |
-                **/.git*
-                **/.git*/**
-                **/node_modules/**
-                .github/**
-                .next/**         
+          # GitHub Secrets-da yaratgan SSH Private Key-ingiz
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          # Agar kalit yaratishda parol qo'ygan bo'lsangiz:
+          SSH_PASSPHRASE: ${{ secrets.SSH_PASSPHRASE }} 
+          # Server ma'lumotlari
+          REMOTE_HOST: ${{ secrets.FTP_SERVER }}   # uz04.ahost.uz
+          REMOTE_USER: ${{ secrets.FTP_USERNAME }} # uzautotr
+          REMOTE_PORT: 22                          # Standart SSH porti
+          # Qayerdan va qayerga yuklash
+          SOURCE: "out/"                           # Build papkasi
+          TARGET: "/home/uzautotr/public_html/"    # Serverdagi aniq yo'l
+          # rsync parametrlari (Faqat o'zgargan fayllarni juda tez yuklaydi)
+          ARGS: "-rlgoDzvc -i --delete" 
+          # Keraksiz papkalarni chetlab o'tish
+          EXCLUDE: "/node_modules/, /.git/, /.github/"
