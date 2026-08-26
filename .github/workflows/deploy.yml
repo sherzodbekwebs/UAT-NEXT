@@ -44,21 +44,13 @@ jobs:
               username: ${{ secrets.FTP_USERNAME }}
               password: ${{ secrets.FTP_PASSWORD }}
               local-dir: ./out/
-              server-dir: ./public_html/  # Odatda cPanel-da public_html bo'ladi, buni tekshiring
-              # --- OPTIMALLASHTIRISH ---
-              port: 21
-              # Ba'zi serverlar "state" faylini o'qishda xatolik beradi, 
-              # ulanish uzilaversa buni vaqtinchalik o'chirib turing:
-              # state-name: .ftp-deploy-sync-state.json 
-              
-              # ECONNRESET-ni oldini olish uchun asosiy parametrlar:
-              timeout: 120000 # 2 daqiqa
-              # Agar fayllar ko'p bo'lsa, bir vaqtning o'zida hammasini jo'natishga urinmasligi uchun:
-              # (Bu action-da parallel limit yo'q, lekin quyidagilar yordam beradi)
-              dangerous-clean-slate: false
+              server-dir: public_html/  
+              timeout: 600000            
+              state-name: .ftp-deploy-sync-state.json
+              # Yangi qo'shimchalar:
               exclude: |
                 **/.git*
                 **/.git*/**
                 **/node_modules/**
                 .github/**
-                .next/cache/**
+                .next/**         
