@@ -40,12 +40,12 @@ jobs:
     - name: 📂 Deploy via SSH
       uses: easingthemes/ssh-deploy@main
       env:
-        SSH_PASSPHRASE: ${{ secrets.SSH_PASSPHRASE }} # Bu faqat env-da ishlaydi
+        SSH_PASSPHRASE: ${{ secrets.SSH_PASSPHRASE }}
       with:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         REMOTE_HOST: ${{ secrets.FTP_SERVER }}
         REMOTE_USER: ${{ secrets.FTP_USERNAME }}
-        REMOTE_PORT: 22 # AGAR "CONNECTION REFUSED" CHIQSA, SHUNI O'ZGARTIRING
+        REMOTE_PORT: 30151  # <--- SIZGA AYTILGAN YANGI PORT
         SOURCE: "out/"
         TARGET: "/home/uzautotr/public_html/"
         ARGS: "-rlgoDzvc -i --delete"
