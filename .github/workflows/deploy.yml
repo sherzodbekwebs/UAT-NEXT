@@ -37,15 +37,13 @@ jobs:
     - name: 🏗️ Build Project
       run: npm run build
 
-    - name: 📂 Deploy via SSH
-      uses: easingthemes/ssh-deploy@main
-      env:
-        SSH_PASSPHRASE: ${{ secrets.SSH_PASSPHRASE }}
+    - name: 📂 Deploy via SCP (SSH)
+      uses: appleboy/scp-action@master
       with:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        REMOTE_HOST: ${{ secrets.FTP_SERVER }}
-        REMOTE_USER: ${{ secrets.FTP_USERNAME }}
-        REMOTE_PORT: 30151  # <--- SIZGA AYTILGAN YANGI PORT
-        SOURCE: "out/"
-        TARGET: "/home/uzautotr/public_html/"
-        ARGS: "-rlgoDzvc -i --delete"
+            host: ${{ secrets.FTP_SERVER }}
+            username: ${{ secrets.FTP_USERNAME }}
+            key: ${{ secrets.SSH_PRIVATE_KEY }}
+            port: 30151
+            source: "out/*"
+            target: "/home/uzautotr/public_html/"
+            strip_components: 1 # out papkasining o'zini emas, ichidagilarni yuklaydi
