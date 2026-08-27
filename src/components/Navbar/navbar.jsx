@@ -20,13 +20,13 @@ import {
 
 // 7 ta kategoriya uchun O'ZINGIZNING rasmlaringiz — public/ papkasiga qo'ying.
 // Fayl nomini o'zgartirsangiz, shu yerdagi import yo'lini ham mos ravishda o'zgartiring.
-import tortuvchi_icon from '../../../public/tortuvchi_icon.png';
-import samosval_icon from '../../../public/samosval_icon.png';
-import furgon_icon from '../../../public/furgon_icon.png';
-import maxsus_icon from '../../../public/maxsus_icon.png';
-import shassi_icon from '../../../public/shassi_icon.png';
-import pritsep_icon from '../../../public/pritsep_icon.png';
-import mini_icon from '../../../public/mini_icon.png';
+import tortuvchi_icon from '../../../public/tortuvchi_icon.webp';
+import samosval_icon from '../../../public/samosval_icon.webp';
+import furgon_icon from '../../../public/furgon_icon.webp';
+import maxsus_icon from '../../../public/maxsus_icon.webp';
+import shassi_icon from '../../../public/shassi_icon.webp';
+import pritsep_icon from '../../../public/pritsep_icon.webp';
+import mini_icon from '../../../public/mini_icon.webp';
 
 import API, { API_URL } from '../../api/axios';
 import { useLanguage } from '../../context/LanguageContext';

@@ -47,4 +47,4 @@ jobs:
             port: 30151
             source: "out/*"
             target: "/home/uzautotr/public_html/"
-            strip_components: 1
+            strip_components: 1/">>>>>>>>>"
