@@ -43,8 +43,8 @@ jobs:
             host: ${{ secrets.FTP_SERVER }}
             username: ${{ secrets.FTP_USERNAME }}
             key: ${{ secrets.SSH_PRIVATE_KEY }}
-            passphrase: ${{ secrets.SSH_PASSPHRASE }} # SHU QATORNI QO'SHING
+            passphrase: ${{ secrets.SSH_PASSPHRASE }}
             port: 30151
             source: "out/*"
             target: "/home/uzautotr/public_html/"
-            strip_components: 1/">>>>>>>>>"
+            strip_components: 1
