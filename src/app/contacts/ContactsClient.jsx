@@ -99,6 +99,8 @@ const translations = {
     }
 };
 
+const ACCENT = '#0061A4';
+
 const ContactsClient = () => {
     const { lang } = useLanguage();
     const t = translations[lang] || translations.ru;
@@ -107,8 +109,8 @@ const ContactsClient = () => {
     const [loading, setLoading] = useState(false);
     const [phoneError, setPhoneError] = useState(false);
 
-    useEffect(() => { 
-        if (typeof window !== 'undefined') window.scrollTo(0, 0); 
+    useEffect(() => {
+        if (typeof window !== 'undefined') window.scrollTo(0, 0);
     }, []);
 
     const handlePhoneChange = (e) => {
@@ -172,10 +174,10 @@ const ContactsClient = () => {
     };
 
     const socialLinks = [
-        { name: "Telegram", url: "https://t.me/uatproductsbot", icon: <TelegramIcon size={24} />, brandColor: "#229ED9" },
-        { name: "Instagram", url: "https://www.instagram.com/uzautotrailer_official", icon: <Instagram size={24} />, brandColor: "#E1306C" },
-        { name: "Facebook", url: "https://www.facebook.com/UzAutoTrailerofficial", icon: <Facebook size={24} />, brandColor: "#1877F2" },
-        { name: "YouTube", url: "https://www.youtube.com/@UzAutoTrailer/videos", icon: <Youtube size={24} />, brandColor: "#FF0000" }
+        { name: "Telegram", url: "https://t.me/uatproductsbot", icon: <TelegramIcon size={22} />, brandColor: "#229ED9" },
+        { name: "Instagram", url: "https://www.instagram.com/uzautotrailer_official", icon: <Instagram size={22} />, brandColor: "#E1306C" },
+        { name: "Facebook", url: "https://www.facebook.com/UzAutoTrailerofficial", icon: <Facebook size={22} />, brandColor: "#1877F2" },
+        { name: "YouTube", url: "https://www.youtube.com/@UzAutoTrailer/videos", icon: <Youtube size={22} />, brandColor: "#FF0000" }
     ];
 
     const mapUrls = {
@@ -184,91 +186,189 @@ const ContactsClient = () => {
     };
 
     return (
-        <div className="pt-10 pb-20 bg-[#F8FAFC] font-inter text-[#1a2e44]">
+        <div className="pt-12 pb-24 bg-[#F7F9FB] font-inter text-[#101828]">
             <style>{`
                 @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
                 .shake-input { animation: shake 0.2s ease-in-out 0s 2; }
             `}</style>
 
-            <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
-                <div className="text-center mb-16 space-y-4">
-                    <motion.h1 initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="text-4xl lg:text-6xl font-bold tracking-tight">
+            <div className="max-w-[1320px] mx-auto px-6 lg:px-10">
+                <div className="text-center mb-14 max-w-2xl mx-auto">
+                    <motion.h1
+                        initial={{ opacity: 0, y: 14 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-4xl lg:text-[52px] font-semibold tracking-tight leading-[1.05]"
+                    >
                         {t.title}
                     </motion.h1>
-                    <p className="text-gray-500 text-lg max-w-2xl mx-auto">{t.subtitle}</p>
+                    <p className="text-gray-500 text-[17px] leading-relaxed mt-4">{t.subtitle}</p>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                     {/* LEFT COLUMN */}
                     <div className="lg:col-span-7 space-y-6">
-                        <div className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm space-y-6">
-                            <div className="flex items-center gap-4">
-                                <div className="w-11 h-11 rounded-2xl bg-[#0061A4] flex items-center justify-center text-white shadow-lg"><MapPin size={22} /></div>
-                                <h3 className="text-lg font-bold tracking-wider">{t.our_address}</h3>
+                        <div className="bg-white p-7 lg:p-8 rounded-[26px] border border-gray-100 shadow-[0_1px_2px_rgba(16,24,40,0.04)] space-y-6">
+                            <div className="flex items-center justify-between flex-wrap gap-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white" style={{ backgroundColor: ACCENT }}>
+                                        <MapPin size={19} />
+                                    </div>
+                                    <h3 className="text-base font-semibold">{t.our_address}</h3>
+                                </div>
+                                <div className="flex items-center gap-2 bg-gray-50 rounded-full p-1">
+                                    <button
+                                        onClick={() => setActiveLocation('tashkent')}
+                                        className={`px-4 py-1.5 rounded-full text-[12px] font-medium transition-all ${activeLocation === 'tashkent' ? 'bg-white shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                                        style={activeLocation === 'tashkent' ? { color: ACCENT } : undefined}
+                                    >
+                                        {t.headOffice}
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveLocation('samarkand')}
+                                        className={`px-4 py-1.5 rounded-full text-[12px] font-medium transition-all ${activeLocation === 'samarkand' ? 'bg-white shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                                        style={activeLocation === 'samarkand' ? { color: ACCENT } : undefined}
+                                    >
+                                        {t.production}
+                                    </button>
+                                </div>
                             </div>
-                            <div className="flex gap-3">
-                                <button onClick={() => setActiveLocation('tashkent')} className={`px-6 py-2 rounded-xl text-[10px] font-bold tracking-widest transition-all ${activeLocation === 'tashkent' ? 'bg-[#0061A4] text-white' : 'bg-gray-50 text-gray-400'}`}>{t.headOffice}</button>
-                                <button onClick={() => setActiveLocation('samarkand')} className={`px-6 py-2 rounded-xl text-[10px] font-bold tracking-widest transition-all ${activeLocation === 'samarkand' ? 'bg-[#0061A4] text-white' : 'bg-gray-50 text-gray-400'}`}>{t.production}</button>
-                            </div>
-                            <p className="text-gray-600 text-base">{activeLocation === 'tashkent' ? t.tashkent : t.samarkand}</p>
-                            <div className="flex gap-3">
-                                <a href={activeLocation === 'tashkent' ? "https://yandex.uz/maps/org/234745806070/" : "https://yandex.uz/maps/org/242429445745/"} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest"><ExternalLink size={14} /> {t.view_map}</a>
-                                <button onClick={() => copyToClipboard(activeLocation === 'tashkent' ? t.tashkent : t.samarkand)} className="flex items-center gap-2 px-6 py-3 bg-gray-50 text-gray-500 rounded-xl text-[10px] font-bold uppercase tracking-widest border border-gray-100"><Copy size={14} /> {t.copy}</button>
+
+                            <AnimatePresence mode="wait">
+                                <motion.p
+                                    key={activeLocation}
+                                    initial={{ opacity: 0, y: 4 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0 }}
+                                    className="text-gray-600 leading-relaxed text-[15px]"
+                                >
+                                    {activeLocation === 'tashkent' ? t.tashkent : t.samarkand}
+                                </motion.p>
+                            </AnimatePresence>
+
+                            <div className="flex items-center gap-3 flex-wrap">
+                                <a
+                                    href={activeLocation === 'tashkent' ? "https://yandex.uz/maps/org/234745806070/" : "https://yandex.uz/maps/org/242429445745/"}
+                                    target="_blank" rel="noreferrer"
+                                    className="flex items-center gap-2 px-5 py-2.5 text-white rounded-xl text-[13px] font-medium hover:opacity-90 transition-opacity"
+                                    style={{ backgroundColor: ACCENT }}
+                                >
+                                    <ExternalLink size={14} /> {t.view_map}
+                                </a>
+                                <button
+                                    onClick={() => copyToClipboard(activeLocation === 'tashkent' ? t.tashkent : t.samarkand)}
+                                    className="flex items-center gap-2 px-5 py-2.5 bg-gray-50 text-gray-500 rounded-xl text-[13px] font-medium hover:bg-gray-100 transition-colors"
+                                >
+                                    <Copy size={14} /> {t.copy}
+                                </button>
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm space-y-4">
-                                <div className="flex items-center gap-3 text-gray-400 font-semibold text-[10px] uppercase tracking-widest"><Phone size={14} className="text-[#0061A4]" /> {t.callCenter}</div>
-                                <a href="tel:+998712023223" className="text-xl font-bold block">+998 71 202 32 23</a>
-                                <a href="tel:+998712028866" className="text-xl font-bold block">+998 71 202 88 66</a>
+                            <div className="bg-white p-7 rounded-[26px] border border-gray-100 shadow-[0_1px_2px_rgba(16,24,40,0.04)] space-y-4">
+                                <div className="flex items-center gap-2.5 text-gray-400 font-medium text-[13px]">
+                                    <Phone size={15} style={{ color: ACCENT }} /> {t.callCenter}
+                                </div>
+                                <div className="space-y-1.5">
+                                    <a href="tel:+998712023223" className="text-xl font-semibold hover:opacity-70 transition-opacity block">+998 71 202 32 23</a>
+                                    <a href="tel:+998712028866" className="text-xl font-semibold hover:opacity-70 transition-opacity block">+998 71 202 88 66</a>
+                                </div>
                             </div>
-                            <div className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm space-y-4">
-                                <div className="flex items-center gap-3 text-gray-400 font-semibold text-[10px] uppercase tracking-widest"><Mail size={14} className="text-[#0061A4]" /> Email</div>
-                                <a href="mailto:info@trailer.uz" className="text-xl font-bold block">info@trailer.uz</a>
-                                <a href="mailto:marketing@trailer.uz" className="text-xl font-bold block">marketing@trailer.uz</a>
+                            <div className="bg-white p-7 rounded-[26px] border border-gray-100 shadow-[0_1px_2px_rgba(16,24,40,0.04)] space-y-4">
+                                <div className="flex items-center gap-2.5 text-gray-400 font-medium text-[13px]">
+                                    <Mail size={15} style={{ color: ACCENT }} /> Email
+                                </div>
+                                <div className="space-y-1.5">
+                                    <a href="mailto:info@trailer.uz" className="text-xl font-semibold hover:opacity-70 transition-opacity block">info@trailer.uz</a>
+                                    <a href="mailto:marketing@trailer.uz" className="text-xl font-semibold hover:opacity-70 transition-opacity block">marketing@trailer.uz</a>
+                                </div>
                             </div>
                         </div>
 
-                        <div className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm space-y-6">
-                            <div className="flex items-center gap-3 text-gray-400 font-semibold text-[10px] uppercase tracking-widest"><Clock size={14} className="text-[#0061A4]" /> {t.workHours}</div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="flex justify-between border-b border-gray-50 pb-2"><span className="text-sm text-gray-500">{t.weekdays_title}</span><span className="font-bold">{t.weekdays_time}</span></div>
-                                <div className="flex justify-between border-b border-gray-50 pb-2"><span className="text-sm text-gray-500">{t.weekend}</span><span className="font-bold text-red-500 uppercase text-xs">{t.closed}</span></div>
+                        <div className="bg-white p-7 rounded-[26px] border border-gray-100 shadow-[0_1px_2px_rgba(16,24,40,0.04)] space-y-5">
+                            <div className="flex items-center gap-2.5 text-gray-400 font-medium text-[13px]">
+                                <Clock size={15} style={{ color: ACCENT }} /> {t.workHours}
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+                                <div className="flex justify-between items-center py-2.5 border-b border-gray-50">
+                                    <span className="text-gray-500 text-sm">{t.weekdays_title}</span>
+                                    <span className="font-semibold text-sm">{t.weekdays_time}</span>
+                                </div>
+                                <div className="flex justify-between items-center py-2.5 border-b border-gray-50">
+                                    <span className="text-gray-500 text-sm">{t.weekend}</span>
+                                    <span className="font-semibold text-sm text-red-500">{t.closed}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     {/* RIGHT COLUMN: FORM */}
                     <div className="lg:col-span-5">
-                        <div className="bg-white p-8 lg:p-10 rounded-[40px] border border-gray-100 shadow-sm sticky top-32">
-                            <h3 className="text-2xl font-bold mb-8">{t.form_title}</h3>
-                            <form className="space-y-6" onSubmit={handleSubmit}>
+                        <div className="bg-white p-7 lg:p-9 rounded-[28px] border border-gray-100 shadow-[0_20px_45px_-20px_rgba(16,24,40,0.12)] lg:sticky lg:top-28">
+                            <h3 className="text-xl font-semibold mb-7">{t.form_title}</h3>
+                            <form className="space-y-5" onSubmit={handleSubmit}>
                                 <div>
-                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">{t.name_label}</label>
-                                    <input required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full p-4 bg-gray-50 border-none rounded-2xl outline-none text-black text-sm mt-1" />
+                                    <label className="text-[13px] font-medium text-gray-500">{t.name_label}</label>
+                                    <input
+                                        required
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        className="w-full p-3.5 bg-gray-50 border border-transparent rounded-xl focus:border-[#0061A4]/30 focus:ring-4 focus:ring-[#0061A4]/10 focus:bg-white outline-none transition-all text-[15px] mt-1.5"
+                                    />
                                 </div>
                                 <div className="relative">
-                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">{t.phone_label}</label>
-                                    <AnimatePresence>{phoneError && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute -top-6 right-0 bg-red-500 text-white text-[9px] px-2 py-0.5 rounded font-bold uppercase">{t.phoneError}</motion.div>}</AnimatePresence>
-                                    <input required value={formData.phone} onChange={handlePhoneChange} className={`w-full p-4 bg-gray-50 border transition-all rounded-2xl outline-none text-black text-sm mt-1 ${phoneError ? 'border-red-400 shake-input' : 'border-transparent'}`} />
+                                    <label className="text-[13px] font-medium text-gray-500">{t.phone_label}</label>
+                                    <AnimatePresence>
+                                        {phoneError && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                                                className="absolute -top-2 right-0 bg-red-500 text-white text-[11px] px-2.5 py-1 rounded-md font-medium shadow-sm z-20"
+                                            >
+                                                {t.phoneError}
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                    <input
+                                        required
+                                        value={formData.phone}
+                                        onChange={handlePhoneChange}
+                                        className={`w-full p-3.5 bg-gray-50 rounded-xl outline-none transition-all text-[15px] mt-1.5 border ${phoneError ? 'border-red-300 shake-input' : 'border-transparent focus:border-[#0061A4]/30 focus:ring-4 focus:ring-[#0061A4]/10 focus:bg-white'}`}
+                                    />
                                 </div>
                                 <div>
-                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">{t.msg_label}</label>
-                                    <textarea required rows={4} value={formData.message} onChange={(e) => setFormData({ ...formData, message: e.target.value })} className="w-full p-4 bg-gray-50 border-none rounded-2xl outline-none text-black text-sm mt-1 resize-none" placeholder={t.msg_placeholder}></textarea>
+                                    <label className="text-[13px] font-medium text-gray-500">{t.msg_label}</label>
+                                    <textarea
+                                        required
+                                        rows={4}
+                                        value={formData.message}
+                                        onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                                        className="w-full p-3.5 bg-gray-50 border border-transparent rounded-xl focus:border-[#0061A4]/30 focus:ring-4 focus:ring-[#0061A4]/10 focus:bg-white outline-none transition-all text-[15px] mt-1.5 resize-none"
+                                        placeholder={t.msg_placeholder}
+                                    ></textarea>
                                 </div>
-                                <button type="submit" disabled={loading} className="w-full py-5 bg-[#0061A4] text-white rounded-2xl font-bold uppercase tracking-widest text-[11px] shadow-lg shadow-blue-900/10 hover:bg-[#004A7D] disabled:opacity-70 transition-all flex items-center justify-center gap-3">
+                                <motion.button
+                                    whileTap={{ scale: 0.98 }}
+                                    type="submit"
+                                    disabled={loading}
+                                    className="w-full py-4 text-white rounded-xl font-semibold text-[14px] transition-opacity hover:opacity-90 flex items-center justify-center gap-2.5 disabled:opacity-60"
+                                    style={{ backgroundColor: ACCENT }}
+                                >
                                     {loading ? t.sending_btn : <><Send size={16} /> {t.send_btn}</>}
-                                </button>
+                                </motion.button>
                             </form>
                         </div>
                     </div>
                 </div>
 
-                <div className="mt-20 space-y-8 text-center">
-                    <h2 className="text-xl font-bold uppercase tracking-widest text-gray-400">{t.map_title}</h2>
-                    <div className="bg-white p-3 rounded-[40px] border border-gray-100 shadow-sm h-[500px] overflow-hidden">
-                        <iframe src={mapUrls[activeLocation]} className="w-full h-full rounded-[32px] grayscale-[0.1]" style={{ border: 0 }} allowFullScreen="" loading="lazy"></iframe>
+                <div className="mt-20 space-y-6 text-center">
+                    <h2 className="text-lg font-semibold text-gray-700">{t.map_title}</h2>
+                    <div className="bg-white p-2 rounded-[28px] border border-gray-100 shadow-[0_1px_2px_rgba(16,24,40,0.04)] h-[460px] overflow-hidden">
+                        <iframe
+                            src={mapUrls[activeLocation]}
+                            className="w-full h-full rounded-[22px]"
+                            style={{ border: 0 }}
+                            allowFullScreen=""
+                            loading="lazy"
+                        ></iframe>
                     </div>
                 </div>
             </div>

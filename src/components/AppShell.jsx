@@ -38,7 +38,7 @@ export default function AppShell({ children }) {
               {children}
             </main>
             <Footer />
-            <ContactModal />
+            {/* <ContactModal /> */}
             <ScrollToTop />
             <Toaster position="top-center" reverseOrder={false} />
           </div>

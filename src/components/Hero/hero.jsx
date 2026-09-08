@@ -11,6 +11,10 @@ import staticslayd from '../../../public/staticslayder.webp';
 
 const AUTOPLAY_MS = 7000;
 
+// 🔧 Navbar balandligi shu yerda belgilanadi (headeringiz balandligiga moslang)
+const NAVBAR_HEIGHT_LG = 96; // px, katta ekranlar uchun
+const NAVBAR_HEIGHT_SM = 72; // px, kichik ekranlar uchun (agar kerak bo'lsa)
+
 const translations = {
     uz: {
         seoTitle: "UzAuto TRAILER — Yarim tirkamalar va maxsus texnikalar ishlab chiqaruvchisi",
@@ -76,6 +80,14 @@ const translations = {
         ]
     }
 };
+
+// 🔧 Overlay quvvati shu yerdan boshqariladi — kerak bo'lsa shu qiymatlarni o'zgartiring
+// Matn o'qilishi uchun juda yengil overlay (rasm deyarli ochiq qoladi)
+const OVERLAY_MOBILE = "bg-gradient-to-t from-black/25 via-transparent to-transparent";
+const OVERLAY_DESKTOP = "lg:bg-gradient-to-r lg:from-black/45 lg:via-black/10 lg:to-transparent";
+// Section foni bilan bir xil rang — rasm pastki chetini shu rangga "eritib" yuboradi,
+// shunda rasm va pastdagi qora blok orasida qattiq chegara ko'rinmaydi
+const SECTION_BG = "#050505";
 
 const Hero = ({ lang = 'ru' }) => {
     const t = translations[lang] || translations.ru;
@@ -153,19 +165,34 @@ const Hero = ({ lang = 'ru' }) => {
     const slideTotal = String(Math.max(bgImages.length, 1)).padStart(2, '0');
 
     return (
-        <section className="relative w-full flex flex-col lg:h-screen lg:block overflow-hidden bg-[#050505] font-roboto">
+        <section
+            className="relative w-full flex flex-col lg:block overflow-hidden bg-[#050505] font-roboto"
+        >
             <Helmet>
                 <title>{t.seoTitle}</title>
                 <meta name="description" content={t.metaDesc} />
             </Helmet>
+
+            {/* Katta ekranlar uchun balandlikni CSS orqali beramiz (calc bilan) */}
+            <style jsx>{`
+                section {
+                    min-height: 480px;
+                }
+                @media (min-width: 1024px) {
+                    section {
+                        height: calc(100vh - ${NAVBAR_HEIGHT_LG}px);
+                    }
+                }
+            `}</style>
 
             {/* BACKGROUND SLIDER */}
             <div className="relative w-full aspect-video sm:aspect-[16/8] lg:aspect-auto lg:h-full lg:absolute lg:inset-0 z-10 overflow-hidden cursor-grab active:cursor-grabbing">
                 <AnimatePresence>
                     {(!isFirstImageLoaded || queryLoading) && (
                         <motion.div exit={{ opacity: 0 }} transition={{ duration: 0.4 }} className="absolute inset-0 z-30 w-full h-full bg-[#0a0a0a]">
-                            <img src={staticslayd.src} alt="" className="w-full h-full object-cover object-[80%_center]" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-black/10 lg:bg-gradient-to-r lg:from-black/75 lg:via-black/35 lg:to-black/10 z-10" />
+                            {/* ✅ vertikal object-position — tepadagi muhim qism kesilmasin uchun */}
+                            <img src={staticslayd.src} alt="" className="w-full h-full object-cover object-[80%_25%] lg:object-[75%_20%]" />
+                            <div className={`absolute inset-0 ${OVERLAY_MOBILE} ${OVERLAY_DESKTOP} z-10`} />
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -187,20 +214,27 @@ const Hero = ({ lang = 'ru' }) => {
                     >
                         {slides.map((img, idx) => (
                             <div key={idx} className="relative h-full w-full shrink-0">
-                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-black/10 lg:bg-gradient-to-r lg:from-black/75 lg:via-black/35 lg:to-black/10 z-10" />
+                                <div className={`absolute inset-0 ${OVERLAY_MOBILE} ${OVERLAY_DESKTOP} z-10`} />
+                                {/* ✅ vertikal object-position (25% / 20%) — tepasi kesilmaydi */}
                                 <img
                                     src={getFullImagePath(img)}
                                     alt="UzAuto Trailer"
                                     onLoad={() => { if (idx === current) setIsFirstImageLoaded(true); }}
-                                    className="w-full h-full object-cover object-[80%_center] lg:object-[75%_center] pointer-events-none select-none"
+                                    className="w-full h-full object-cover object-[80%_25%] lg:object-[75%_20%] pointer-events-none select-none"
                                 />
                             </div>
                         ))}
                     </motion.div>
                 )}
 
-                {/* fine vignette for depth + legibility */}
-                <div className="absolute inset-0 z-10 pointer-events-none bg-[radial-gradient(ellipse_at_bottom_left,rgba(0,0,0,0.35),transparent_60%)]" />
+                {/* fine vignette for depth — faqat desktopda, mobilda o'chirilgan */}
+                <div className="hidden lg:block absolute inset-0 z-10 pointer-events-none bg-[radial-gradient(ellipse_at_bottom_left,rgba(0,0,0,0.2),transparent_60%)]" />
+
+                {/* ✅ Rasm pastki chetini section foniga "eritish" — faqat mobil/tablet uchun, desktopda o'chirilgan */}
+                <div
+                    className="lg:hidden absolute inset-x-0 bottom-0 h-20 sm:h-28 z-20 pointer-events-none"
+                    style={{ background: `linear-gradient(to top, ${SECTION_BG} 0%, transparent 100%)` }}
+                />
             </div>
 
             {/* CONTENT */}
@@ -213,12 +247,7 @@ const Hero = ({ lang = 'ru' }) => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
                         className="hidden sm:flex items-center gap-3 mb-5 justify-center lg:justify-start"
-                    >
-                        {/* <span className="h-px w-8 bg-gradient-to-r from-[#0061A4] to-[#5CC2FF]" /> */}
-                        {/* <span className="text-[11px] lg:text-xs font-bold tracking-[0.28em] text-white/70 uppercase">
-                            {t.eyebrow}
-                        </span> */}
-                    </motion.div>
+                    />
 
                     <div className="min-h-[90px] lg:min-h-0 flex items-center lg:items-start justify-center lg:justify-start">
                         <AnimatePresence mode="wait">
@@ -239,7 +268,7 @@ const Hero = ({ lang = 'ru' }) => {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.6, delay: 0.1 }}
-                        className="text-[13px] lg:text-lg text-white/80 font-normal leading-relaxed mt-2 mb-8 lg:mb-12 mx-auto lg:mx-0 whitespace-pre-line max-w-xl"
+                        className="text-[13px] lg:text-lg text-white/80 font-normal leading-relaxed mt-2 mb-6 lg:mb-8 mx-auto lg:mx-0 whitespace-pre-line max-w-xl"
                     >
                         {t.description}
                     </motion.p>
@@ -264,38 +293,28 @@ const Hero = ({ lang = 'ru' }) => {
 
             {/* SLIDE COUNTER + NAV (bottom right) */}
             {bgImages.length > 1 && (
-                <div className="absolute bottom-8 lg:bottom-14 right-6 lg:right-12 z-40 flex items-center gap-4 pointer-events-none">
-                    {/* <span className="hidden sm:flex items-baseline gap-1 text-white/70 text-xs font-semibold tracking-widest tabular-nums pointer-events-auto">
+                <div className="absolute bottom-8 lg:bottom-10 right-6 lg:right-12 z-40 flex items-center gap-4 pointer-events-none">
+                    <span className="hidden sm:flex items-baseline gap-1 text-white/70 text-xs font-semibold tracking-widest tabular-nums pointer-events-auto">
                         <span className="text-white">{slideNumber}</span>
                         <span className="text-white/30">/</span>
                         <span>{slideTotal}</span>
-                    </span> */}
-                    {/* SLIDE COUNTER + NAV (bottom right) */}
-                    {bgImages.length > 1 && (
-                        <div className="absolute bottom-8 lg:bottom-14 right-6 lg:right-12 z-40 flex items-center gap-4 pointer-events-none">
-                            <span className="hidden sm:flex items-baseline gap-1 text-white/70 text-xs font-semibold tracking-widest tabular-nums pointer-events-auto">
-                                <span className="text-white">{slideNumber}</span>
-                                <span className="text-white/30">/</span>
-                                <span>{slideTotal}</span>
-                            </span>
-                            <div className="hidden lg:flex gap-2 pointer-events-auto">
-                                <button
-                                    onClick={prevSlide}
-                                    aria-label="Previous slide"
-                                    className="w-10 h-10 lg:w-12 lg:h-12 border border-white/25 rounded-sm flex items-center justify-center text-white bg-black/30 hover:bg-[#0061A4] hover:border-[#0061A4] backdrop-blur-md transition-all active:scale-90 group focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
-                                >
-                                    <ChevronLeft size={20} className="group-hover:-translate-x-0.5 transition-transform" />
-                                </button>
-                                <button
-                                    onClick={nextSlide}
-                                    aria-label="Next slide"
-                                    className="w-10 h-10 lg:w-12 lg:h-12 border border-white/25 rounded-sm flex items-center justify-center text-white bg-black/30 hover:bg-[#0061A4] hover:border-[#0061A4] backdrop-blur-md transition-all active:scale-90 group focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
-                                >
-                                    <ChevronRight size={20} className="group-hover:translate-x-0.5 transition-transform" />
-                                </button>
-                            </div>
-                        </div>
-                    )}
+                    </span>
+                    <div className="hidden lg:flex gap-2 pointer-events-auto">
+                        <button
+                            onClick={prevSlide}
+                            aria-label="Previous slide"
+                            className="w-10 h-10 lg:w-11 lg:h-11 border border-white/25 rounded-sm flex items-center justify-center text-white bg-black/30 hover:bg-[#0061A4] hover:border-[#0061A4] backdrop-blur-md transition-all active:scale-90 group focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
+                        >
+                            <ChevronLeft size={20} className="group-hover:-translate-x-0.5 transition-transform" />
+                        </button>
+                        <button
+                            onClick={nextSlide}
+                            aria-label="Next slide"
+                            className="w-10 h-10 lg:w-11 lg:h-11 border border-white/25 rounded-sm flex items-center justify-center text-white bg-black/30 hover:bg-[#0061A4] hover:border-[#0061A4] backdrop-blur-md transition-all active:scale-90 group focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
+                        >
+                            <ChevronRight size={20} className="group-hover:translate-x-0.5 transition-transform" />
+                        </button>
+                    </div>
                 </div>
             )}
 
@@ -331,31 +350,3 @@ const Hero = ({ lang = 'ru' }) => {
 };
 
 export default Hero;
-
-
-
-// {bgImages.length > 1 && (
-//     <div className="absolute bottom-8 lg:bottom-14 right-6 lg:right-12 z-40 flex items-center gap-4 pointer-events-none">
-//         <span className="hidden sm:flex items-baseline gap-1 text-white/70 text-xs font-semibold tracking-widest tabular-nums pointer-events-auto">
-//             <span className="text-white">{slideNumber}</span>
-//             <span className="text-white/30">/</span>
-//             <span>{slideTotal}</span>
-//         </span>
-//         <div className="hidden lg:flex gap-2 pointer-events-auto">
-//             <button
-//                 onClick={prevSlide}
-//                 aria-label="Previous slide"
-//                 className="w-10 h-10 lg:w-12 lg:h-12 border border-white/25 rounded-sm flex items-center justify-center text-white bg-black/30 hover:bg-[#0061A4] hover:border-[#0061A4] backdrop-blur-md transition-all active:scale-90 group focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
-//             >
-//                 <ChevronLeft size={20} className="group-hover:-translate-x-0.5 transition-transform" />
-//             </button>
-//             <button
-//                 onClick={nextSlide}
-//                 aria-label="Next slide"
-//                 className="w-10 h-10 lg:w-12 lg:h-12 border border-white/25 rounded-sm flex items-center justify-center text-white bg-black/30 hover:bg-[#0061A4] hover:border-[#0061A4] backdrop-blur-md transition-all active:scale-90 group focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
-//             >
-//                 <ChevronRight size={20} className="group-hover:translate-x-0.5 transition-transform" />
-//             </button>
-//         </div>
-//     </div>
-// )}

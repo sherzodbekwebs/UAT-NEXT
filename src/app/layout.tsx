@@ -45,7 +45,7 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: '/Logo.png',
-    apple: '/Logo.png', // Apple qurilmalari uchun
+    apple: '/Logo.png',
   },
   robots: {
     index: true,

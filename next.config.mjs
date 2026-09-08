@@ -2,10 +2,10 @@ import path from 'path';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    output: 'export',        // Statik HTML fayllar yaratish buyrug'i
-    trailingSlash: true,     // Sahifalar oxiriga "/" qo'shadi, bu cPanel'da 404 xatosini oldini oladi
+    output: 'export',       
+    trailingSlash: true,    
     images: {
-        unoptimized: true,   // Statik exportda Next.js rasmlarni optimizatsiya qila olmaydi
+        unoptimized: true,   
     },
     turbopack: {},
     webpack(config) {

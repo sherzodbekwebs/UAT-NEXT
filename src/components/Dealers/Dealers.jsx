@@ -8,6 +8,8 @@ import api from '../../api/axios';
 import { useLanguage } from '../../context/LanguageContext';
 import DealerInfoModal from '../../components/Dealers/DealerInfoModal';
 
+const ACCENT = '#0061A4';
+
 const Dealers = () => {
     const { lang } = useLanguage();
 
@@ -81,12 +83,12 @@ const Dealers = () => {
     }[lang] || { title: "Дилерская сеть", subtitle: "Найдите ближайший дилерский центр", official: "Официальный дилер", service: "Сервисный центр", all: "Все", search: "Поиск...", found: "Найдено", call: "Звонок", loc: "Локация" };
 
     return (
-        <div className="navbar-roboto-container min-h-screen bg-[#F8FAFC] pt-10 lg:pt-20 pb-20 overflow-x-hidden">
+        <div className="navbar-roboto-container min-h-screen bg-[#F7F9FB] pt-12 lg:pt-20 pb-24 overflow-x-hidden">
             <style>{`
                 .custom-scrollbar-x::-webkit-scrollbar { height: 4px; }
                 .custom-scrollbar-x::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
-                .custom-scrollbar-x::-webkit-scrollbar-thumb { background: #0054A6; border-radius: 10px; }
-                .custom-scrollbar-x { scrollbar-width: thin; scrollbar-color: #0054A6 #f1f5f9; }
+                .custom-scrollbar-x::-webkit-scrollbar-thumb { background: ${ACCENT}; border-radius: 10px; }
+                .custom-scrollbar-x { scrollbar-width: thin; scrollbar-color: ${ACCENT} #f1f5f9; }
                 .fade-right::after {
                     content: ''; position: absolute; right: 0; top: 0; height: 100%; width: 40px;
                     background: linear-gradient(to right, transparent, white); pointer-events: none;
@@ -94,31 +96,32 @@ const Dealers = () => {
                 @media (min-width: 1024px) { .fade-right::after { display: none; } }
             `}</style>
 
-            <div className="max-w-[1440px] mx-auto px-4 lg:px-8">
+            <div className="max-w-[1320px] mx-auto px-4 lg:px-10">
 
                 {/* HERO SECTION */}
-                <div className="text-center mb-10 lg:mb-16">
+                <div className="text-center mb-10 lg:mb-14 max-w-2xl mx-auto">
                     <motion.h1
-                        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-                        className="text-[30px] lg:text-[60px] font-black text-[#1a2e44] mb-3 leading-tight"
+                        initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}
+                        className="text-[28px] lg:text-[52px] font-semibold text-[#101828] mb-3 leading-[1.1] tracking-tight"
                     >
-                        {t.title} <br className="hidden lg:block" /> <span className="text-[#0054A6]">UzAuto TRAILER</span>
+                        {t.title} <span style={{ color: ACCENT }}>UzAuto TRAILER</span>
                     </motion.h1>
-                    <p className="text-gray-500 text-sm lg:text-lg font-medium max-w-2xl mx-auto">{t.subtitle}</p>
+                    <p className="text-gray-500 text-[15px] lg:text-[17px] leading-relaxed">{t.subtitle}</p>
                 </div>
 
                 {/* FILTERS & SEARCH CONTAINER */}
-                <div className="bg-white p-4 lg:p-8 rounded-[24px] lg:rounded-[40px] shadow-sm border border-gray-100 mb-8 space-y-6 lg:space-y-8">
+                <div className="bg-white p-4 lg:p-7 rounded-[26px] shadow-[0_1px_2px_rgba(16,24,40,0.04)] border border-gray-100 mb-7 space-y-5 lg:space-y-6">
                     <div className="relative fade-right">
-                        <div className="flex overflow-x-auto lg:flex-wrap lg:justify-center gap-2 lg:gap-3 pb-4 custom-scrollbar-x">
+                        <div className="flex overflow-x-auto lg:flex-wrap lg:justify-center gap-2 pb-2 custom-scrollbar-x">
                             {!isLoading && regions.map((reg) => (
                                 <button
                                     key={reg}
                                     onClick={() => setSelectedRegion(reg)}
-                                    className={`whitespace-nowrap shrink-0 px-4 py-2 lg:px-6 lg:py-3.5 rounded-xl lg:rounded-2xl text-[12px] lg:text-sm font-bold transition-all duration-300 border ${selectedRegion === reg
-                                        ? 'bg-[#0054A6] text-white border-[#0054A6] shadow-lg shadow-blue-100'
-                                        : 'bg-gray-50 text-gray-500 border-transparent hover:bg-white hover:border-gray-200 shadow-sm'
+                                    className={`whitespace-nowrap shrink-0 px-4 py-2 lg:px-5 lg:py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 ${selectedRegion === reg
+                                        ? 'text-white shadow-sm'
+                                        : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
                                         }`}
+                                    style={selectedRegion === reg ? { backgroundColor: ACCENT } : undefined}
                                 >
                                     {reg === 'all' ? t.all : reg}
                                 </button>
@@ -127,86 +130,97 @@ const Dealers = () => {
                     </div>
 
                     <div className="relative max-w-3xl mx-auto w-full">
-                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                         <input
                             type="text"
                             placeholder={t.search}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-12 lg:pl-14 pr-6 py-4 lg:py-5 bg-gray-50 border border-gray-100 rounded-2xl lg:rounded-[22px] outline-none focus:border-[#0054A6] focus:bg-white transition-all font-bold text-sm lg:text-base text-[#1a2e44] shadow-inner"
+                            className="w-full pl-11 pr-5 py-3.5 lg:py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-[#0061A4]/30 focus:ring-4 focus:ring-[#0061A4]/10 focus:bg-white transition-all text-[15px] text-[#101828]"
                         />
                     </div>
                 </div>
 
                 {/* RESULTS COUNT */}
-                <div className="mb-6 lg:mb-8 flex items-center justify-center lg:justify-start gap-3">
-                    <span className="text-gray-400 font-black text-[10px] lg:text-[11px] uppercase tracking-[2px]">{t.found}:</span>
+                <div className="mb-6 flex items-center justify-center lg:justify-start gap-2.5">
+                    <span className="text-gray-400 font-medium text-[13px]">{t.found}:</span>
                     {!isLoading ? (
-                        <span className="bg-[#1a2e44] text-white px-3 py-1 rounded-lg text-xs lg:text-sm font-black">{filteredDealers.length}</span>
+                        <span className="bg-[#101828] text-white px-2.5 py-0.5 rounded-md text-[13px] font-semibold">{filteredDealers.length}</span>
                     ) : (
-                        <div className="w-8 h-6 bg-gray-200 animate-pulse rounded-lg"></div>
+                        <div className="w-8 h-5 bg-gray-200 animate-pulse rounded-md"></div>
                     )}
                 </div>
 
                 {/* GRID SECTION */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6">
                     {!isLoading ? (
                         <AnimatePresence mode='popLayout'>
                             {filteredDealers.map((dealer) => (
                                 <motion.div
                                     layout
                                     key={dealer.id}
-                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    initial={{ opacity: 0, scale: 0.97 }}
                                     animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.95 }}
+                                    exit={{ opacity: 0, scale: 0.97 }}
                                     onClick={() => handleDealerClick(dealer)}
-                                    className="flex flex-col bg-white rounded-[24px] lg:rounded-[32px] overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-500 group cursor-pointer"
+                                    className="flex flex-col bg-white rounded-[24px] overflow-hidden border border-gray-100 shadow-[0_1px_2px_rgba(16,24,40,0.04)] hover:shadow-[0_20px_45px_-20px_rgba(16,24,40,0.16)] transition-shadow duration-300 group cursor-pointer"
                                 >
-                                    <div className="h-1.5 w-full bg-[#0054A6]"></div>
-
-                                    <div className="p-6 lg:p-7 flex flex-col h-full">
+                                    <div className="p-6 flex flex-col h-full">
                                         <div className="flex justify-between items-start mb-4">
                                             <div className="flex flex-col gap-1.5">
-                                                <span className="bg-blue-50 text-[#0054A6] px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider w-fit">
+                                                <span className="text-[11px] font-medium w-fit" style={{ color: ACCENT }}>
                                                     {getLangField(dealer, 'category')}
                                                 </span>
-                                                <div className="flex flex-wrap gap-2">
-                                                    <span className="bg-[#22C55E] text-white px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider shadow-sm flex items-center justify-center whitespace-nowrap">
+                                                <div className="flex flex-wrap gap-1.5 mt-0.5">
+                                                    <span className="bg-green-50 text-green-700 px-2 py-1 rounded-md text-[10px] font-medium whitespace-nowrap">
                                                         {t.official}
                                                     </span>
-                                                    <span className="bg-[#F97316] text-white px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider shadow-sm flex items-center justify-center whitespace-nowrap">
+                                                    <span className="bg-orange-50 text-orange-700 px-2 py-1 rounded-md text-[10px] font-medium whitespace-nowrap">
                                                         {t.service}
                                                     </span>
                                                 </div>
                                             </div>
-                                            <div className="w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center text-gray-300 group-hover:text-[#0054A6] transition-colors border border-gray-100"><Globe size={18} /></div>
+                                            <div className="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center text-gray-300 group-hover:text-[#0061A4] transition-colors">
+                                                <Globe size={16} />
+                                            </div>
                                         </div>
 
-                                        <h3 className="text-[17px] lg:text-[19px] font-black text-[#1a2e44] mb-3 leading-tight group-hover:text-[#0054A6] transition-colors line-clamp-1">
+                                        <h3 className="text-[17px] font-semibold text-[#101828] mb-3 leading-snug group-hover:opacity-80 transition-opacity line-clamp-1">
                                             {getLangField(dealer, 'name')}
                                         </h3>
 
-                                        <div className="space-y-2.5 mb-5 text-gray-500 flex-1">
-                                            <div className="flex items-start gap-3">
-                                                <MapPin size={15} className="shrink-0 text-[#0054A6] mt-0.5" />
-                                                <span className="text-[13px] font-bold leading-relaxed line-clamp-2">{getLangField(dealer, 'address')}</span>
+                                        <div className="space-y-2.5 mb-5 flex-1">
+                                            <div className="flex items-start gap-2.5">
+                                                <MapPin size={15} className="shrink-0 mt-0.5" style={{ color: ACCENT }} />
+                                                <span className="text-[13px] text-gray-500 leading-relaxed line-clamp-2">{getLangField(dealer, 'address')}</span>
                                             </div>
-                                            <div className="flex items-center gap-3">
-                                                <Phone size={15} className="shrink-0 text-[#0054A6]" />
-                                                <span className="text-[14px] font-black text-[#1a2e44]">{dealer.phone || "—"}</span>
+                                            <div className="flex items-center gap-2.5">
+                                                <Phone size={15} className="shrink-0" style={{ color: ACCENT }} />
+                                                <span className="text-[14px] font-semibold text-[#101828]">{dealer.phone || "—"}</span>
                                             </div>
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-3 mt-auto">
-                                            <a href={`tel:${dealer.phone}`} onClick={(e) => e.stopPropagation()} className="flex items-center justify-center gap-2 bg-[#22C55E] hover:bg-[#16A34A] text-white py-3 rounded-xl font-black text-[10px] uppercase tracking-wider transition-all active:scale-95"><PhoneCall size={14} /> {t.call}</a>
-                                            <button onClick={(e) => { e.stopPropagation(); dealer.link && window.open(dealer.link, '_blank'); }} className="flex items-center justify-center gap-2 bg-[#F1F5F9] hover:bg-[#1a2e44] text-[#1a2e44] hover:text-white py-3 rounded-xl font-black text-[10px] uppercase tracking-wider transition-all active:scale-95"><MapPin size={14} /> {t.loc}</button>
+                                        <div className="grid grid-cols-2 gap-2.5 mt-auto">
+                                            <a
+                                                href={`tel:${dealer.phone}`}
+                                                onClick={(e) => e.stopPropagation()}
+                                                className="flex items-center justify-center gap-1.5 bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-xl font-medium text-[12px] transition-colors active:scale-95"
+                                            >
+                                                <PhoneCall size={13} /> {t.call}
+                                            </a>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); dealer.link && window.open(dealer.link, '_blank'); }}
+                                                className="flex items-center justify-center gap-1.5 bg-gray-50 hover:bg-[#101828] text-[#101828] hover:text-white py-2.5 rounded-xl font-medium text-[12px] transition-colors active:scale-95"
+                                            >
+                                                <MapPin size={13} /> {t.loc}
+                                            </button>
                                         </div>
                                     </div>
                                 </motion.div>
                             ))}
                         </AnimatePresence>
                     ) : (
-                        [...Array(6)].map((_, i) => <div key={i} className="bg-white rounded-[32px] h-64 animate-pulse border border-gray-100"></div>)
+                        [...Array(6)].map((_, i) => <div key={i} className="bg-white rounded-[24px] h-64 animate-pulse border border-gray-100"></div>)
                     )}
                 </div>
 

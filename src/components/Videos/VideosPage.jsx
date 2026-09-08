@@ -55,6 +55,8 @@ const STATIC_VIDEOS = [
     }
 ];
 
+const ACCENT = '#0061A4';
+
 const VideosPage = () => {
     const { lang } = useLanguage();
     const t = translations[lang] || translations.ru;
@@ -72,50 +74,44 @@ const VideosPage = () => {
     };
 
     return (
-        <div className="pt-20 px-4 md:px-10 pb-24 bg-[#f8fafc] min-h-screen font-inter">
-            <div className="max-w-[1440px] mx-auto">
+        <div className="pt-20 px-4 md:px-10 pb-24 bg-[#F7F9FB] min-h-screen font-inter">
+            <div className="max-w-[1320px] mx-auto">
 
                 {/* Sarlavha qismi */}
-                <div className="mb-16 text-center">
+                <div className="mb-14 max-w-2xl mx-auto text-center">
                     <motion.h1
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 14 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="text-4xl lg:text-6xl font-black text-[#1a2e44] mb-6 tracking-tight uppercase"
+                        className="text-4xl lg:text-[52px] font-semibold tracking-tight leading-[1.05] text-[#101828]"
                     >
                         {t.title}
                     </motion.h1>
 
-                    <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: "80px" }}
-                        className="h-1.5 bg-[#0054A6] mx-auto mb-8 rounded-full"
-                    />
-
                     <motion.p
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 14 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 }}
-                        className="text-slate-500 text-lg max-w-2xl mx-auto leading-relaxed"
+                        transition={{ delay: 0.08 }}
+                        className="text-gray-500 text-[17px] leading-relaxed mt-4"
                     >
                         {t.subtitle}
                     </motion.p>
                 </div>
 
                 {/* Videolar Grid'i */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {STATIC_VIDEOS.map((video, index) => (
                         <motion.div
                             key={video.id}
-                            initial={{ opacity: 0, y: 30 }}
+                            initial={{ opacity: 0, y: 20 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
-                            transition={{ delay: index * 0.1 }}
-                            className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 border border-slate-200 group flex flex-col"
+                            transition={{ delay: index * 0.06 }}
+                            className="bg-white rounded-[26px] overflow-hidden border border-gray-100 shadow-[0_1px_2px_rgba(16,24,40,0.04)] hover:shadow-[0_20px_45px_-20px_rgba(16,24,40,0.16)] transition-shadow duration-300 group flex flex-col"
                         >
                             {/* Video Iframe qismi */}
                             <div className="relative aspect-video bg-slate-900 overflow-hidden">
                                 <iframe
-                                    className="w-full h-full grayscale-[0.1] group-hover:grayscale-0 transition-all duration-500"
+                                    className="w-full h-full"
                                     src={`https://www.youtube.com/embed/${video.youtubeId}?rel=0&modestbranding=1`}
                                     title={getLangField(video, 'title')}
                                     frameBorder="0"
@@ -126,30 +122,30 @@ const VideosPage = () => {
                             </div>
 
                             {/* Video kontenti */}
-                            <div className="p-8 flex-grow flex flex-col">
-                                <h3 className="text-xl font-semibold text-[#1a2e44] mb-6 group-hover:text-[#0054A6] transition-colors leading-[1.4] flex-grow">
+                            <div className="p-6 flex-grow flex flex-col">
+                                <h3 className="text-[16px] font-semibold text-[#101828] mb-5 leading-[1.45] flex-grow">
                                     {getLangField(video, 'title')}
                                 </h3>
 
-                                <div className="pt-5 border-t border-slate-100 flex items-center justify-between mt-auto">
-                                    <div className="flex items-center gap-2 text-slate-400 text-sm font-semibold">
-                                        <Calendar size={16} className="text-[#0054A6]" />
+                                <div className="pt-4 border-t border-gray-50 flex items-center justify-between mt-auto">
+                                    <div className="flex items-center gap-2 text-gray-400 text-[13px] font-medium">
+                                        <Calendar size={15} style={{ color: ACCENT }} />
                                         <span>{video.date}</span>
                                     </div>
 
-                                    <div className="flex gap-4">
+                                    <div className="flex gap-1">
                                         <button
                                             onClick={() => handleOpenYoutube(video.youtubeId)}
-                                            className="p-2 text-slate-400 hover:text-[#0054A6] hover:bg-blue-50 rounded-md transition-all cursor-pointer"
+                                            className="w-9 h-9 flex items-center justify-center text-gray-400 hover:text-[#0061A4] hover:bg-[#0061A4]/8 rounded-lg transition-colors cursor-pointer"
                                             title="YouTube'da ochish"
                                         >
-                                            <ExternalLink size={20} />
+                                            <ExternalLink size={18} />
                                         </button>
                                         <button
-                                            className="p-2 text-slate-400 hover:text-[#0054A6] hover:bg-blue-50 rounded-md transition-all cursor-pointer"
+                                            className="w-9 h-9 flex items-center justify-center text-gray-400 hover:text-[#0061A4] hover:bg-[#0061A4]/8 rounded-lg transition-colors cursor-pointer"
                                             title="Ulashish"
                                         >
-                                            <Share2 size={20} />
+                                            <Share2 size={18} />
                                         </button>
                                     </div>
                                 </div>

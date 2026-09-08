@@ -22,7 +22,7 @@ jobs:
         node-version: 20
         cache: 'npm'
 
-    - name: ⚡ Restore Next.js build cache
+    - name: ⚡ Restore Next.js build cache-
       uses: actions/cache@v4
       with:
         path: |
