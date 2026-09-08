@@ -9,12 +9,11 @@ import ChatWidget from "@/components/ChatWidget";
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const roboto = Roboto({ subsets: ['latin'], weight: ['300', '400', '500', '700', '900'], variable: '--font-roboto' });
 
-// Professional SEO Metadata (Rus tiliga fokuslangan)
 export const metadata: Metadata = {
   metadataBase: new URL('https://uzautotrailer.uz'),
   title: {
     default: 'UzAuto TRAILER — Официальный сайт завода прицепной техники',
-    template: '%s | UzAuto TRAILER', // Ichki sahifalar "Название | UzAuto TRAILER" bo'lib chiqadi
+    template: '%s | UzAuto TRAILER',
   },
   description: "Официальный сайт UzAuto TRAILER – ведущего производителя прицепов, полуприцепов и спецтехники в Узбекистане. Гарантия качества, современное производство и сервис.",
   keywords: "UzAuto TRAILER, производство прицепов, спецтехника Узбекистан, полуприцепы Ташкент, купить грузовик, самосвалы Камаз, завод прицепов",
@@ -65,14 +64,27 @@ export default function RootLayout({
   children: ReactNode;
 }) {
   return (
-    // Ruscha SEO uchun lang="ru" qildik
     <html lang="ru" className={`${inter.variable} ${roboto.variable}`}>
       <body>
         <AppShell>{children}</AppShell>
-        {/* <AIChatBot /> */}
-        {/* <ChatWidget /> */}
 
-        {/* Yandex Metrika */}
+        {/* 1. FIREBASE ANALYTICS (Google Analytics) */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-9RNW2ZW8LR"
+          strategy="afterInteractive"
+        />
+        <Script id="firebase-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-9RNW2ZW8LR', {
+              page_path: window.location.pathname,
+            });
+          `}
+        </Script>
+
+        {/* 3. YANDEX METRIKA */}
         <Script id="yandex-metrika-main" strategy="afterInteractive">
           {`
             (function (m, e, t, r, i, k, a) {
