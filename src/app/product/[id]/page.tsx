@@ -6,6 +6,9 @@ import { cache } from 'react';
 const SITE_URL = 'https://uzautotrailer.uz';
 const API_BASE_URL = 'https://api.uzautotrailer.uz';
 
+export const dynamic = 'force-dynamic';
+export const dynamicParams = true;
+
 // 1. Ma'lumotlarni keshlaymiz (API so'rovni optimallashtirish uchun)
 const getProductData = cache(async (id: string) => {
   try {
@@ -29,22 +32,8 @@ const cleanText = (text: string, length: number) => {
     .substring(0, length);
 };
 
-// 2. generateStaticParams - Build vaqtida barcha sahifalarni yaratish
-export async function generateStaticParams() {
-  try {
-    const res = await API.get('/products');
-    const products = Array.isArray(res.data) ? res.data : (res.data?.products || []);
-
-    const paths: { id: string }[] = [];
-    products.forEach((product: any) => {
-      if (product.id) paths.push({ id: product.id.toString() });
-      if (product.slug) paths.push({ id: product.slug.toString() });
-    });
-    return paths;
-  } catch (error) {
-    return [];
-  }
-}
+// 2. Dynamic route: yangi mahsulotlar request vaqtida ishlaydi
+// generateStaticParams o'chirilgan, chunki static export bilan birga ishlamaydi.
 
 // 3. generateMetadata (Professional Ruscha SEO)
 export async function generateMetadata(props: any): Promise<Metadata> {
