@@ -6,6 +6,9 @@ import { cache } from 'react';
 const SITE_URL = 'https://uzautotrailer.uz';
 const API_BASE_URL = 'https://api.uzautotrailer.uz';
 
+export const dynamic = 'force-dynamic';
+export const dynamicParams = true;
+
 // 1. Ma'lumotlarni keshlaymiz (API so'rovni optimallashtirish uchun)
 const getProductData = cache(async (id: string) => {
   try {
