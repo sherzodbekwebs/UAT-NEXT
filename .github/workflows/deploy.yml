@@ -45,6 +45,6 @@ jobs:
             key: ${{ secrets.SSH_PRIVATE_KEY }}
             passphrase: ${{ secrets.SSH_PASSPHRASE }}
             port: 30151
-            source: "out/*"
+            source: "out/*,.htaccess"
             target: "/home/uzautotr/public_html/"
             strip_components: 1

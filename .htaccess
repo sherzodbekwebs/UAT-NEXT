@@ -1,0 +1,15 @@
+DirectoryIndex index.html
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Prevent the generated Next.js index.txt files from being used as the directory entry.
+    RewriteRule ^(.+?)/index\.txt/?$ /$1/ [R=301,L,NC]
+
+    # Serve static files directly and fallback to the app entry for client routes.
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule . /index.html [L]
+</IfModule>
