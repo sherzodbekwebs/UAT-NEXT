@@ -211,29 +211,28 @@ const Compliance = ({ lang = 'ru' }) => {
                 </section>
 
                 {/* 5. CHANNELS */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-12 lg:mb-20">
-                    <div className="lg:col-span-8 bg-[#1a2e44] rounded-3xl p-8 lg:p-12 text-white shadow-lg">
-                        <h2 className="text-xl lg:text-2xl font-bold mb-6 uppercase tracking-tight">{t.channelsTitle}</h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                            <div className="space-y-1">
-                                <div className="text-[#0054A6] font-bold text-[10px] uppercase tracking-widest">Email</div>
-                                <a href="mailto:compliance@trailer.uz" className="text-lg font-bold hover:text-blue-300 transition-colors">compliance@trailer.uz</a>
-                            </div>
-                            <div className="space-y-1">
-                                <div className="text-[#0054A6] font-bold text-[10px] uppercase tracking-widest">Hot Line</div>
-                                <a href="tel:+998712023883" className="text-lg font-bold hover:text-blue-300 transition-colors">+998 71 202 38 83</a>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="lg:col-span-4 space-y-3">
-                        {t.docLinks && t.docLinks.map((doc, i) => (
-                            <a key={i} href={doc.url} target="_blank" className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 shadow-sm hover:bg-gray-50 transition-all">
-                                <span className="text-[11px] lg:text-[12px] font-bold leading-tight max-w-[85%]">{doc.title}</span>
-                                <FileText size={18} className="text-[#0054A6]" />
-                            </a>
-                        ))}
-                    </div>
-                </div>
+               {/* 5. CHANNELS */}
+<div className="mb-12 lg:mb-20">
+    <div className="bg-[#1a2e44] rounded-3xl p-8 lg:p-12 text-white shadow-lg max-w-4xl mx-auto">
+        <h2 className="text-xl lg:text-2xl font-bold mb-6 uppercase tracking-tight text-center lg:text-left">
+            {t.channelsTitle}
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 text-center lg:text-left">
+            <div className="space-y-1">
+                <div className="text-[#0054A6] font-bold text-[10px] uppercase tracking-widest">Email</div>
+                <a href="mailto:compliance@trailer.uz" className="text-lg font-bold hover:text-blue-300 transition-colors">
+                    compliance@trailer.uz
+                </a>
+            </div>
+            <div className="space-y-1">
+                <div className="text-[#0054A6] font-bold text-[10px] uppercase tracking-widest">Hot Line</div>
+                <a href="tel:+998712023883" className="text-lg font-bold hover:text-blue-300 transition-colors">
+                    +998 71 202 38 83
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 
                 {/* 6. FORM */}
                 <section id="compliance-form" className="max-w-3xl mx-auto">

@@ -35,7 +35,7 @@ const translations = {
                 title: "ПРОИЗВОДСТВО",
                 items: [
                     { icon: MapPin, text: "Самаркандская область, Джамбайский район, улица Ташкентская 2." },
-                    { icon: Mail, text: "info@uzautotrailer.uz" }
+                    { icon: Mail, text: "info@trailer.uz" }
                 ]
             }
         ],
@@ -65,7 +65,7 @@ const translations = {
                 title: "ISHLAB CHIQARISH",
                 items: [
                     { icon: MapPin, text: "Samarqand viloyati, Jomboy tumani, Toshkent ko‘chasi 2" },
-                    { icon: Mail, text: "info@uzautotrailer.uz" }
+                    { icon: Mail, text: "info@trailer.uz" }
                 ]
             }
         ],
@@ -95,7 +95,7 @@ const translations = {
                 title: "PRODUCTION",
                 items: [
                     { icon: MapPin, text: "Tashkentskaya Street 2, Dzhambay District, Samarkand Region, Uzbekistan" },
-                    { icon: Mail, text: "info@uzautotrailer.uz" }
+                    { icon: Mail, text: "info@trailer.uz" }
                 ]
             }
         ],

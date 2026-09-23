@@ -182,7 +182,7 @@ const ContactsClient = () => {
 
     const mapUrls = {
         tashkent: "https://yandex.uz/map-widget/v1/?ll=69.31980%2C41.31940&z=19&pt=69.31980,41.31940,pm2rdm",
-        samarkand: "https://yandex.uz/map-widget/v1/?ll=67.076356%2C39.690112&z=19&pt=67.076356,39.690112,pm2rdm"
+        samarkand: "https://yandex.uz/map-widget/v1/?ll=67.072577%2C39.689774&z=17&pt=67.072577,39.689774,pm2rdm"
     };
 
     return (
