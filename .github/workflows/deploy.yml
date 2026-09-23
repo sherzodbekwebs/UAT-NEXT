@@ -39,13 +39,14 @@ jobs:
       - name: 📂 Deploy via SCP (SSH)
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          passphrase: ${{ secrets.SSH_PASSPHRASE }}
-          port: 30151
+          host: ${{ secrets.FTP_SERVER }}          # ← FTP_SERVER (SSH_HOST emas)
+          username: ${{ secrets.FTP_USERNAME }}    # ← FTP_USERNAME
+          key: ${{ secrets.SSH_PRIVATE_KEY }}      # ← SSH_PRIVATE_KEY
+          # passphrase: ${{ secrets.SSH_PASSPHRASE }}  ← agar key passphrase'siz bo'lsa, bu qatorni o'chiring
+          port: 22                                  # ← 22 yoki 2222 yoki 30151
           source: "out/"
           target: "/home/uzautotr/public_html/"
           strip_components: 1
           overwrite: true
           rm: false
+          debug: true                               # ← batafsil log uchun
