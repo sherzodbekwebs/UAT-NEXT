@@ -1,4 +1,4 @@
-name: Deploy Next.js via SCP
+name: Deploy Next.js via SCP SSH
 
 on:
   push:
@@ -13,40 +13,51 @@ jobs:
       NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
 
     steps:
-      - name: 🚚 Get latest code
-        uses: actions/checkout@v4
+    - name: 🚚 Get latest code
+      uses: actions/checkout@v4
 
-      - name: 🛠️ Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
+    - name: 🛠️ Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: 'npm'
 
-      - name: ⚡ Restore Next.js build cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ github.workspace }}/.next/cache
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
-          restore-keys: |
-            ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
+    - name: ⚡ Restore Next.js build cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ github.workspace }}/.next/cache
+        key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
+        restore-keys: |
+          ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
 
-      - name: 📦 Install dependencies
-        run: npm ci
+    - name: 📦 Install dependencies
+      run: npm ci
 
-      - name: 🏗️ Build Project
-        run: npm run build
+    - name: 🏗️ Build Project
+      run: npm run build
 
-      - name: 📂 Deploy via SCP (SSH)
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.FTP_SERVER }}          # ← FTP_SERVER (SSH_HOST emas)
-          username: ${{ secrets.FTP_USERNAME }}    # ← FTP_USERNAME
-          key: ${{ secrets.SSH_PRIVATE_KEY }}      # ← SSH_PRIVATE_KEY
-          # passphrase: ${{ secrets.SSH_PASSPHRASE }}  ← agar key passphrase'siz bo'lsa, bu qatorni o'chiring
-          port: 22                                  # ← 22 yoki 2222 yoki 30151
-          source: "out/"
-          target: "/home/uzautotr/public_html/"
-          strip_components: 1
-          overwrite: true
-          rm: false
-          debug: true                               # ← batafsil log uchun
+    - name: 📂 Deploy generated site
+      uses: appleboy/scp-action@v1.0.0
+      with:
+        host: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        passphrase: ${{ secrets.SSH_PASSPHRASE }}
+        port: 30151
+        source: "out/*"
+        target: "/home/uzautotr/public_html/"
+        strip_components: 1
+        overwrite: true
+
+    - name: 📄 Deploy Apache rewrite rules
+      uses: appleboy/scp-action@v1.0.0
+      with:
+        host: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        passphrase: ${{ secrets.SSH_PASSPHRASE }}
+        port: 30151
+        source: ".htaccess"
+        target: "/home/uzautotr/public_html/"
+        overwrite: true
