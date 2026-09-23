@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { useState } from 'react';
 import { LanguageProvider } from '../context/LanguageContext';
-import PromoModal from './PromoModal';
+// import PromoModal from './PromoModal';
 
 // Komponentlarni dinamik yuklash (Hydration xatolarini oldini oladi)
 const Navbar = dynamic(() => import('./Navbar/navbar'), { ssr: false });
@@ -27,7 +27,7 @@ export default function AppShell({ children }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <PromoModal href="/products" />
+      {/* <PromoModal href="/products" /> */}
       <HelmetProvider>
         <LanguageProvider>
           <div className="flex min-h-screen flex-col font-inter">
