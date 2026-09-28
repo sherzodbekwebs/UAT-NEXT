@@ -20,8 +20,8 @@ function cn(...classes) {
 const BOT_TOKEN = '8607165005:AAH98FISY0M_ubhPYqF3klRQbuy34K5rHGU';
 const CHANNEL_ID = '-1003693722283';
 
-// Products sahifasi bilan BIR XIL kalit: bir sahifada forma to'ldirilsa,
-// ikkinchisida ham narxlar avtomatik ochiq bo'ladi.
+// Products sahifasi bilan BIR XIL kalit (sessionStorage): bir sahifada forma
+// to'ldirilsa, ikkinchisida ham narxlar ochiq bo'ladi. Tab/sayt yopilsa, yana yopiladi.
 const UNLOCK_KEY = 'uat_prices_unlocked';
 
 const leadTranslations = {
@@ -29,6 +29,7 @@ const leadTranslations = {
         currency: "so'm",
         agreed: "Kelishilgan holda",
         getPrice: "Narxini bilish uchun so'rov qoldiring",
+        tapToView: "Narxni ko'rish",
         modalDesc: "So'rovni yuborishingiz bilanoq barcha texnika narxlari saytda darhol ko'rinadi.",
         namePlaceholder: "Ismingiz",
         phonePlaceholder: "Telefon raqamingiz",
@@ -44,6 +45,7 @@ const leadTranslations = {
         currency: "сум",
         agreed: "Цена по запросу",
         getPrice: "Оставьте заявку, чтобы узнать цену",
+        tapToView: "Показать цену",
         modalDesc: "Как только вы отправите заявку, все цены на технику сразу появятся на сайте.",
         namePlaceholder: "Ваше имя",
         phonePlaceholder: "Номер телефона",
@@ -59,6 +61,7 @@ const leadTranslations = {
         currency: "sum",
         agreed: "Price on request",
         getPrice: "Fill the form to see the price",
+        tapToView: "Show price",
         modalDesc: "As soon as you submit the request, all equipment prices appear on the site immediately.",
         namePlaceholder: "Your name",
         phonePlaceholder: "Phone number",
@@ -150,8 +153,11 @@ const ProductDetailPage = () => {
 
     useEffect(() => {
         try {
-            if (window.localStorage.getItem(UNLOCK_KEY) === '1') setPricesUnlocked(true);
-        } catch (e) { /* localStorage mavjud emas */ }
+            // Eski versiyada localStorage ishlatilgan edi: doimiy ochiq qolib ketmasligi uchun tozalaymiz
+            window.localStorage.removeItem(UNLOCK_KEY);
+            // sessionStorage: faqat shu tab ochiq turguncha saqlanadi.
+            if (window.sessionStorage.getItem(UNLOCK_KEY) === '1') setPricesUnlocked(true);
+        } catch (e) { /* storage mavjud emas */ }
     }, []);
 
     // 🟢 Rasm URL tozalash (Double slash fix)
@@ -252,7 +258,7 @@ const ProductDetailPage = () => {
 
             setLeadSuccess(true);
             setPricesUnlocked(true);
-            try { window.localStorage.setItem(UNLOCK_KEY, '1'); } catch (err) { /* ignore */ }
+            try { window.sessionStorage.setItem(UNLOCK_KEY, '1'); } catch (err) { /* ignore */ }
             setTimeout(() => {
                 closePriceModal();
             }, 1200);
@@ -519,17 +525,25 @@ const ProductDetailPage = () => {
                                             onClick={() => openPriceModal(product)}
                                             title={curT.getPrice}
                                             aria-label={curT.getPrice}
-                                            className="group/price flex items-center gap-4 min-w-0 cursor-pointer text-left"
+                                            className="group/price flex items-center gap-4 min-w-0 cursor-pointer text-left rounded-2xl border border-dashed border-[#0061A4]/40 bg-blue-50/60 hover:bg-blue-50 hover:border-[#0061A4] pl-5 pr-3 py-3 transition-all"
                                         >
-                                            {/* Haqiqiy narx DOM'ga chiqmaydi: faqat yopilgan ko'rinish */}
-                                            <span
-                                                aria-hidden
-                                                className="text-3xl sm:text-4xl font-bold text-slate-400 tracking-[0.18em] tabular-nums select-none truncate group-hover/price:text-[#0061A4] transition-colors"
-                                            >
-                                                •••• ••• {curT.currency}
+                                            <span className="flex flex-col min-w-0">
+                                                {/* Haqiqiy narx DOM'ga chiqmaydi: faqat yopilgan ko'rinish */}
+                                                <span
+                                                    aria-hidden
+                                                    className="text-2xl sm:text-3xl font-bold text-slate-400 tracking-[0.18em] tabular-nums leading-none select-none truncate group-hover/price:text-[#0061A4] transition-colors"
+                                                >
+                                                    •••• ••• {curT.currency}
+                                                </span>
+                                                <span className="mt-2 text-[11px] font-bold text-[#0061A4] leading-none">
+                                                    {curT.tapToView}
+                                                </span>
                                             </span>
-                                            <span className="shrink-0 w-10 h-10 rounded-full bg-[#0061A4] text-white flex items-center justify-center shadow-md shadow-blue-100 group-hover/price:scale-110 transition-transform">
-                                                <Lock size={18} />
+                                            <span className="relative shrink-0 w-11 h-11 flex items-center justify-center">
+                                                <span className="absolute inset-0 rounded-full bg-[#0061A4]/30 animate-ping" />
+                                                <span className="relative w-11 h-11 rounded-full bg-[#0061A4] text-white flex items-center justify-center shadow-md shadow-blue-100 group-hover/price:scale-110 transition-transform">
+                                                    <Lock size={18} />
+                                                </span>
                                             </span>
                                         </button>
                                     )}
@@ -655,8 +669,11 @@ const ProductDetailPage = () => {
                                                     >
                                                         •••• ••• UZS
                                                     </span>
-                                                    <span className="shrink-0 w-6 h-6 rounded-full bg-[#0061A4] text-white flex items-center justify-center shadow-md shadow-blue-100 group-hover/price:scale-110 transition-transform">
-                                                        <Lock size={12} />
+                                                    <span className="relative shrink-0 w-6 h-6 flex items-center justify-center">
+                                                        <span className="absolute inset-0 rounded-full bg-[#0061A4]/30 animate-ping" />
+                                                        <span className="relative w-6 h-6 rounded-full bg-[#0061A4] text-white flex items-center justify-center shadow-md shadow-blue-100 group-hover/price:scale-110 transition-transform">
+                                                            <Lock size={12} />
+                                                        </span>
                                                     </span>
                                                 </button>
                                             )}
