@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronRight, PhoneCall, ShieldCheck, Info, Signal, Truck, ArrowUpRight, ArrowRight, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, PhoneCall, ShieldCheck, Info, Signal, Truck, ArrowUpRight, ArrowRight, Loader2, Lock, Check, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import API, { API_URL } from '../../api/axios';
@@ -13,6 +13,76 @@ import { useLanguage } from '../../context/LanguageContext';
 function cn(...classes) {
     return classes.filter(Boolean).join(' ');
 }
+
+// === TELEGRAMGA ZAYAVKA YUBORISH UCHUN (products sahifasidagi bilan bir xil) ===
+// DIQQAT: token/ID brauzer kodida ochiq turadi. Xohlasangiz keyinchalik
+// backend route (masalan /api/lead) orqali yashirin holda yuborish mumkin.
+const BOT_TOKEN = '8607165005:AAH98FISY0M_ubhPYqF3klRQbuy34K5rHGU';
+const CHANNEL_ID = '-1003693722283';
+
+// Products sahifasi bilan BIR XIL kalit: bir sahifada forma to'ldirilsa,
+// ikkinchisida ham narxlar avtomatik ochiq bo'ladi.
+const UNLOCK_KEY = 'uat_prices_unlocked';
+
+const leadTranslations = {
+    uz: {
+        currency: "so'm",
+        agreed: "Kelishilgan holda",
+        getPrice: "Narxini bilish uchun so'rov qoldiring",
+        modalDesc: "So'rovni yuborishingiz bilanoq barcha texnika narxlari saytda darhol ko'rinadi.",
+        namePlaceholder: "Ismingiz",
+        phonePlaceholder: "Telefon raqamingiz",
+        submitBtn: "Narxlarni ko'rish",
+        submitting: "Yuborilmoqda...",
+        successMsg: "Rahmat! Endi barcha narxlar saytda ko'rinadi.",
+        errorMsg: "Xatolik yuz berdi. Qaytadan urinib ko'ring.",
+        leadFillError: "Iltimos, ism va telefon raqamingizni kiriting",
+        nameInvalid: "Ismingizni to'g'ri kiriting (kamida 2 ta harf)",
+        phoneInvalid: "Telefon raqamini to'liq kiriting (9 ta raqam)",
+    },
+    ru: {
+        currency: "сум",
+        agreed: "Цена по запросу",
+        getPrice: "Оставьте заявку, чтобы узнать цену",
+        modalDesc: "Как только вы отправите заявку, все цены на технику сразу появятся на сайте.",
+        namePlaceholder: "Ваше имя",
+        phonePlaceholder: "Номер телефона",
+        submitBtn: "Показать цены",
+        submitting: "Отправка...",
+        successMsg: "Спасибо! Теперь все цены отображаются на сайте.",
+        errorMsg: "Произошла ошибка. Попробуйте ещё раз.",
+        leadFillError: "Пожалуйста, введите имя и номер телефона",
+        nameInvalid: "Введите имя корректно (минимум 2 буквы)",
+        phoneInvalid: "Введите номер полностью (9 цифр)",
+    },
+    en: {
+        currency: "sum",
+        agreed: "Price on request",
+        getPrice: "Fill the form to see the price",
+        modalDesc: "As soon as you submit the request, all equipment prices appear on the site immediately.",
+        namePlaceholder: "Your name",
+        phonePlaceholder: "Phone number",
+        submitBtn: "Show prices",
+        submitting: "Sending...",
+        successMsg: "Thank you! All prices are now shown on the site.",
+        errorMsg: "Something went wrong. Please try again.",
+        leadFillError: "Please enter your name and phone number",
+        nameInvalid: "Please enter a valid name (at least 2 letters)",
+        phoneInvalid: "Please enter the full phone number (9 digits)",
+    },
+};
+
+// Telefon: faqat 9 ta raqam (+998 dan keyingi qism), "90 810 10 09" ko'rinishida
+const formatPhone = (raw) => {
+    let digits = String(raw).replace(/\D/g, '');
+    if (digits.startsWith('998') && digits.length > 9) digits = digits.slice(3);
+    digits = digits.slice(0, 9);
+    const parts = [digits.slice(0, 2), digits.slice(2, 5), digits.slice(5, 7), digits.slice(7, 9)];
+    return parts.filter(Boolean).join(' ');
+};
+
+// Ism: faqat harflar, bo'sh joy va ' - belgilari
+const cleanName = (raw) => String(raw).replace(/[^\p{L}\s'’`-]/gu, '').slice(0, 40);
 
 // ── 1. SKELETON ANIMATION CSS ──
 const skeletonStyles = `
@@ -65,14 +135,36 @@ const ProductDetailPage = () => {
     const router = useRouter();
     const { t, lang } = useLanguage();
 
+    const curT = leadTranslations[lang] || leadTranslations.ru;
+
     const [activeImg, setActiveImg] = useState(null);
+
+    // === NARXLARNI OCHISH (LEAD-FORM) ===
+    const [pricesUnlocked, setPricesUnlocked] = useState(false);
+    const [priceModalProduct, setPriceModalProduct] = useState(null);
+    const [leadName, setLeadName] = useState('');
+    const [leadPhone, setLeadPhone] = useState('');
+    const [leadSubmitting, setLeadSubmitting] = useState(false);
+    const [leadError, setLeadError] = useState('');
+    const [leadSuccess, setLeadSuccess] = useState(false);
+
+    useEffect(() => {
+        try {
+            if (window.localStorage.getItem(UNLOCK_KEY) === '1') setPricesUnlocked(true);
+        } catch (e) { /* localStorage mavjud emas */ }
+    }, []);
 
     // 🟢 Rasm URL tozalash (Double slash fix)
     const formatImgUrl = (path) => {
         if (!path) return null;
         return `${API_URL}/${path}`.replace(/([^:]\/)\/+/g, "$1");
     };
-
+    const hasPrice = (value) => {
+        if (value === null || value === undefined || value === '') return false;
+        const normalized = String(value).replace(/\s+/g, '').replace(/,/g, '.');
+        const numeric = Number(normalized.replace(/[^\d.]/g, ''));
+        return Number.isFinite(numeric) && numeric > 0;
+    };
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 
     const { data: product, isLoading: loading } = useQuery({
@@ -104,6 +196,73 @@ const ProductDetailPage = () => {
         return obj[`${field}${k}`] || obj[`${field}Ru`] || obj[`${field}Uz`] || '---';
     };
 
+    const openPriceModal = (p) => {
+        setPriceModalProduct(p);
+        setLeadError('');
+        setLeadSuccess(false);
+    };
+
+    const closePriceModal = () => {
+        setPriceModalProduct(null);
+        setLeadName('');
+        setLeadPhone('');
+        setLeadError('');
+        setLeadSuccess(false);
+    };
+
+    const handleLeadSubmit = async (e) => {
+        e.preventDefault();
+        const nameLetters = leadName.replace(/[^\p{L}]/gu, '');
+        const phoneDigits = leadPhone.replace(/\D/g, '');
+        if (!leadName.trim() && !phoneDigits) {
+            setLeadError(curT.leadFillError);
+            return;
+        }
+        if (nameLetters.length < 2) {
+            setLeadError(curT.nameInvalid);
+            return;
+        }
+        if (phoneDigits.length !== 9) {
+            setLeadError(curT.phoneInvalid);
+            return;
+        }
+        setLeadSubmitting(true);
+        setLeadError('');
+        try {
+            const productTitle = priceModalProduct ? getField(priceModalProduct, 'title') : '---';
+            const productPrice = priceModalProduct
+                ? (hasPrice(priceModalProduct.price) ? `${priceModalProduct.price} ${curT.currency}` : curT.agreed)
+                : '---';
+
+            const message =
+                `🆕 Yangi so'rov (Narx uchun)\n\n` +
+                `👤 Ism: ${leadName.trim()}\n` +
+                `📞 Telefon: +998 ${leadPhone.trim()}\n` +
+                `🚛 Texnika: ${productTitle}\n` +
+                `💰 Narx: ${productPrice}\n` +
+                `🌐 Sahifa: ${typeof window !== 'undefined' ? window.location.href : ''}`;
+
+            const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: CHANNEL_ID, text: message }),
+            });
+
+            if (!res.ok) throw new Error('Telegram request failed');
+
+            setLeadSuccess(true);
+            setPricesUnlocked(true);
+            try { window.localStorage.setItem(UNLOCK_KEY, '1'); } catch (err) { /* ignore */ }
+            setTimeout(() => {
+                closePriceModal();
+            }, 1200);
+        } catch (err) {
+            setLeadError(curT.errorMsg);
+        } finally {
+            setLeadSubmitting(false);
+        }
+    };
+
     if (loading) return (
         <div className="min-h-screen bg-white flex items-center justify-center">
             <Loader2 className="animate-spin text-blue-600" size={40} />
@@ -124,6 +283,8 @@ const ProductDetailPage = () => {
     const specSections = groupedSpecs ? Object.values(groupedSpecs) : [];
 
     // ── JSON-LD (Schema.org) for Next.js ──
+    // ESLATMA: narx bu yerda ochiq turibdi. Agar bu obyekt sahifaga <script> sifatida
+    // chiqarilsa, narx sahifa kodida ko'rinib qoladi. Hozir u render qilinmayapti.
     const jsonLd = {
         "@context": "https://schema.org/",
         "@type": "Product",
@@ -347,9 +508,31 @@ const ProductDetailPage = () => {
                             <div className="relative z-10 space-y-8">
                                 <div>
                                     <p className=" text-gray-400 text-[10px] tracking-widest uppercase font-bold mb-2">{lang === 'uz' ? 'Narxi' : 'Цена'}</p>
-                                    <p className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tighter tabular-nums">
-                                        {product.price ? `${product.price} ${lang === 'ru' ? 'сум' : "so'm"}` : (lang === 'uz' ? 'Kelishilgan holda' : 'Цена по запросу')}
-                                    </p>
+
+                                    {pricesUnlocked ? (
+                                        <p className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tighter tabular-nums">
+                                            {hasPrice(product.price) ? `${product.price} ${lang === 'ru' ? 'сум' : "so'm"}` : (lang === 'uz' ? 'Kelishilgan holda' : 'Цена по запросу')}
+                                        </p>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            onClick={() => openPriceModal(product)}
+                                            title={curT.getPrice}
+                                            aria-label={curT.getPrice}
+                                            className="group/price flex items-center gap-4 min-w-0 cursor-pointer text-left"
+                                        >
+                                            {/* Haqiqiy narx DOM'ga chiqmaydi: faqat yopilgan ko'rinish */}
+                                            <span
+                                                aria-hidden
+                                                className="text-3xl sm:text-4xl font-bold text-slate-400 tracking-[0.18em] tabular-nums select-none truncate group-hover/price:text-[#0061A4] transition-colors"
+                                            >
+                                                •••• ••• {curT.currency}
+                                            </span>
+                                            <span className="shrink-0 w-10 h-10 rounded-full bg-[#0061A4] text-white flex items-center justify-center shadow-md shadow-blue-100 group-hover/price:scale-110 transition-transform">
+                                                <Lock size={18} />
+                                            </span>
+                                        </button>
+                                    )}
                                 </div>
                                 <button onClick={() => router.push('/contacts')} className="relative w-full flex items-center justify-center gap-3 py-5 sm:py-6 bg-[#0061A4] text-white font-bold text-[11px] uppercase tracking-widest hover:bg-blue-700 transition-all active:scale-[0.98] rounded-sm cursor-pointer">
                                     <PhoneCall size={16} /> {lang === 'uz' ? 'Bog\'lanish' : 'Связаться'} <ArrowUpRight size={16} />
@@ -454,12 +637,35 @@ const ProductDetailPage = () => {
                                             {getField(item, 'title')}
                                         </h3>
                                         <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-50">
-                                            <span className="text-[10px] font-black text-[#0061A4] tracking-widest uppercase">
-                                                {item.price ? `${item.price} UZS` : (lang === 'ru' ? 'По запросу' : 'Kelishilgan')}
-                                            </span>
-                                            <div className="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 group-hover:bg-[#0061A4] group-hover:text-white transition-all">
+                                            {pricesUnlocked ? (
+                                                <span className="text-[10px] font-black text-[#0061A4] tracking-widest uppercase">
+                                                    {hasPrice(item.price) ? `${item.price} UZS` : (lang === 'ru' ? 'По запросу' : 'Kelishilgan')}
+                                                </span>
+                                            ) : (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => openPriceModal(item)}
+                                                    title={curT.getPrice}
+                                                    aria-label={curT.getPrice}
+                                                    className="group/price flex items-center gap-2 min-w-0 cursor-pointer"
+                                                >
+                                                    <span
+                                                        aria-hidden
+                                                        className="text-[11px] font-black text-slate-400 tracking-[0.18em] tabular-nums select-none truncate group-hover/price:text-[#0061A4] transition-colors"
+                                                    >
+                                                        •••• ••• UZS
+                                                    </span>
+                                                    <span className="shrink-0 w-6 h-6 rounded-full bg-[#0061A4] text-white flex items-center justify-center shadow-md shadow-blue-100 group-hover/price:scale-110 transition-transform">
+                                                        <Lock size={12} />
+                                                    </span>
+                                                </button>
+                                            )}
+                                            <Link
+                                                href={`/product/${item.slug || item.id}`}
+                                                className="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 group-hover:bg-[#0061A4] group-hover:text-white transition-all shrink-0"
+                                            >
                                                 <ArrowRight size={14} />
-                                            </div>
+                                            </Link>
                                         </div>
                                     </div>
                                 </motion.div>
@@ -485,6 +691,110 @@ const ProductDetailPage = () => {
                     </button>
                 </div>
             </section>
+
+            {/* ============ NARX SO'ROVI MODALI ============ */}
+            <AnimatePresence>
+                {priceModalProduct && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={closePriceModal}
+                            className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 12 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 12 }}
+                            className="fixed z-[201] inset-0 flex items-center justify-center p-4 pointer-events-none"
+                        >
+                            <div className="bg-white rounded-2xl w-full max-w-[420px] p-6 sm:p-7 relative shadow-2xl pointer-events-auto">
+                                <button
+                                    onClick={closePriceModal}
+                                    className="absolute top-4 right-4 p-1.5 rounded-full bg-gray-50 hover:bg-gray-100 text-gray-500 transition-colors"
+                                    aria-label="Close"
+                                >
+                                    <X size={18} />
+                                </button>
+
+                                <h3 className="text-[16px] sm:text-[18px] font-black text-slate-900 text-center leading-snug px-6">
+                                    {curT.modalDesc}
+                                </h3>
+
+                                <div className="mt-4 flex items-center gap-3 bg-gray-50 rounded-xl p-3">
+                                    <img
+                                        src={formatImgUrl(priceModalProduct.image)}
+                                        alt=""
+                                        className="w-12 h-12 object-contain shrink-0"
+                                    />
+                                    <span className="text-[13px] font-bold text-slate-700 line-clamp-2">
+                                        {getField(priceModalProduct, 'title')}
+                                    </span>
+                                </div>
+
+                                {leadSuccess ? (
+                                    <div className="mt-6 flex flex-col items-center text-center gap-2 py-4">
+                                        <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center">
+                                            <Check size={22} className="text-green-600" strokeWidth={3} />
+                                        </div>
+                                        <p className="text-[13px] font-bold text-slate-700">{curT.successMsg}</p>
+                                    </div>
+                                ) : (
+                                    <form onSubmit={handleLeadSubmit} className="mt-5 flex flex-col gap-4" noValidate>
+                                        <div className="flex flex-col gap-1.5">
+                                            <label className="text-[11px] font-black uppercase tracking-wider text-slate-500 px-1">
+                                                {curT.namePlaceholder}
+                                            </label>
+                                            <input
+                                                type="text"
+                                                autoComplete="name"
+                                                value={leadName}
+                                                onChange={(e) => { setLeadName(cleanName(e.target.value)); setLeadError(''); }}
+                                                placeholder={curT.namePlaceholder}
+                                                className="w-full px-4 py-3.5 rounded-xl border border-gray-200 bg-gray-50/50 text-[14px] font-bold text-slate-800 placeholder:text-gray-300 placeholder:font-medium focus:outline-none focus:bg-white focus:border-[#0061A4] focus:ring-4 focus:ring-blue-50 transition-all"
+                                            />
+                                        </div>
+
+                                        <div className="flex flex-col gap-1.5">
+                                            <label className="text-[11px] font-black uppercase tracking-wider text-slate-500 px-1">
+                                                {curT.phonePlaceholder}
+                                            </label>
+                                            <div className="flex items-stretch rounded-xl border border-gray-200 bg-gray-50/50 overflow-hidden focus-within:bg-white focus-within:border-[#0061A4] focus-within:ring-4 focus-within:ring-blue-50 transition-all">
+                                                <span className="flex items-center px-4 text-[14px] font-black text-slate-700 bg-gray-100/70 border-r border-gray-200 select-none">
+                                                    +998
+                                                </span>
+                                                <input
+                                                    type="tel"
+                                                    inputMode="numeric"
+                                                    autoComplete="tel-national"
+                                                    value={leadPhone}
+                                                    onChange={(e) => { setLeadPhone(formatPhone(e.target.value)); setLeadError(''); }}
+                                                    placeholder="90 810 10 09"
+                                                    maxLength={12}
+                                                    className="flex-1 min-w-0 px-4 py-3.5 bg-transparent text-[14px] font-bold text-slate-800 tabular-nums tracking-wide placeholder:text-gray-300 placeholder:font-medium focus:outline-none"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {leadError && (
+                                            <p className="text-[12px] font-bold text-red-500 px-1">{leadError}</p>
+                                        )}
+
+                                        <button
+                                            type="submit"
+                                            disabled={leadSubmitting}
+                                            className="mt-1 w-full px-5 py-3.5 rounded-xl bg-[#0061A4] text-white font-black text-[13px] tracking-wide hover:bg-blue-800 active:scale-[0.98] disabled:opacity-60 transition-all shadow-lg shadow-blue-100"
+                                        >
+                                            {leadSubmitting ? curT.submitting : curT.submitBtn}
+                                        </button>
+                                    </form>
+                                )}
+                            </div>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

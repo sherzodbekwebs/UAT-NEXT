@@ -101,7 +101,7 @@ const translations = {
 const Compliance = ({ lang = 'ru' }) => {
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
     const t = translations[lang] || translations.ru;
-    
+
     const [isAnonymous, setIsAnonymous] = useState(false);
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({ name: '', email: '', subject: '', phone: '', message: '' });
@@ -134,13 +134,13 @@ const Compliance = ({ lang = 'ru' }) => {
             if (response.ok) {
                 setModal({ show: true, type: 'success', message: t.successMsg });
                 setFormData({ name: '', email: '', subject: '', phone: '', message: '' });
-            } else { 
-                setModal({ show: true, type: 'error', message: t.errorMsg }); 
+            } else {
+                setModal({ show: true, type: 'error', message: t.errorMsg });
             }
-        } catch (error) { 
-            setModal({ show: true, type: 'error', message: t.errorMsg }); 
-        } finally { 
-            setLoading(false); 
+        } catch (error) {
+            setModal({ show: true, type: 'error', message: t.errorMsg });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -211,28 +211,27 @@ const Compliance = ({ lang = 'ru' }) => {
                 </section>
 
                 {/* 5. CHANNELS */}
-               {/* 5. CHANNELS */}
-<div className="mb-12 lg:mb-20">
-    <div className="bg-[#1a2e44] rounded-3xl p-8 lg:p-12 text-white shadow-lg max-w-4xl mx-auto">
-        <h2 className="text-xl lg:text-2xl font-bold mb-6 uppercase tracking-tight text-center lg:text-left">
-            {t.channelsTitle}
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 text-center lg:text-left">
-            <div className="space-y-1">
-                <div className="text-[#0054A6] font-bold text-[10px] uppercase tracking-widest">Email</div>
-                <a href="mailto:compliance@trailer.uz" className="text-lg font-bold hover:text-blue-300 transition-colors">
-                    compliance@trailer.uz
-                </a>
-            </div>
-            <div className="space-y-1">
-                <div className="text-[#0054A6] font-bold text-[10px] uppercase tracking-widest">Hot Line</div>
-                <a href="tel:+998712023883" className="text-lg font-bold hover:text-blue-300 transition-colors">
-                    +998 71 202 38 83
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
+                <div className="mb-12 lg:mb-20">
+                    <div className="bg-[#1a2e44] rounded-3xl p-8 lg:p-12 text-white shadow-lg max-w-4xl mx-auto">
+                        <h2 className="text-xl lg:text-2xl font-bold mb-6 uppercase tracking-tight text-center lg:text-left">
+                            {t.channelsTitle}
+                        </h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 text-center lg:text-left">
+                            <div className="space-y-1">
+                                <div className="text-[#0054A6] font-bold text-[10px] uppercase tracking-widest">Email</div>
+                                <a href="mailto:compliance@trailer.uz" className="text-lg font-bold hover:text-blue-300 transition-colors">
+                                    compliance@trailer.uz
+                                </a>
+                            </div>
+                            <div className="space-y-1">
+                                <div className="text-[#0054A6] font-bold text-[10px] uppercase tracking-widest">Hot Line</div>
+                                <a href="tel:+998712023883" className="text-lg font-bold hover:text-blue-300 transition-colors">
+                                    +998 71 202 38 83
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 {/* 6. FORM */}
                 <section id="compliance-form" className="max-w-3xl mx-auto">
@@ -254,7 +253,7 @@ const Compliance = ({ lang = 'ru' }) => {
                             )}
                             <input required value={formData.subject} type="text" placeholder={t.fields.subject} className={`w-full bg-gray-50 border border-transparent focus:border-blue-200 rounded-xl px-4 py-3 text-sm outline-none ${isAnonymous ? 'sm:col-span-2' : ''}`} onChange={(e) => setFormData({ ...formData, subject: e.target.value })} />
                             <textarea required value={formData.message} rows="4" placeholder={t.fields.message} className="sm:col-span-2 w-full bg-gray-50 border border-transparent focus:border-blue-200 rounded-2xl px-4 py-3 text-sm outline-none resize-none" onChange={(e) => setFormData({ ...formData, message: e.target.value })}></textarea>
-                            
+
                             <div className="sm:col-span-2 flex flex-col items-center pt-4">
                                 <button disabled={loading} type="submit" className="w-full sm:w-auto bg-[#0054A6] hover:bg-[#004488] text-white px-12 py-3.5 rounded-full font-bold uppercase text-[10px] tracking-widest shadow-lg transition-all active:scale-95 disabled:opacity-50">
                                     {loading ? "..." : t.fields.submit}
