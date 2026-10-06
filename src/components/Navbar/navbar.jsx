@@ -26,13 +26,18 @@ import furgon_icon from '../../../public/furgon_icon.webp';
 import maxsus_icon from '../../../public/maxsus_icon.webp';
 import shassi_icon from '../../../public/shassi_icon.webp';
 import pritsep_icon from '../../../public/pritsep_icon.webp';
-import mini_icon from '../../../public/mini_icon.webp'; 
+import mini_icon from '../../../public/mini_icon.webp';
 
 import API, { API_URL } from '../../api/axios';
 import { useLanguage } from '../../context/LanguageContext';
 
 const BRAND = '#0061A4';
 const BRAND_LIGHT = '#5CC2FF';
+
+// Mobil menyu animatsiyalari uchun umumiy sozlamalar — bitta joyda boshqarish oson bo'lishi uchun.
+// Tez boshlanib, oxirida yumshoq to'xtaydigan egri chiziq (iOS uslubidagi).
+const MOBILE_PANEL_TRANSITION = { type: 'tween', duration: 0.38, ease: [0.25, 0.8, 0.25, 1] };
+const ACCORDION_TRANSITION = { duration: 0.3, ease: [0.25, 0.8, 0.25, 1] };
 
 const socialLinks = [
     { icon: Send, url: "https://t.me/uatproductsbot", color: "#0088cc" },
@@ -54,6 +59,9 @@ const CategoryIcon = ({ icon, size = 22, className = '' }) => {
         <img
             src={src}
             alt=""
+            width={size}
+            height={size}
+            decoding="async"
             className={className}
         />
     );
@@ -330,19 +338,30 @@ const SearchResults = ({ suggestions, t, getLangField, handleResultClick }) => (
     </motion.div>
 );
 
+/**
+ * Mobil accordion item. Eslatma: tashqi div'da `transition-all` YO'Q — framer-motion
+ * balandlikni animatsiya qilayotganda CSS transition bilan ziddiyatga kirishib,
+ * animatsiyani sekin va "qotib-qotib" ko'rsatardi.
+ */
 const MobileNavItem = ({ icon: Icon, label, isOpen, isCurrent, onClick, children }) => (
-    <div className="rounded-2xl overflow-hidden transition-all duration-300">
-        <button onClick={onClick} aria-expanded={isOpen} className={`w-full flex justify-between items-center p-4 rounded-2xl transition-all ${isOpen ? 'bg-blue-50 text-[#0061A4]' : isCurrent ? 'bg-blue-50/60 text-[#0061A4]' : 'text-[#1a2e44] hover:bg-gray-50'}`}>
+    <div className="rounded-2xl overflow-hidden">
+        <button onClick={onClick} aria-expanded={isOpen} className={`w-full flex justify-between items-center p-4 rounded-2xl transition-colors duration-200 ${isOpen ? 'bg-blue-50 text-[#0061A4]' : isCurrent ? 'bg-blue-50/60 text-[#0061A4]' : 'text-[#1a2e44] hover:bg-gray-50'}`}>
             <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-xl transition-colors ${isOpen || isCurrent ? 'bg-[#0061A4] text-white' : 'bg-gray-100 text-[#0061A4]'}`}><Icon size={18} /></div>
+                <div className={`p-2 rounded-xl transition-colors duration-200 ${isOpen || isCurrent ? 'bg-[#0061A4] text-white' : 'bg-gray-100 text-[#0061A4]'}`}><Icon size={18} /></div>
                 <span className="text-[16px] font-bold">{label}</span>
                 {isCurrent && <span className="w-1.5 h-1.5 rounded-full bg-[#0061A4]" />}
             </div>
-            <ChevronRight size={18} className={`transition-transform duration-300 ${isOpen ? 'rotate-90 text-[#0061A4]' : 'text-gray-300'}`} />
+            <ChevronRight size={18} className={`transition-transform duration-200 ${isOpen ? 'rotate-90 text-[#0061A4]' : 'text-gray-300'}`} />
         </button>
-        <AnimatePresence>
+        <AnimatePresence initial={false}>
             {isOpen && (
-                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.22 }} className="overflow-hidden bg-gray-50/50 mx-2 rounded-b-2xl border-x border-b border-blue-50 px-4 py-2 ml-8 border-l-2 border-blue-100 my-2">
+                <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={ACCORDION_TRANSITION}
+                    className="overflow-hidden bg-gray-50/50 mx-2 rounded-b-2xl border-x border-b border-blue-50 px-4 py-2 ml-8 border-l-2 border-blue-100 my-2"
+                >
                     {children}
                 </motion.div>
             )}
@@ -351,9 +370,9 @@ const MobileNavItem = ({ icon: Icon, label, isOpen, isCurrent, onClick, children
 );
 
 const SimpleMobileLink = ({ href, icon: Icon, label, isCurrent, onClick }) => (
-    <Link href={href} onClick={onClick} className={`flex items-center justify-between p-4 rounded-2xl transition-all group ${isCurrent ? 'bg-blue-50/70 text-[#0061A4]' : 'hover:bg-gray-50 text-[#1a2e44]'}`}>
+    <Link href={href} onClick={onClick} className={`flex items-center justify-between p-4 rounded-2xl transition-colors duration-200 group ${isCurrent ? 'bg-blue-50/70 text-[#0061A4]' : 'hover:bg-gray-50 text-[#1a2e44]'}`}>
         <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-xl transition-all ${isCurrent ? 'bg-[#0061A4] text-white' : 'bg-gray-100 text-[#0061A4] group-hover:bg-[#0061A4] group-hover:text-white'}`}><Icon size={18} /></div>
+            <div className={`p-2 rounded-xl transition-colors duration-200 ${isCurrent ? 'bg-[#0061A4] text-white' : 'bg-gray-100 text-[#0061A4] group-hover:bg-[#0061A4] group-hover:text-white'}`}><Icon size={18} /></div>
             <span className="text-[16px] font-bold">{label}</span>
             {isCurrent && <span className="w-1.5 h-1.5 rounded-full bg-[#0061A4]" />}
         </div>
@@ -397,6 +416,13 @@ const Navbar = () => {
         window.addEventListener('scroll', onScroll, { passive: true });
         return () => window.removeEventListener('scroll', onScroll);
     }, []);
+
+    // Mobil menyu ochiq bo'lganda orqadagi sahifa skrollini bloklash —
+    // shunda menyu ochilayotganda orqa fon qimirlamaydi va animatsiya silliq ko'rinadi.
+    useEffect(() => {
+        document.body.style.overflow = isMobileMenuOpen ? 'hidden' : '';
+        return () => { document.body.style.overflow = ''; };
+    }, [isMobileMenuOpen]);
 
     const getLangField = (obj, field) => {
         if (!obj) return "";
@@ -694,14 +720,22 @@ const Navbar = () => {
                 </nav>
             </header>
 
+            {/* MOBIL MENYU — spring o'rniga tez tween: ~250ms, oxirida yumshoq to'xtaydi */}
             <AnimatePresence>
                 {isMobileMenuOpen && (
-                    <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: "spring", damping: 25 }} className="navbar-roboto-container fixed inset-0 bg-white z-[9999] min-[1201px]:hidden flex flex-col">
+                    <motion.div
+                        initial={{ x: '100%' }}
+                        animate={{ x: 0 }}
+                        exit={{ x: '100%' }}
+                        transition={MOBILE_PANEL_TRANSITION}
+                        style={{ willChange: 'transform' }}
+                        className="navbar-roboto-container fixed inset-0 bg-white z-[9999] min-[1201px]:hidden flex flex-col"
+                    >
                         <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100">
                             <img src={logo.src || logo} alt="UzAuto Trailer" className="h-10 w-auto" />
                             <button onClick={() => setIsMobileMenuOpen(false)} aria-label="Close menu" className="text-black p-2 rounded-lg hover:bg-gray-50 transition-colors duration-200"><XIcon size={22} /></button>
                         </div>
-                        <div className="flex-1 overflow-y-auto px-6 py-5">
+                        <div className="flex-1 overflow-y-auto overscroll-contain px-6 py-5">
                             <div className="space-y-1">
                                 <MobileNavItem icon={Info} label={t.about} isOpen={mobileAccordion === 'about'} isCurrent={isAboutActive} onClick={() => setMobileAccordion(mobileAccordion === 'about' ? null : 'about')}>
                                     {fullAboutItems.map((item, i) => (
@@ -742,7 +776,7 @@ const Navbar = () => {
                                                     key={group.id}
                                                     href={`/products?category=${group.id}`}
                                                     onClick={() => setIsMobileMenuOpen(false)}
-                                                    className={`flex flex-col items-center text-center gap-2 px-2 py-3 rounded-xl transition-all ${active ? 'bg-blue-100/60' : 'hover:bg-white'}`}
+                                                    className={`flex flex-col items-center text-center gap-2 px-2 py-3 rounded-xl transition-colors duration-200 ${active ? 'bg-blue-100/60' : 'hover:bg-white'}`}
                                                 >
                                                     <div className={`w-10 h-10 rounded-full flex items-center justify-center ${active ? 'bg-[#0061A4] text-white' : 'bg-white text-[#0061A4]'}`}>
                                                         <CategoryIcon icon={group.icon} size={18} />
