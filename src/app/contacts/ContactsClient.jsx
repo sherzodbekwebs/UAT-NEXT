@@ -163,7 +163,6 @@ const ContactsClient = () => {
                 }),
             });
 
-            await API.post('/crm', { name: formData.name, phone: formData.phone });
 
             await submitAmoLead(formData);
 

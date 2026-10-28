@@ -173,13 +173,8 @@ const Contacts = ({ lang = 'ru' }) => {
                 // Agar bot xatosi bo'lsa, bu yerda bilib olasiz
             }
 
-            // 2. Bazaga yozish
-            const dbResponse = await API.post('/crm', {
-                name: formData.name,
-                phone: formData.phone
-            });
+            // CRM bazasiga saqlash va amoCRM ga yuborish
 
-            // Agar har ikkalasi yoki hech bo'lmasa DB muvaffaqiyatli bo'lsa
             await submitAmoLead(formData);
 
             toast.success(lang === 'ru' ? 'Сообщение отправлено!' : 'Xabaringiz yuborildi!');
