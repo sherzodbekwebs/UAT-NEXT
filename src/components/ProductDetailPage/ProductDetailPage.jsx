@@ -1,5 +1,7 @@
 'use client';
 
+import { submitAmoLead } from '../../api/leads';
+
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -255,6 +257,12 @@ const ProductDetailPage = () => {
             });
 
             if (!res.ok) throw new Error('Telegram request failed');
+
+            await submitAmoLead({
+                name: leadName.trim(),
+                phone: `+998${phoneDigits}`,
+                message,
+            });
 
             setLeadSuccess(true);
             setPricesUnlocked(true);

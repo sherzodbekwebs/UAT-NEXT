@@ -1,5 +1,7 @@
 'use client';
 
+import { submitAmoLead } from '../../api/leads';
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -162,6 +164,8 @@ const ContactsClient = () => {
             });
 
             await API.post('/crm', { name: formData.name, phone: formData.phone });
+
+            await submitAmoLead(formData);
 
             toast.success(lang === 'ru' ? 'Сообщение отправлено!' : 'Xabaringiz yuborildi!');
             setFormData({ name: '', phone: '+998 ', message: '' });

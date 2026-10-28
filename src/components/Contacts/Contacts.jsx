@@ -1,5 +1,7 @@
 'use client';
 
+import { submitAmoLead } from '../../api/leads';
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -178,6 +180,8 @@ const Contacts = ({ lang = 'ru' }) => {
             });
 
             // Agar har ikkalasi yoki hech bo'lmasa DB muvaffaqiyatli bo'lsa
+            await submitAmoLead(formData);
+
             toast.success(lang === 'ru' ? 'Сообщение отправлено!' : 'Xabaringiz yuborildi!');
             setFormData({ name: '', phone: '+998 ', message: '' });
 

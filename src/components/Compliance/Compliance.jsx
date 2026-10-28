@@ -1,4 +1,6 @@
-"use client"; // 1. BU SHART!
+"use client";
+
+import { submitAmoLead } from '../../api/leads'; // 1. BU SHART!
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -99,7 +101,7 @@ const translations = {
 };
 
 const Compliance = ({ lang = 'ru' }) => {
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+    const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'https://api.uzautotrailer.uz').replace(/\/+$/, '');
     const t = translations[lang] || translations.ru;
 
     const [isAnonymous, setIsAnonymous] = useState(false);
@@ -132,6 +134,13 @@ const Compliance = ({ lang = 'ru' }) => {
                 body: JSON.stringify(payload),
             });
             if (response.ok) {
+                await submitAmoLead({
+                    source: 'compliance',
+                    anonymous: isAnonymous,
+                    name: payload.name,
+                    phone: payload.phone,
+                    message: `Komplayens murojaati\nMavzu: ${payload.subject}\n${payload.message}\n${isAnonymous ? 'Anonim murojaat' : `Email: ${payload.email}`}\nSahifa: ${payload.pageUrl}`,
+                });
                 setModal({ show: true, type: 'success', message: t.successMsg });
                 setFormData({ name: '', email: '', subject: '', phone: '', message: '' });
             } else {

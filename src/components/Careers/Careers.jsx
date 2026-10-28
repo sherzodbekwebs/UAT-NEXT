@@ -1,5 +1,7 @@
 "use client";
 
+import { submitAmoLead } from '../../api/leads';
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -148,6 +150,11 @@ const Careers = ({ lang = 'ru' }) => {
             });
 
             if (response.ok) {
+                await submitAmoLead({
+                    name: form.name,
+                    phone: form.phone,
+                    message: `Vakansiya: ${getVal(applyVacancy, 'title')}\nTil: ${lang}\nRezyume: ${form.file.name} (Telegram orqali yuborildi)`,
+                });
                 setIsSent(true);
                 setTimeout(() => {
                     setIsSent(false);
@@ -156,7 +163,8 @@ const Careers = ({ lang = 'ru' }) => {
                 }, 3000);
             }
         } catch (error) {
-            console.error("Telegram error:", error);
+            console.error("Ariza yuborishda xatolik:", error);
+            alert(lang === 'uz' ? 'Yuborishda xatolik yuz berdi' : 'Ошибка при отправке');
         } finally {
             setIsLoading(false);
         }

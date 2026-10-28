@@ -1,5 +1,7 @@
 'use client';
 
+import { submitAmoLead } from '../../api/leads';
+
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom'; // Portaldan foydalanamiz
 import { motion, AnimatePresence } from 'framer-motion';
@@ -36,6 +38,7 @@ const ContactModal = ({ lang = 'ru' }) => {
     const [formData, setFormData] = useState({ name: '', phone: '+998 ', message: '' });
     const [isLoading, setIsLoading] = useState(false);
     const [isSent, setIsSent] = useState(false);
+    const [submitError, setSubmitError] = useState('');
     const [mounted, setMounted] = useState(false);
 
     // Dom tayyor bo'lganini tekshirish (Portal uchun kerak)
@@ -48,6 +51,7 @@ const ContactModal = ({ lang = 'ru' }) => {
     const handleCallSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
+        setSubmitError('');
         const telegramMsg = `🔔 *НОВАЯ ЗАЯВКА*\n👤 *Имя:* ${formData.name}\n📞 *Телефон:* ${formData.phone}${formData.message ? `\n💬 *Сообщение:* ${formData.message}` : ''}`;
         try {
             await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
@@ -55,6 +59,7 @@ const ContactModal = ({ lang = 'ru' }) => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ chat_id: CHANNEL_ID, text: telegramMsg, parse_mode: "Markdown" }),
             });
+            await submitAmoLead(formData);
             setIsSent(true);
             setTimeout(() => {
                 setIsOpenCall(false);
@@ -63,6 +68,7 @@ const ContactModal = ({ lang = 'ru' }) => {
                 setIsLoading(false);
             }, 3000);
         } catch (error) {
+            setSubmitError(lang === 'uz' ? 'Yuborishda xatolik yuz berdi' : 'Ошибка при отправке');
             setIsLoading(false);
         }
     };
@@ -151,6 +157,7 @@ const ContactModal = ({ lang = 'ru' }) => {
                                                 <textarea placeholder={t.messageLabel} rows={3} value={formData.message} onChange={e => setFormData({ ...formData, message: e.target.value })} className="w-full bg-gray-50 border-none rounded-xl px-12 py-3.5 text-black outline-none focus:ring-2 focus:ring-[#0061A4]/20 transition-all resize-none" />
                                             </div>
                                         </div>
+                                        {submitError && <p role="alert" className="text-sm text-red-600">{submitError}</p>}
                                         <button disabled={isLoading} className="w-full bg-[#0061A4] text-white py-4 rounded-xl font-bold uppercase text-sm hover:bg-[#004e82] transition-all flex items-center justify-center gap-2 mt-2">
                                             {isLoading ? <Loader2 className="animate-spin" size={20} /> : t.btnSend}
                                         </button>
