@@ -5,6 +5,9 @@ import type { ReactNode } from "react";
 import Script from 'next/script';
 import { Metadata } from 'next';
 import ChatWidget from "@/components/ChatWidget";
+import { GoogleTagManager } from '@next/third-parties/google';
+
+const GTM_ID = 'GTM-5PJSK24H';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const roboto = Roboto({ subsets: ['latin'], weight: ['300', '400', '500', '700', '900'], variable: '--font-roboto' });
@@ -65,6 +68,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ru" className={`${inter.variable} ${roboto.variable}`}>
+      <GoogleTagManager gtmId={GTM_ID} />
       <body>
         <AppShell>{children}</AppShell>
 
