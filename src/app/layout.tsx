@@ -8,6 +8,7 @@ import ChatWidget from "@/components/ChatWidget";
 import { GoogleTagManager } from '@next/third-parties/google';
 
 const GTM_ID = 'GTM-5PJSK24H';
+const GA4_MEASUREMENT_ID = 'G-9RNW2ZW0LR';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const roboto = Roboto({ subsets: ['latin'], weight: ['300', '400', '500', '700', '900'], variable: '--font-roboto' });
@@ -74,7 +75,7 @@ export default function RootLayout({
 
         {/* 1. FIREBASE ANALYTICS (Google Analytics) */}
         <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-9RNW2ZW8LR"
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA4_MEASUREMENT_ID}`}
           strategy="afterInteractive"
         />
         <Script id="firebase-analytics" strategy="afterInteractive">
@@ -82,7 +83,7 @@ export default function RootLayout({
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', 'G-9RNW2ZW8LR', {
+            gtag('config', '${GA4_MEASUREMENT_ID}', {
               page_path: window.location.pathname,
             });
           `}
